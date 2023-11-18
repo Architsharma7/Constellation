@@ -1,21 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
+import { ChainlinkConsumer } from "./ChainlinkConsumer.sol";
 
-import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {IUnlockV12} from "@unlock-protocol/contracts/dist/Unlock/IUnlockV12.sol";
 
-import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/libraries/FunctionsRequest.sol";
-
-import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
-
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {IPublicLockV12} from "@unlock-protocol/contracts/dist/PublicLock/IPublicLockV12.sol";
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
-import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
 /**
@@ -23,71 +17,40 @@ import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @notice 
  * @dev 
  */
-contract AgentPlace is FunctionsClient, Ownable {
-    using FunctionsRequest for FunctionsRequest.Request;
+contract AgentPlace is ChainlinkConsumer {
 
-    uint256 month = month;
+    IUnlockV12 unlockContract;
 
-    uint256 public interval; // interval specifies the time between upkeeps
-
-    uint256 public lastTimeStamp; // lastTimeStamp tracks the last upkeep performed
-
-    address public s_forwarderAddress;
-
-    uint64 subscriptionId;
-
-    uint256 agentPlaceTreasury;
-
-    struct AgentStruct {
-        address creator;
-        address splitterContract;
-        string metadata;
+    struct AgentInitConfig {
+        uint16 agentID;
+        uint subscriptionExpirationDuration;
+        address tokenAddress;
+        uint keyPrice;
+        uint basisPoint;
+        string lockName;
+        string lockSymbol;
+        string baseTokenURI;
+        bool isOpenForContributions;
     }
 
-    struct Subscription {
-        uint256 start;
-        uint256 end;
-        uint8 SubscriptionType;
-    }
-
-    mapping(uint16 => AgentStruct) public agents;
-
-    mapping(address => Subscription) public subscriptions;
-
-    // Custom error type
-    error UnexpectedRequestID(bytes32 requestId);
-
-    // Event to log responses
-    event Response(
-        bytes32 indexed requestId,
-        uint32[] topk
+    event agentRegistered(
+        uint16 agentID, 
+        address creator, 
+        address UnlockSubscriptionContract, 
+        bool isOpenForContributions
     );
 
-    // Router address - Hardcoded for Mumbai
-    // Check to get the router address for your supported network https://docs.chain.link/chainlink-functions/supported-networks
-    address oracle = 0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C;
-    // JavaScript source code
-    // Fetch character name from the Star Wars API.
-    // Documentation: https://swapi.dev/documentation#people
-    string source =
-        "const characterId = args[0];"
-        "const apiResponse = await Functions.makeHttpRequest({"
-        "url: `https://swapi.dev/api/people/${characterId}/`"
-        "});"
-        "if (apiResponse.error) {"
-        "throw Error('Request failed');"
-        "}"
-        "const { data } = apiResponse;"
-        "return Functions.encodeString(data.name);";
-    //Callback gas limit
-    uint32 gasLimit = 300000;
-    // donID - Hardcoded for Mumbai
-    bytes32 donID = 0x66756e2d706f6c79676f6e2d6d756d6261692d31000000000000000000000000;
-
+    event agentVersionRegistered(
+        uint16 agentID, 
+        uint16 agentVersionID, 
+        address creator, 
+        string agentMetadataCID
+    );
 
     /// @notice Initializes the contract
     /// @param _oracle The address of the Chainlink Function oracle
     /// @param _forwarderAddress The address of the Chainlink oracle Automation Forwarder
+    /// @param _unlockContract The address of the Chainlink oracle Automation Forwarder
     /// @param _donID Chainlink's contract chainID => donID 
     /// @param _subscriptionId The subscription ID for Chainlink Functions
     /// @param _source The source code for the Chainlink Functions request
@@ -95,92 +58,151 @@ contract AgentPlace is FunctionsClient, Ownable {
     constructor(
         address _oracle,
         address _forwarderAddress,
+        IUnlockV12 _unlockContract,
         bytes32 _donID,
         uint64 _subscriptionId,
-        string memory _source,
-        uint32 _gasLimit
-    ) FunctionsClient(_oracle) {
-        s_forwarderAddress = _forwarderAddress;
-        subscriptionId = _subscriptionId;
-        source = _source;
-        gasLimit = _gasLimit;
-        donID = _donID;
+        string[] memory _source,
+        uint32 _gasLimit,
+        uint8 _topK,
+        uint8[] memory _splits
+    ) ChainlinkConsumer(
+        _oracle,
+        _forwarderAddress,
+        _donID,
+        _subscriptionId,
+        _source,
+        _gasLimit,
+        _topK,
+        _splits
+    ){
+        unlockContract =  _unlockContract;
     }
 
-    function subscribe(uint8 subscriptionType)external payable{
-        // Handle create subscription
+    function registerAgent(
+        AgentInitConfig calldata agentConfig
+    ) external{
+        require(agents[agentConfig.agentID].creator == address(0), "agent already exists");
+ 
+        address newLockAddress = unlockContract.createLock(
+            agentConfig.subscriptionExpirationDuration,
+            agentConfig.tokenAddress,
+            agentConfig.keyPrice,
+            type(uint).max,
+            agentConfig.lockName,
+            bytes12(0)
+        );
+        IPublicLockV12(newLockAddress).setLockMetadata(agentConfig.lockName,agentConfig.lockSymbol, agentConfig.baseTokenURI);
+        if(agentConfig.basisPoint > 0 ) IPublicLockV12(newLockAddress).setReferrerFee(address(0), agentConfig.basisPoint);
+        IPublicLockV12(newLockAddress).setEventHooks(address(this),address(0),address(0),address(0),address(0),address(0),address(0));
+        agents[agentConfig.agentID] = AgentStruct({
+            creator : msg.sender,
+            lockAddress: newLockAddress,
+            isOpenForContributions: agentConfig.isOpenForContributions
+        });
+        
+        emit agentRegistered(agentConfig.agentID, msg.sender, newLockAddress, agentConfig.isOpenForContributions);
     }
 
-    function registerAgent(string memory agentID)external {
+    function registerAgentVersion(
+        uint16 _agentID, 
+        uint16 _agentVersionID,
+        string memory _agentMetadataCID
+    )external {
+        require(agents[_agentID].isOpenForContributions, "agent is not open for contributions");
         // Check Subscription plan
+        agents[_agentID] = AgentStruct({
+            creator : msg.sender,
+            lockAddress: agents[_agentID].lockAddress,
+            isOpenForContributions: false
+        });
+
+        emit agentVersionRegistered(_agentID, _agentVersionID, msg.sender, _agentMetadataCID);
+
+        agentVersions[_agentVersionID] = _agentID;
     } 
 
-    function checkUpkeep(
-        bytes calldata /*checkData*/
-    ) external view returns (bool, bytes memory) {
-        bool needsUpkeep = (block.timestamp - lastTimeStamp) > interval;
-        return (needsUpkeep, bytes(""));
-    }
+    /**
+     * @dev PurchaseSubscription function for an agentID
+     * @param _agentID to subscribe
+     * @param _values array of tokens amount to pay for this purchase >= the current keyPrice - any applicable discount
+     * (_values is ignored when using ETH)
+     * @param _recipients array of addresses of the recipients of the purchased key
+     * @param _referrers array of addresses of the users making the referral
+     * @param _keyManagers optional array of addresses to grant managing rights to a specific address on creation
+     * @param _data arbitrary data populated by the front-end which initiated the sale
+     * @notice when called for an existing and non-expired key, the `_keyManager` param will be ignored 
+     * @dev Setting _value to keyPrice exactly doubles as a security feature. That way if the lock owner increases the
+     * price while my transaction is pending I can't be charged more than I expected (only applicable to ERC-20 when more
+     * than keyPrice is approved for spending).
+    */
+    function purchaseSubscription(
+        uint16 _agentID,
+        uint256[] memory _values,
+        address[] memory _recipients,
+        address[] memory _referrers,
+        // We dont need keyManagers so this array should have address(0)
+        // Maybe init in the function an array with size of _referrers array 
+        // and leave it with zeros
+        address[] memory _keyManagers,
+        bytes[] calldata _data
+    ) external payable
+        // returns (uint[] memory)
+    {
+        address agentLockAddress = agents[_agentID].lockAddress;
+        // If the agent that we want to subscribe is a subVersion then 
+        // Pay the main agentID and give a referre fee to the contributor
+        // Of this new agent Version. Referre fee is defined in the registerAgent function.
+        if(!agents[_agentID].isOpenForContributions){
+            address referrer = agents[_agentID].creator;
+            for(uint i = 0; i < _referrers.length; i++){
+                _referrers[i] = referrer;
+            }
+        }
 
-    function performUpkeep(bytes calldata /*performData*/) external {
-        require(
-            msg.sender == s_forwarderAddress,
-            "This address does not have permission to call performUpkeep"
-        );
-        lastTimeStamp = block.timestamp;
-        sendRequest();
-    }
-
-    /// @notice Set the address that `performUpkeep` is called from
-    /// @dev Only callable by the owner
-    /// @param forwarderAddress the address to set
-    function setForwarderAddress(address forwarderAddress) external onlyOwner {
-        s_forwarderAddress = forwarderAddress;
+        IPublicLockV12(agentLockAddress).purchase(_values,_recipients,_referrers,_keyManagers,_data);
     }
 
     /**
-     * @notice Sends an HTTP request for character information
-     */
-    function sendRequest(
-        // string[] calldata args
-    ) internal {
-        FunctionsRequest.Request memory req;
-        req.initializeRequestForInlineJavaScript(source); // Initialize the request with JS code
-
-        // Send the request and store the request ID
-        _sendRequest(
-            req.encodeCBOR(),
-            subscriptionId,
-            gasLimit,
-            donID
+     * @dev withdraw function for an agentID
+     * @notice We give back to the agent creator 70% of the total
+     * income from that agent the platform keeps 30% of that amount
+     * @param _agentID to withdraw money from the lock contract
+    */
+    function withdraw(uint16 _agentID) external {
+        AgentStruct memory _agent = agents[_agentID];
+        IPublicLockV12 AgentLockContract = IPublicLockV12(_agent.lockAddress);
+        uint balance = address(_agent.lockAddress).balance;
+        uint amountToTransfer = (balance / 10 ) * 7;
+        address tokenAddress = AgentLockContract.tokenAddress();
+        AgentLockContract.withdraw(
+            tokenAddress,
+            payable(address(this)),
+            balance
         );
+        address payable withdrawer = payable(_agent.creator);
+        // IF Payment token is in Ethers
+        if(tokenAddress == address(0)) {
+            // https://diligence.consensys.net/blog/2019/09/stop-using-soliditys-transfer-now/
+            Address.sendValue(withdrawer, amountToTransfer);
+        } else {
+            IERC20 token = IERC20(tokenAddress);
+            token.transfer(withdrawer, amountToTransfer);
+        }
     }
 
-    /**
-     * @notice Callback function for fulfilling a request
-     * @param requestId The ID of the request to fulfill
-     * @param response The HTTP response data
-     */
-    function fulfillRequest(
-        bytes32 requestId,
-        bytes memory response,
-        bytes memory /* err */
-    ) internal override {
+    // Function to receive Ethers
+    receive()external payable{}
 
-        uint32[] memory topkAgents = abi.decode(response, (uint32[]));
-        uint256 bal = agentPlaceTreasury - address(this).balance;
-        agentPlaceTreasury > address(this).balance?  
-        bal =  agentPlaceTreasury - address(this).balance: 
-        bal = address(this).balance - agentPlaceTreasury; 
-
-        if(bal != 0){
-            uint oneTenth = SafeMath.div(bal ,  10);
-            agentPlaceTreasury = SafeMath.mul(oneTenth , 7);
+    // Function to withdraw the platform income
+    function withdraw(address tokenAddress)external onlyOwner{
+        address payable withdrawer = payable(msg.sender);
+        // IF Payment token is in Ethers
+        if(tokenAddress == address(0)) {
+            // https://diligence.consensys.net/blog/2019/09/stop-using-soliditys-transfer-now/
+            Address.sendValue(withdrawer, address(this).balance);
+        } else {
+            IERC20 token = IERC20(tokenAddress);
+            token.transfer(withdrawer, token.balanceOf(address(this)));
         }
-        for(uint i = 0; i < topkAgents.length; i++){
-
-        }
-        // Emit an event to log the response
-        emit Response(requestId, topkAgents);
     }
 }
