@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import { ChainlinkConsumer } from "./ChainlinkConsumer.sol";
 
@@ -26,7 +26,7 @@ contract AgentPlace is ChainlinkConsumer {
         uint subscriptionExpirationDuration;
         address tokenAddress;
         uint keyPrice;
-        uint basisPoint;
+        uint basisPoint; 
         string lockName;
         string lockSymbol;
         string baseTokenURI;
@@ -49,7 +49,6 @@ contract AgentPlace is ChainlinkConsumer {
 
     /// @notice Initializes the contract
     /// @param _oracle The address of the Chainlink Function oracle
-    /// @param _forwarderAddress The address of the Chainlink oracle Automation Forwarder
     /// @param _unlockContract The address of the Chainlink oracle Automation Forwarder
     /// @param _donID Chainlink's contract chainID => donID 
     /// @param _subscriptionId The subscription ID for Chainlink Functions
@@ -57,17 +56,15 @@ contract AgentPlace is ChainlinkConsumer {
     /// @param _gasLimit The gas limit for the Chainlink Functions request callback
     constructor(
         address _oracle,
-        address _forwarderAddress,
         IUnlockV12 _unlockContract,
         bytes32 _donID,
         uint64 _subscriptionId,
-        string[] memory _source,
+        string memory _source,
         uint32 _gasLimit,
         uint8 _topK,
         uint8[] memory _splits
     ) ChainlinkConsumer(
         _oracle,
-        _forwarderAddress,
         _donID,
         _subscriptionId,
         _source,
@@ -110,7 +107,7 @@ contract AgentPlace is ChainlinkConsumer {
     )external {
         require(agents[_agentID].isOpenForContributions, "agent is not open for contributions");
         // Check Subscription plan
-        agents[_agentID] = AgentStruct({
+        agents[_agentVersionID] = AgentStruct({
             creator : msg.sender,
             lockAddress: agents[_agentID].lockAddress,
             isOpenForContributions: false
@@ -127,8 +124,6 @@ contract AgentPlace is ChainlinkConsumer {
      * @param _values array of tokens amount to pay for this purchase >= the current keyPrice - any applicable discount
      * (_values is ignored when using ETH)
      * @param _recipients array of addresses of the recipients of the purchased key
-     * @param _referrers array of addresses of the users making the referral
-     * @param _keyManagers optional array of addresses to grant managing rights to a specific address on creation
      * @param _data arbitrary data populated by the front-end which initiated the sale
      * @notice when called for an existing and non-expired key, the `_keyManager` param will be ignored 
      * @dev Setting _value to keyPrice exactly doubles as a security feature. That way if the lock owner increases the
@@ -139,15 +134,12 @@ contract AgentPlace is ChainlinkConsumer {
         uint16 _agentID,
         uint256[] memory _values,
         address[] memory _recipients,
-        address[] memory _referrers,
-        // We dont need keyManagers so this array should have address(0)
-        // Maybe init in the function an array with size of _referrers array 
-        // and leave it with zeros
-        address[] memory _keyManagers,
         bytes[] calldata _data
-    ) external payable
-        // returns (uint[] memory)
-    {
+    ) external payable{
+        
+        address[] memory _referrers = new address[](_values.length);
+        address[] memory _keyManagers = new address[](_values.length);
+
         address agentLockAddress = agents[_agentID].lockAddress;
         // If the agent that we want to subscribe is a subVersion then 
         // Pay the main agentID and give a referre fee to the contributor
@@ -158,8 +150,18 @@ contract AgentPlace is ChainlinkConsumer {
                 _referrers[i] = referrer;
             }
         }
-
-        IPublicLockV12(agentLockAddress).purchase(_values,_recipients,_referrers,_keyManagers,_data);
+        address tokenAddress = IPublicLockV12(agentLockAddress).tokenAddress();
+        uint _priceToPay = IPublicLockV12(agentLockAddress).keyPrice();
+        if (tokenAddress != address(0)) {
+            IERC20(tokenAddress).transferFrom(
+                msg.sender,
+                address(this),
+                _priceToPay
+            );
+            IPublicLockV12(agentLockAddress).purchase(_values,_recipients,_referrers,_keyManagers,_data);
+        }else{
+            IPublicLockV12(agentLockAddress).purchase{value:msg.value}(_values,_recipients,_referrers,_keyManagers,_data);
+        }
     }
 
     /**
@@ -204,5 +206,26 @@ contract AgentPlace is ChainlinkConsumer {
             IERC20 token = IERC20(tokenAddress);
             token.transfer(withdrawer, token.balanceOf(address(this)));
         }
+    }
+
+    function onKeyPurchase(
+        uint /* tokenId */,
+        address from,
+        address /* recipient */,
+        address /* referrer */,
+        bytes calldata /* data */,
+        uint /* minKeyPrice */,
+        uint /* pricePaid */
+    ) external view{
+        require(from == address(this));
+    }
+
+    function keyPurchasePrice(    
+        address /* from */,
+        address /* recipient */,
+        address /* referrer */,
+        bytes calldata /* data */
+    ) external view returns (uint minKeyPrice){
+        return IPublicLockV12(msg.sender).keyPrice();
     }
 }
