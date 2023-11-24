@@ -1,21 +1,70 @@
-require("hardhat-deploy")
-require("hardhat-deploy-ethers")
+require("hardhat-deploy");
+require("hardhat-deploy-ethers");
 
-const { ethers } = require("hardhat")
-const { Console } = require("console")
+const { ethers } = require("hardhat");
+const { Console } = require("console");
+const { getContractFactory } = require("hardhat-deploy-ethers/types");
+const {
+  getAgentID,
+  getTopKAgents,
+  config,
+  encodeUint16ArrayRLE,
+} = require("../utils");
+const { verify } = require("crypto");
 
-const private_key = network.config.accounts[0]
-const wallet = new ethers.Wallet(private_key, ethers.provider)
+const private_key = network.config.accounts[0];
+const wallet = new ethers.Wallet(private_key, ethers.provider);
 
-module.exports = async({ deployments }) => {
-    const { deploy } = deployments
-    console.log("Wallet+ Ethereum Address:", wallet.address)
-    const a = await deploy("", {
-        from: wallet.address,
-        args: [],
-        log: true,
-    });
-    console.log(a.address)
+module.exports = async ({ deployments }) => {
+  const { deploy } = deployments;
+  console.log("Wallet+ Ethereum Address:", wallet.address);
 
+  const AgentPlace = await deploy("AgentPlace", {
+    from: wallet.address,
+    args: config,
+    log: false,
+  });
 
-}
+  await hre.run("verify:verify", {
+    address: AgentPlace.address,
+    constructorArguments: config,
+  });
+
+  console.log(getAgentID("example1"));
+  const agentPlace = await ethers.getContractFactory("AgentPlace");
+
+  const agentPlaceInstance = agentPlace.attach(AgentPlace.address);
+
+  let tx = await agentPlaceInstance.registerAgent([
+    getAgentID("example13"),
+    10000,
+    "0x0000000000000000000000000000000000000000",
+    10000,
+    500,
+    "test",
+    "test",
+    "test",
+    true,
+  ]);
+
+  await tx.wait();
+  console.log("dd");
+
+  tx = await agentPlaceInstance.registerAgentVersion(
+    getAgentID("example13"),
+    getAgentID("subExample1"),
+    "test"
+  );
+  await tx.wait();
+
+  tx = await agentPlaceInstance.purchaseSubscription(
+    getAgentID("example13"),
+    [10000],
+    ["0x9a2d1097D97AB918149E5268640F423fa309A2f1"],
+    ["0x00"],
+    { value: 10000, gasLimit: 10000000 }
+  );
+  await tx.wait();
+
+  console.log(AgentPlace.address);
+};
