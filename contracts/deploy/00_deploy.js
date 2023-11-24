@@ -60,7 +60,7 @@ module.exports = async ({ deployments }) => {
   tx = await agentPlaceInstance.purchaseSubscription(
     getAgentID("example13"),
     [10000],
-    ["0x9a2d1097D97AB918149E5268640F423fa309A2f1"],
+    ["YOUR ADDRESSSSSSSSSSSSSSSSSSSSSSSS"],
     ["0x00"],
     { value: 10000, gasLimit: 10000000 }
   );
