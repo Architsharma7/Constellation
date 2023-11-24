@@ -7,7 +7,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
-    version: "0.8.19",
+    version: "0.8.20",
     settings: {
       optimizer: {
         enabled: true,
@@ -15,8 +15,9 @@ module.exports = {
       },
     },
   },
-  defaultNetwork: "sepolia",
-  // defaultNetwork: "mumbai",
+  
+  // defaultNetwork: "sepolia",
+  defaultNetwork: "mumbai",
 
   networks: {
     sepolia: {
@@ -31,9 +32,7 @@ module.exports = {
     },
   },
   etherscan: {
-    // apiKey: "JYMKRTHHFUSX4X11I1NQRNW6X7K2FJFJUU",
-    apiKey: "KNVT7KRT9B15Z5UTXZT8TG8HNMIJXWXRMY",
-
+    apiKey: "JYMKRTHHFUSX4X11I1NQRNW6X7K2FJFJUU",
     customChains: [],
   },
   paths: {
