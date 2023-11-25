@@ -1,16 +1,18 @@
-import { createThread } from "@/utils/openAIfunctions";
+import { checkRun, createMessage, runThread } from "@/utils/openAIfunctions";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method != "POST") return res.status(405).send("Method Not Allowed");
+  if (req.method != "GET") return res.status(405).send("Method Not Allowed");
 
-  // we might have to add other checks here in case of authentication if the user is allowed to use the assistant , meaning if they have paid for it or not
+  const { thread, runObj } = req.body;
 
   try {
-    const result = await createThread();
+    const result = await checkRun(thread, runObj);
+
+    // after checking , we'll might have to run the function , and submit the Output here or directly in the
     if (result) {
       res.status(200).json(result);
     } else {

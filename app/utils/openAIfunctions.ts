@@ -5,91 +5,100 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // 1. Create the Assistant first
 // NOTE : Actions and Function calling , add extra functions
 // Files can be added for this assistant to add context
-const createAssistant = async () => {
+export const createAssistant = async (
+  assistantName: string,
+  assistantDesc: string,
+  tools: any[],
+  fileIds: []
+): Promise<OpenAI.Beta.Assistants.Assistant | undefined> => {
   try {
     const assistant = await openai.beta.assistants.create({
-      name: "Data visualizer",
-      description:
-        "You are great at creating beautiful data visualizations. You analyze data present in .csv files, understand trends, and come up with data visualizations relevant to those trends. You also share a brief text summary of the trends observed.",
+      name: assistantName,
+      description: assistantDesc,
       model: "gpt-4-1106-preview",
-      tools: [{ type: "code_interpreter" }], // can also pass extra functions
-
-      //   file_ids: [file.id],
+      tools: tools, // can also pass extra functions
+      file_ids: fileIds,
     });
 
-    // {
-    //     type: "function",
-    //     function: {
-    //       name: "get_current_weather",
-    //       description: "Get the current weather in a given location",
-    //       parameters: {
-    //         type: "object",
-    //         properties: {
-    //           location: {
-    //             type: "string",
-    //             description: "The city and state, e.g. San Francisco, CA",
-    //           },
-    //           unit: { type: "string", enum: ["celsius", "fahrenheit"] },
-    //         },
-    //         required: ["location"],
-    //       },
-    //     },
-    //   },
+    return assistant;
   } catch (error) {
     console.log(error);
   }
 };
 
+// {
+//     type: "function",
+//     function: {
+//       name: "get_current_weather",
+//       description: "Get the current weather in a given location",
+//       parameters: {
+//         type: "object",
+//         properties: {
+//           location: {
+//             type: "string",
+//             description: "The city and state, e.g. San Francisco, CA",
+//           },
+//           unit: { type: "string", enum: ["celsius", "fahrenheit"] },
+//         },
+//         required: ["location"],
+//       },
+//     },
+//   },
+
 // 2. Create a thread for a user using a particular assistant
-const createThread = async () => {
+// store the thread Id for a particular user in some db
+export const createThread = async (): Promise<
+  OpenAI.Beta.Threads.Thread | undefined
+> => {
   try {
-    const thread = await openai.beta.threads.create({
-      messages: [
-        {
-          role: "user",
-          content:
-            "Create 3 data visualizations based on the trends in this file.",
-          //   file_ids: [file.id],
-        },
-      ],
-    });
+    const thread = await openai.beta.threads.create();
+    return thread;
   } catch (error) {
     console.log(error);
   }
 };
 
 // 3. Send Messages to these thread
-const createMessage = async () => {
+export const createMessage = async (
+  thread: OpenAI.Beta.Threads.Thread,
+  messageContent: string,
+  fileIds: any[]
+): Promise<OpenAI.Beta.Threads.Messages.ThreadMessage | undefined> => {
   try {
     const threadMessages = await openai.beta.threads.messages.create(
-      "thread_abc123", // thread_id
-      { role: "user", content: "How does AI work? Explain it in simple terms." }
+      thread.id, // thread_id
+      { role: "user", content: messageContent, file_ids: fileIds }
     );
+    return threadMessages;
   } catch (error) {
     console.log(error);
   }
 };
 
-// 4. Run the thread
-const runThread = async () => {
+// 4. Run the thread, to perform the message
+export const runThread = async (
+  assistant: OpenAI.Beta.Assistants.Assistant,
+  instructions: string
+): Promise<OpenAI.Beta.Threads.Runs.Run | undefined> => {
   try {
     const run = await openai.beta.threads.runs.create("thread_abc123", {
-      assistant_id: "asst_abc123",
-      instructions:
-        "Please address the user as Jane Doe. The user has a premium account.",
+      assistant_id: assistant.id,
+      instructions: instructions,
     });
+    return run;
   } catch (error) {
     console.log(error);
   }
 };
 
 // 5. Check the Run status , if actions needed , take the JSON response , and call the function from your side
-const checkRun = async () => {
+export const checkRun = async (
+  thread: OpenAI.Beta.Threads.Thread,
+  runObj: OpenAI.Beta.Threads.Runs.Run
+): Promise<OpenAI.Beta.Threads.Runs.Run | undefined> => {
   try {
-    const run = await openai.beta.threads.runs.retrieve(
-      "thread_abc123",
-      "run_abc123"
-    );
+    const run = await openai.beta.threads.runs.retrieve(thread.id, runObj.id);
+    return run;
     // run.required_action?.submit_tool_outputs.tool_calls
     // If needs run , call the function and submit
   } catch (error) {
@@ -98,28 +107,31 @@ const checkRun = async () => {
 };
 
 // 6. Return the functions output to run
-const submitToolOuput = async () => {
+export const submitToolOuput = async (
+  thread: OpenAI.Beta.Threads.Thread,
+  runObj: OpenAI.Beta.Threads.Runs.Run,
+  toolOutputs: { tool_call_id: string; output: string }[]
+): Promise<OpenAI.Beta.Threads.Runs.Run | undefined> => {
   try {
     const run = await openai.beta.threads.runs.submitToolOutputs(
-      "thread_abc123",
-      "run_abc123",
+      thread.id,
+      runObj.id,
       {
-        tool_outputs: [
-          {
-            tool_call_id: "call_abc123",
-            output: "28C",
-          },
-        ],
+        tool_outputs: toolOutputs,
       }
     );
+    return run;
   } catch (error) {
     console.log(error);
   }
 };
 
-const getThreadMessage = async () => {
+export const getThreadMessage = async (
+  thread: OpenAI.Beta.Threads.Thread
+): Promise<OpenAI.Beta.Threads.Messages.ThreadMessagesPage | undefined> => {
   try {
-    const messages = await openai.beta.threads.messages.list("thread_abc123");
+    const messages = await openai.beta.threads.messages.list(thread.id);
+    return messages;
   } catch (error) {
     console.log(error);
   }
