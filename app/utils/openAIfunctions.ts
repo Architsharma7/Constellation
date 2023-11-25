@@ -5,7 +5,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // 1. Create the Assistant first
 // NOTE : Actions and Function calling , add extra functions
 // Files can be added for this assistant to add context
-const createAssistant = async (
+export const createAssistant = async (
   assistantName: string,
   assistantDesc: string,
   tools: any[],
@@ -47,7 +47,7 @@ const createAssistant = async (
 
 // 2. Create a thread for a user using a particular assistant
 // store the thread Id for a particular user in some db
-const createThread = async (): Promise<
+export const createThread = async (): Promise<
   OpenAI.Beta.Threads.Thread | undefined
 > => {
   try {
@@ -59,7 +59,7 @@ const createThread = async (): Promise<
 };
 
 // 3. Send Messages to these thread
-const createMessage = async (
+export const createMessage = async (
   thread: OpenAI.Beta.Threads.Thread,
   messageContent: string,
   fileIds: any[]
@@ -76,7 +76,7 @@ const createMessage = async (
 };
 
 // 4. Run the thread, to perform the message
-const runThread = async (
+export const runThread = async (
   assistant: OpenAI.Beta.Assistants.Assistant,
   instructions: string
 ): Promise<OpenAI.Beta.Threads.Runs.Run | undefined> => {
@@ -92,7 +92,7 @@ const runThread = async (
 };
 
 // 5. Check the Run status , if actions needed , take the JSON response , and call the function from your side
-const checkRun = async (
+export const checkRun = async (
   thread: OpenAI.Beta.Threads.Thread,
   runObj: OpenAI.Beta.Threads.Runs.Run
 ): Promise<OpenAI.Beta.Threads.Runs.Run | undefined> => {
@@ -107,7 +107,7 @@ const checkRun = async (
 };
 
 // 6. Return the functions output to run
-const submitToolOuput = async (
+export const submitToolOuput = async (
   thread: OpenAI.Beta.Threads.Thread,
   runObj: OpenAI.Beta.Threads.Runs.Run,
   toolOutputs: { tool_call_id: string; output: string }[]
@@ -126,7 +126,7 @@ const submitToolOuput = async (
   }
 };
 
-const getThreadMessage = async (
+export const getThreadMessage = async (
   thread: OpenAI.Beta.Threads.Thread
 ): Promise<OpenAI.Beta.Threads.Messages.ThreadMessagesPage | undefined> => {
   try {
