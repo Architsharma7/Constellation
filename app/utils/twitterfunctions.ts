@@ -37,20 +37,18 @@ app.get("/login", async function (req, res) {
 });
 
 app.get("/refresh", async function (req, res) {
-    try {
-      await authClient.refreshAccessToken();
-      res.send("Refreshed Access Token");
-    } catch (error) {
-      console.log(error);
-    }
-  });
+  try {
+    await authClient.refreshAccessToken();
+    res.send("Refreshed Access Token");
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 app.get("/createTweets", async function (req, res) {
   try {
-    const tweet = await client.tweets.createTweet(
-        req.body
-    )
-    console.log(tweet)
+    const tweet = await client.tweets.createTweet(req.body);
+    console.log(tweet);
   } catch (error) {
     console.log("tweets error", error);
   }
