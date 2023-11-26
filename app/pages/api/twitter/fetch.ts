@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
-import { resolve } from "path";
+import { NextApiResponse, NextApiRequest } from "next";
 
 const token = process.env.NEXT_PUBLIC_BEARER_TOKEN;
 
 const endpointURL = "https://api.twitter.com/2/tweets";
 
-export default async function GetHandler() {
+export default async function GetHandler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const params = {
     ids: "1723706110987698333",
-    "tweet.fields": "lang,author_id",
-    "user.fields": "created_at",
+    // "tweet.fields": "lang,author_id",
+    // "user.fields": "created_at",
   };
 
-  const res = await fetch(endpointURL + "?" + new URLSearchParams(params), {
+  const result = await fetch(endpointURL + "?" + new URLSearchParams(params), {
     method: "GET",
     headers: {
       "User-Agent": "v2TweetLookupJS",
@@ -20,9 +23,8 @@ export default async function GetHandler() {
     },
   });
 
-  if (res.body) {
-    NextResponse.json(res.body);
-    resolve();
+  if (result) {
+    res.status(200).json(result);
   } else {
     throw new Error("Unsuccessful request");
   }
