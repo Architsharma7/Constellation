@@ -7,10 +7,10 @@ export default async function handler(
 ) {
   if (req.method != "POST") return res.status(405).send("Method Not Allowed");
 
-  const { assistant, instructions } = req.body;
+  const { thread, assistant, instructions } = req.body;
 
   try {
-    const result = await runThread(assistant, instructions);
+    const result = await runThread(thread, assistant, instructions);
     if (result) {
       res.status(200).json(result);
     } else {

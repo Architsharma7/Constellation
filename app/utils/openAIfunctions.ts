@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import fs from "fs";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -77,11 +78,12 @@ export const createMessage = async (
 
 // 4. Run the thread, to perform the message
 export const runThread = async (
+  thread: OpenAI.Beta.Threads.Thread,
   assistant: OpenAI.Beta.Assistants.Assistant,
   instructions: string
 ): Promise<OpenAI.Beta.Threads.Runs.Run | undefined> => {
   try {
-    const run = await openai.beta.threads.runs.create("thread_abc123", {
+    const run = await openai.beta.threads.runs.create(thread.id, {
       assistant_id: assistant.id,
       instructions: instructions,
     });
@@ -132,6 +134,37 @@ export const getThreadMessage = async (
   try {
     const messages = await openai.beta.threads.messages.list(thread.id);
     return messages;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const createImage = async (
+  prompt: string
+): Promise<OpenAI.Images.ImagesResponse | undefined> => {
+  try {
+    const image = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: prompt,
+    });
+    return image;
+    console.log(image.data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const uploadFile = async (
+  prompt: string
+): Promise<OpenAI.Files.FileObject | undefined> => {
+  try {
+    const file = await openai.files.create({
+      file: fs.createReadStream("mydata.jsonl"),
+      purpose: "assistants",
+    });
+
+    console.log(file);
+    return file;
   } catch (error) {
     console.log(error);
   }
