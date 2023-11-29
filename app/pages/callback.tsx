@@ -24,7 +24,9 @@ const Callback = () => {
       console.log(error);
     }
   };
-  return <div>redirecting ...</div>;
+  return <div>
+   redirecting ...
+  </div>;
 };
 
 export default Callback;

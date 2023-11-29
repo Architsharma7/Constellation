@@ -20,8 +20,10 @@ export default async function Callbackhandler(
 ) {
   try {
     const { code, state } = req.body;
+    const data = req.body.file;
     console.log(code);
     console.log(state);
+    console.log(data);
     if (state !== STATE) return res.status(500).send("State isn't matching");
     // Generate code verifier
     const codeVerifier =
@@ -40,7 +42,8 @@ export default async function Callbackhandler(
     console.log("Access Token Data:", tokenData);
 
     const tweetText = "Hello, Twitter! This is a test tweet.";
-    await postTweet(tokenData.token.access_token, tweetText);
+    const mediaData = Buffer.from()  //either a base64 encode string or a raw binary of the image 
+    await postTweet(tokenData.token.access_token, tweetText, mediaData);
 
     res.redirect("/tweets");
   } catch (error) {
@@ -49,45 +52,17 @@ export default async function Callbackhandler(
   }
 }
 
-async function uploadMedia(
-  accessToken: string,
-  mediaData: string
-): Promise<string> {
-  try {
-    const mediaEndpoint = "https://upload.twitter.com/2/media";
-    const headers = {
-      Authorization: `Bearer ${accessToken}`,
-      "content-type": "application/json",
-    };
-
-    const response = await axios.post(
-      mediaEndpoint,
-      { media_data: mediaData },
-      { headers }
-    );
-
-    // Return the media ID
-    return response.data.media_id_string;
-  } catch (error) {
-    console.error("Error uploading media:", error);
-    throw error;
-  }
-}
-
 async function postTweet(
   accessToken: any,
   tweetText: string,
-  mediaData?: string
+  mediaData: Buffer
 ): Promise<any> {
   try {
-    let mediaId;
-    if (mediaData) {
-      // If mediaData is provided, upload the media and get the media ID
-      mediaId = await uploadMedia(accessToken, mediaData);
-    }
+    const mediaId = await uploadMedia(accessToken, mediaData);
     const tweetEndpoint = "https://api.twitter.com/2/tweets";
     const tweetData = {
       text: tweetText,
+      media_ids: [mediaId],
     };
 
     const headers = {
@@ -101,6 +76,64 @@ async function postTweet(
     console.log("Tweet Posted:", response.data);
   } catch (error) {
     console.error("Error posting tweet:", error);
+    throw error;
+  }
+}
+
+async function uploadMedia(
+  accessToken: any,
+  mediaData: Buffer
+): Promise<string> {
+  try {
+    const uploadEndpoint = "https://upload.twitter.com/1.1/media/upload.json";
+
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      "content-type": "multipart/form-data",
+    };
+
+    const mediaUploadResponse = await axios.post(uploadEndpoint, mediaData, {
+      headers: {
+        ...headers,
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      params: {
+        command: "INIT",
+        media_type: "image/jpg",
+        total_bytes: mediaData.length,
+      },
+    });
+
+    const mediaId = mediaUploadResponse.data.media_id_string;
+    console.log(mediaId);
+
+    await axios.post(uploadEndpoint, null, {
+      headers: {
+        ...headers,
+        "content-type": "multipart/form-data",
+      },
+      params: {
+        command: "APPEND",
+        media_id: mediaId,
+        segment_index: 0,
+        data: mediaData,
+      },
+    });
+
+    await axios.post(uploadEndpoint, null, {
+      headers: {
+        ...headers,
+        "content-type": "multipart/form-data",
+      },
+      params: {
+        command: "FINALIZE",
+        media_id: mediaId,
+      },
+    });
+
+    return mediaId;
+  } catch (error) {
+    console.error("Error uploading media:", error);
     throw error;
   }
 }
