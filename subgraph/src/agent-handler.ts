@@ -4,16 +4,7 @@ import {
   agentVersionRegistered as agentVersionRegisteredEvent,
   rewardMechanismRegistered as rewardMechanismRegisteredEvent,
 } from "../generated/AgentHandler/AgentHandler";
-import {
-  Agent,
-  Creator,
-  Subscription,
-  User,
-  agentRegistered,
-  agentSubscriptionPurchased,
-  agentVersionRegistered,
-  rewardMechanismRegistered,
-} from "../generated/schema";
+import { Agent, Creator, SubscriptionEntity, User } from "../generated/schema";
 import { Bytes } from "@graphprotocol/graph-ts";
 
 export function handleagentRegistered(event: agentRegisteredEvent): void {
@@ -40,7 +31,7 @@ export function handleagentSubscriptionPurchased(
   event: agentSubscriptionPurchasedEvent
 ): void {
   //UserAddress-AgentId
-  let entity = new Subscription(
+  let entity = new SubscriptionEntity(
     event.params.subscriber.concatI32(event.params.agentID)
   );
   let agent = Agent.load(Bytes.fromI32(event.params.agentID));

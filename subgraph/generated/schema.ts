@@ -310,7 +310,7 @@ export class Agent extends Entity {
   }
 }
 
-export class Subscription extends Entity {
+export class SubscriptionEntity extends Entity {
   constructor(id: Bytes) {
     super();
     this.set("id", Value.fromBytes(id));
@@ -318,19 +318,19 @@ export class Subscription extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Subscription entity without an ID");
+    assert(id != null, "Cannot save SubscriptionEntity entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.BYTES,
-        `Entities of type Subscription must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type SubscriptionEntity must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("Subscription", id.toBytes().toHexString(), this);
+      store.set("SubscriptionEntity", id.toBytes().toHexString(), this);
     }
   }
 
-  static load(id: Bytes): Subscription | null {
-    return changetype<Subscription | null>(
-      store.get("Subscription", id.toHexString())
+  static load(id: Bytes): SubscriptionEntity | null {
+    return changetype<SubscriptionEntity | null>(
+      store.get("SubscriptionEntity", id.toHexString())
     );
   }
 

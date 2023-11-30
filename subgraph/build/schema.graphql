@@ -2,14 +2,14 @@
 type Creator @entity {
   id: Bytes!
   address: Bytes!
-  agentdCreated: [Agent!] @derivedFrom(field: "creator")
+  agnentCreated: [Agent!] @derivedFrom(field: "creator")
 }
 
 ## User
 type User @entity {
   id: Bytes!
   address: Bytes!
-  agentSubscribedTo: [SubscriptionEntity!] @derivedFrom(field: "buyer")
+  agnentSubscribedTo: [SubscriptionEntity!] @derivedFrom(field: "buyer")
 }
 
 ## Agent
