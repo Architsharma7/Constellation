@@ -11,8 +11,8 @@ export default async function GetHandler(
 ) {
   const params = {
     ids: "1723706110987698333",
-    // "tweet.fields": "lang,author_id",
-    // "user.fields": "created_at",
+    "tweet.fields": "lang,author_id",
+    "user.fields": "created_at",
   };
 
   const result = await fetch(endpointURL + "?" + new URLSearchParams(params), {
