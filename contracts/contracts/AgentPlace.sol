@@ -20,15 +20,15 @@ contract AgentPlace is ChainlinkConsumer {
     IUnlockV12 unlockContract;
 
     struct AgentInitConfig {
-        uint16 agentID;
-        uint subscriptionExpirationDuration;
-        address tokenAddress;
-        uint keyPrice;
-        uint basisPoint;
-        string lockName;
-        string lockSymbol;
+        uint16 agentID; // assistant id of the assitant model
+        uint subscriptionExpirationDuration; // Take from Creator
+        address tokenAddress; // native for now
+        uint keyPrice; // amount for the Sub
+        uint basisPoint; // referre fee i.e. 100point == 1%
+        string lockName; // `Subscription of AssistantName`
+        string lockSymbol; // SOA``
         string baseTokenURI;
-        bool isOpenForContributions;
+        bool isOpenForContributions; // check to make it open For Contributions
     }
 
     event agentRegistered(

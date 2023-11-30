@@ -1,3 +1,10 @@
+## Creator
+## User
+## Agent
+## Subscription
+## Locks from unlock
+## keys from unlock
+
 type Approval @entity(immutable: true) {
   id: Bytes!
   owner: Bytes! # address
