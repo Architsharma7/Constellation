@@ -24,6 +24,7 @@ export function handleagentRegistered(event: agentRegisteredEvent): void {
   entity.basisPoint = event.params.basisPoint;
   entity.categories = event.params.categories;
   entity.isOpenForContributions = event.params.isOpenForContributions;
+  entity.isImprovedVersion = false;
 
   entity.save();
 }
@@ -93,6 +94,7 @@ export function handleagentVersionRegistered(
   entity.basisPoint = agent.basisPoint;
   entity.categories = agent.categories;
   entity.isOpenForContributions = agent.isOpenForContributions;
+  entity.isImprovedVersion = true;
 
   entity.save();
 }

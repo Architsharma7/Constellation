@@ -2,14 +2,14 @@
 type Creator @entity {
   id: Bytes!
   address: Bytes!
-  agentdCreated: [Agent!] @derivedFrom(field: "creator")
+  agentsCreated: [Agent!] @derivedFrom(field: "creator")
 }
 
 ## User
 type User @entity {
   id: Bytes!
   address: Bytes!
-  agentSubscribedTo: [SubscriptionEntity!] @derivedFrom(field: "buyer")
+  agentsSubscribedTo: [SubscriptionEntity!] @derivedFrom(field: "buyer")
 }
 
 ## Agent
@@ -23,6 +23,7 @@ type Agent @entity {
   basisPoint: BigInt! # uint256
   categories: String! # string
   isOpenForContributions: Boolean! # bool
+  isImprovedVersion: Boolean!
   AgentVersions: [Agent!] @derivedFrom(field: "parentAgent")
   parentAgent: Agent
   metadataCID: String

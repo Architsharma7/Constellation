@@ -266,6 +266,19 @@ export class Agent extends Entity {
     this.set("isOpenForContributions", Value.fromBoolean(value));
   }
 
+  get isImprovedVersion(): boolean {
+    let value = this.get("isImprovedVersion");
+    if (!value || value.kind == ValueKind.NULL) {
+      return false;
+    } else {
+      return value.toBoolean();
+    }
+  }
+
+  set isImprovedVersion(value: boolean) {
+    this.set("isImprovedVersion", Value.fromBoolean(value));
+  }
+
   get AgentVersions(): Array<Bytes> | null {
     let value = this.get("AgentVersions");
     if (!value || value.kind == ValueKind.NULL) {
