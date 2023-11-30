@@ -36,7 +36,7 @@ function getTopKAgents(agentsIDs) {
 
 // Mumbai
 const _oracle = "0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C";
-const _forwarderAddress = "0xAea7AF0e1aD08313CA7b2e3790B60fB899446163";
+const _forwarderAddress = "0xA5706f43A9fDBA635Ddda9E1a81101cbc5aabaA6";
 const _unlockContract = "0x1FF7e338d5E582138C46044dc238543Ce555C963";
 const _donID = "0x66756e2d706f6c79676f6e2d6d756d6261692d31000000000000000000000000";
 const _subscriptionId = 785;
@@ -68,12 +68,6 @@ const deployment_config = [
   _subscriptionId,
 ];
 
-const function_config = [
-  "source1", 
-  codeString, 
-  _forwarderAddress,
-  _splits
-]
 
 module.exports = {
   getAgentID,
@@ -81,5 +75,6 @@ module.exports = {
   deployment_config,
   codeString,
   distributionRewards,
-  getSourceID
+  getSourceID,
+  _forwarderAddress
 };
