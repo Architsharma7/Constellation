@@ -20,6 +20,7 @@ contract AgentPlace is ChainlinkConsumer {
     IUnlockV12 unlockContract;
 
     struct AgentInitConfig {
+        string agentName;
         uint16 agentID; // assistant id of the assitant model
         uint subscriptionExpirationDuration; // Take from Creator
         address tokenAddress; // native for now
@@ -28,21 +29,33 @@ contract AgentPlace is ChainlinkConsumer {
         string lockName; // `Subscription of AssistantName`
         string lockSymbol; // SOA``
         string baseTokenURI;
+        string category;
         bool isOpenForContributions; // check to make it open For Contributions
     }
 
     event agentRegistered(
+        string agentName,
         uint16 agentID,
         address creator,
-        address UnlockSubscriptionContract,
+        address unlockSubscriptionContract,
+        uint keyPrice,
+        uint basisPoint,
+        string categories,
         bool isOpenForContributions
     );
 
     event agentVersionRegistered(
         uint16 agentID,
+        string agentVersionName,
         uint16 agentVersionID,
         address creator,
         string agentMetadataCID
+    );
+
+    event agentSubscriptionPurchased(
+        uint16 agentID,
+        address agentCreator,
+        address subscriber
     );
 
     /// @notice Initializes the contract
@@ -50,28 +63,12 @@ contract AgentPlace is ChainlinkConsumer {
     /// @param _unlockContract The address of the Chainlink oracle Automation Forwarder
     /// @param _donID Chainlink's contract chainID => donID
     /// @param _subscriptionId The subscription ID for Chainlink Functions
-    /// @param _source The source code for the Chainlink Functions request
-    /// @param _gasLimit The gas limit for the Chainlink Functions request callback
     constructor(
         address _oracle,
         IUnlockV12 _unlockContract,
         bytes32 _donID,
-        uint64 _subscriptionId,
-        string memory _source,
-        uint32 _gasLimit,
-        uint8 _topK,
-        uint8[] memory _splits
-    )
-        ChainlinkConsumer(
-            _oracle,
-            _donID,
-            _subscriptionId,
-            _source,
-            _gasLimit,
-            _topK,
-            _splits
-        )
-    {
+        uint64 _subscriptionId
+    ) ChainlinkConsumer(_oracle, _donID, _subscriptionId) {
         unlockContract = _unlockContract;
     }
 
@@ -81,11 +78,16 @@ contract AgentPlace is ChainlinkConsumer {
             "agent already exists"
         );
 
+        uint256 max = type(uint).max;
+
+        uint256 month = 31 days;
+
         address newLockAddress = unlockContract.createLock(
-            agentConfig.subscriptionExpirationDuration,
+            // Expiration duration of subscription
+            month,
             agentConfig.tokenAddress,
             agentConfig.keyPrice,
-            type(uint).max,
+            max,
             agentConfig.lockName,
             bytes12(0)
         );
@@ -108,6 +110,7 @@ contract AgentPlace is ChainlinkConsumer {
             address(0),
             address(0)
         );
+        IPublicLockV12(newLockAddress).updateLockConfig(month, max, max);
         agents[agentConfig.agentID] = AgentStruct({
             creator: msg.sender,
             lockAddress: newLockAddress,
@@ -115,9 +118,13 @@ contract AgentPlace is ChainlinkConsumer {
         });
 
         emit agentRegistered(
+            agentConfig.agentName,
             agentConfig.agentID,
             msg.sender,
             newLockAddress,
+            agentConfig.keyPrice,
+            agentConfig.basisPoint,
+            agentConfig.category,
             agentConfig.isOpenForContributions
         );
     }
@@ -125,6 +132,7 @@ contract AgentPlace is ChainlinkConsumer {
     function registerAgentVersion(
         uint16 _agentID,
         uint16 _agentVersionID,
+        string memory _agentVersionName,
         string memory _agentMetadataCID
     ) external {
         require(
@@ -140,6 +148,7 @@ contract AgentPlace is ChainlinkConsumer {
 
         emit agentVersionRegistered(
             _agentID,
+            _agentVersionName,
             _agentVersionID,
             msg.sender,
             _agentMetadataCID
@@ -151,23 +160,21 @@ contract AgentPlace is ChainlinkConsumer {
     /**
      * @dev PurchaseSubscription function for an agentID
      * @param _agentID to subscribe
-     * @param _values array of tokens amount to pay for this purchase >= the current keyPrice - any applicable discount
-     * (_values is ignored when using ETH)
-     * @param _recipients array of addresses of the recipients of the purchased key
-     * @param _data arbitrary data populated by the front-end which initiated the sale
-     * @notice when called for an existing and non-expired key, the `_keyManager` param will be ignored
-     * @dev Setting _value to keyPrice exactly doubles as a security feature. That way if the lock owner increases the
-     * price while my transaction is pending I can't be charged more than I expected (only applicable to ERC-20 when more
-     * than keyPrice is approved for spending).
+     * @param _value array of tokens amount to pay for this purchase >= the current keyPrice - any applicable discount
      */
     function purchaseSubscription(
         uint16 _agentID,
-        uint256[] memory _values,
-        address[] memory _recipients,
-        bytes[] calldata _data
+        uint256 _value
     ) external payable {
-        address[] memory _referrers = new address[](_values.length);
-        address[] memory _keyManagers = new address[](_values.length);
+        require(
+            agents[_agentID].creator != address(0),
+            "agent does not exists"
+        );
+        address[] memory _referrers = new address[](1);
+        address[] memory _recipients = new address[](1);
+        address[] memory _keyManagers = new address[](1);
+        uint256[] memory _values = new uint256[](1);
+        bytes[] memory _data = new bytes[](1);
 
         address agentLockAddress = agents[_agentID].lockAddress;
         // If the agent that we want to subscribe is a subVersion then
@@ -175,10 +182,10 @@ contract AgentPlace is ChainlinkConsumer {
         // Of this new agent Version. Referre fee is defined in the registerAgent function.
         if (!agents[_agentID].isOpenForContributions) {
             address referrer = agents[_agentID].creator;
-            for (uint i = 0; i < _referrers.length; i++) {
-                _referrers[i] = referrer;
-            }
+            _referrers[0] = referrer;
         }
+        _values[0] = _value;
+        _recipients[0] = msg.sender;
         address tokenAddress = IPublicLockV12(agentLockAddress).tokenAddress();
         uint _priceToPay = IPublicLockV12(agentLockAddress).keyPrice();
         if (tokenAddress != address(0)) {
@@ -203,6 +210,12 @@ contract AgentPlace is ChainlinkConsumer {
                 _data
             );
         }
+
+        emit agentSubscriptionPurchased(
+            _agentID,
+            agents[_agentID].creator,
+            msg.sender
+        );
     }
 
     /**

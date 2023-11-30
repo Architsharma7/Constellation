@@ -26,26 +26,15 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
 
     using FunctionsRequest for FunctionsRequest.Request;
 
-    // uint256 month = 31 days;
-
-    uint256 MIN = 60;
-
-    uint256 public interval = 15 * MIN; // interval specifies the time between upkeeps
-
-    uint256 public lastTimeStamp; // lastTimeStamp tracks the last upkeep performed
-
-    address public s_forwarderAddress;
-
     uint64 subscriptionId;
 
     uint256 agentPlaceTreasury;
 
     // Router address Check to get the router address for your supported network https://docs.chain.link/chainlink-functions/supported-networks
     address oracle;
-    // JavaScript source code
-    string source;
+
     //Callback gas limit
-    uint32 gasLimit;
+    uint32 gasLimit = 300000;
     // donID
     bytes32 donID;
 
@@ -55,96 +44,101 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
         bool isOpenForContributions;
     }
 
+    // Mapping from agentID to agentStruct
     mapping(uint16 => AgentStruct) public agents;
 
+    // Mapping from agentID to agentVersionID
     mapping(uint16 => uint16) agentVersions;
 
-    mapping(uint8 => uint8) public topKAgentsSplitRewards;
-
+    // Mapping from requestID to response containing the topK agents
     mapping(bytes32 => bytes) private round_winners;
-    
-    uint8 topK;
 
+    // JavaScript source codes for the reward mechanisms
+    mapping(bytes32 => string) public sources;
+
+    // Reward distributions for the reward mechanisms
+    mapping(bytes32 => uint8[]) public rewardDistributions;
+
+    // Mapping from requestID to sourceID 
+    mapping(bytes32 => bytes32) public requestToSource;
+
+    // Mapping from sourceID to functionForwarder that can call the performUpkeep
+    mapping(bytes32 => address) public functionsForwarders;
+    
     // Custom error type
     error UnexpectedRequestID(bytes32 requestId);
 
     // Event to log responses
-    event Response(
-        bytes32 indexed requestId,
+    event RoundWinners(
+        bytes32 requestId,
+        bytes32 sourceID,
         bytes response
+    );
+
+    event rewardMechanismRegistered(
+        string sourceName,
+        string sourceCode,
+        bytes32 sourceID,
+        uint8[] rewardDistributions
     );
 
     /// @notice Initializes the contract
     /// @param _oracle The address of the Chainlink Function oracle
     /// @param _donID Chainlink's contract chainID => donID 
     /// @param _subscriptionId The subscription ID for Chainlink Functions
-    /// @param _source The source code for the Chainlink Functions request
-    /// @param _gasLimit The gas limit for the Chainlink Functions request callback
     constructor(
         address _oracle,
         bytes32 _donID,
-        uint64 _subscriptionId,
-        string memory _source,
-        uint32 _gasLimit,
-        uint8 _topK,
-        uint8[] memory splits
-    ) FunctionsClient(_oracle) ERC20("D_AI_AGENTS", "DAIA"){
-        require(_topK == splits.length, "error must be equal");
-        for(uint8 i = 0; i < _topK; i++){
-            topKAgentsSplitRewards[i] = splits[i];
-        }
-        topK = _topK;
+        uint64 _subscriptionId
+    ) FunctionsClient(_oracle) ERC20("DAI AGENTS", "DAIA"){
 
         subscriptionId = _subscriptionId;
-        // Source to handle agents usage updates by our end
-        source = _source;
 
-        lastTimeStamp = block.timestamp;
-        gasLimit = _gasLimit;
         donID = _donID;
     }
 
-    // function checkUpkeep(
-    //     bytes calldata /*checkData*/
-    // ) external view returns (bool, bytes memory) {
-    //     bool needsUpkeep = (block.timestamp - lastTimeStamp) > interval;
-    //     return (needsUpkeep, bytes(""));
-    // }
-
-    // function performUpkeep(bytes calldata /*performData*/) external {
-    //     bool needsUpkeep = (block.timestamp - lastTimeStamp + 60) > interval;
-    //     require(needsUpkeep);
-    //     // require(
-    //     //     msg.sender == s_forwarderAddress,
-    //     //     "This address does not have permission to call performUpkeep"
-    //     // );
-    //     lastTimeStamp = block.timestamp;
-    //     sendRequest();
-    // }
-
-    /// @notice Set the address that `performUpkeep` is called from
+    /// @notice Set the setRewardMechanism that `performUpkeep` is called from
+    /// a trusted address the chainlink forwarder
     /// @dev Only callable by the owner
-    /// @param forwarderAddress the address to set
-    function setForwarderAddress(address forwarderAddress) external onlyOwner {
-        s_forwarderAddress = forwarderAddress;
+    /// @param _sourceName sourceID to Forwarder address
+    /// @param _sourceCode sourceID to Forwarder address
+    /// @param _functionForwader chainlink automation forwarder address
+    /// @param _rewardDistributions the reward distributions for the topK agents
+    function addRewardMechanism(
+        string memory _sourceName, 
+        string memory _sourceCode, 
+        address _functionForwader,
+        uint8[] memory _rewardDistributions
+    ) external onlyOwner {
+        bytes32 _sourceID = createSourceID(_sourceName);
+        functionsForwarders[_sourceID] = _functionForwader;
+        sources[_sourceID] = _sourceCode;
+        for(uint8 i = 0; i < _rewardDistributions.length; i++){
+            rewardDistributions[_sourceID].push(_rewardDistributions[i]);
+        }
+        emit rewardMechanismRegistered(_sourceName, _sourceCode, _sourceID, _rewardDistributions);
     }
 
     /**
      * @notice Sends an HTTP request for character information
+     * @param sourceID The ID of the source to send the request to
      */
     function sendRequest(
-        // string[] calldata args
+        bytes32 sourceID
     ) external {
+        require(functionsForwarders[sourceID] == msg.sender);
         FunctionsRequest.Request memory req;
-        req.initializeRequestForInlineJavaScript(source); // Initialize the request with JS code
+        req.initializeRequestForInlineJavaScript(sources[sourceID]); // Initialize the request with JS code
 
         // Send the request and store the request ID
-        _sendRequest(
+        bytes32 reqID = _sendRequest(
             req.encodeCBOR(),
             subscriptionId,
             gasLimit,
             donID
         );
+
+        requestToSource[reqID] = sourceID;
     }
 
     /**
@@ -159,8 +153,8 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
     ) internal override {
 
         round_winners[requestId] = response;
-        // Emit an event to log the response
-        emit Response(requestId, response);
+        // Emit an event to log the RoundWinners response from a sourceID mechanism
+        emit RoundWinners(requestId, requestToSource[requestId], response);
     }
 
     function rewardsDistribution(bytes32 _requestID) external{
@@ -170,24 +164,17 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
 
         uint16[] memory topkAgents = Helpers.decodeUint16ArrayRLE(decodedResponse);
 
-        for(uint8 i = 0; i < topkAgents.length; i++){
+        bytes32 rewardMechanismID = requestToSource[_requestID];
+
+        for(uint8 i = 0; i < rewardDistributions[rewardMechanismID].length; i++){
             address tempWinner = agents[topkAgents[i]].creator;
-            uint256 tempReward = topKAgentsSplitRewards[i];
+            uint256 tempReward = rewardDistributions[rewardMechanismID][i] * 10 ** 18;
             // Minting tokens to the topK agents 
-            _mint(tempWinner, tempReward * 10 ** 16);
+            _mint(tempWinner, tempReward);
         }
     }
-
-    // /**
-    //  * @notice Function to renew the topK agents splits sum much be dividable with 10
-    //  * @param _topK number of agent winners announced each month based on their usage and users feedback 
-    //  * @param splits splits to each one 
-    //  */
-    // function setTopKAgentsSplitRewards(uint8 _topK, uint8[] memory splits) external onlyOwner{
-    //     require(_topK == splits.length, "error must be equal");
-    //     for(uint8 i = 0; i < _topK; i++){
-    //         topKAgentsSplitRewards[i] = splits[i];
-    //     }
-    //     topK = _topK;
-    // }
+     
+    function createSourceID(string memory _sourceID) internal pure returns(bytes32){
+        return keccak256(abi.encode(_sourceID));
+    }
 }
