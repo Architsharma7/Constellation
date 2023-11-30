@@ -12,7 +12,7 @@ const AgentId = () => {
               </p>
               <p className="text-xl text-black font-semibold mt-2">ElonAgent</p>
             </div>
-            <div className="border-2 bg-orange-100 border-b-8 flex flex-col px-14 py-3 border-black shadow-2xl">
+            <div className="border-2 bg-white border-b-8 flex flex-col px-14 py-3 border-black shadow-2xl">
               <p className="text-sm font-mono font-thin text-gray-500">
                 Agent Category
               </p>
@@ -33,7 +33,7 @@ const AgentId = () => {
           </div>
         </div>
         <div className="mt-16 w-5/6 mx-auto flex">
-          <div className="w-2/3 border flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
+          <div className="w-2/3 border bg-orange-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
             <p className="text-xl font-mono font-thin text-gray-600">
               Description
             </p>
