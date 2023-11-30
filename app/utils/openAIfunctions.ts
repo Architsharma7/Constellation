@@ -20,7 +20,6 @@ export const createAssistant = async (
       tools: tools, // can also pass extra functions
       file_ids: fileIds,
     });
-
     return assistant;
   } catch (error) {
     console.log(error);
