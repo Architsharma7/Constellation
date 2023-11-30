@@ -22,24 +22,10 @@ dataSources:
         - name: AgentHandler
           file: ./abis/AgentHandler.json
       eventHandlers:
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
-        - event: RequestFulfilled(indexed bytes32)
-          handler: handleRequestFulfilled
-        - event: RequestSent(indexed bytes32)
-          handler: handleRequestSent
-        - event: Response(indexed bytes32,bytes)
-          handler: handleResponse
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
         - event: agentRegistered(string,uint16,address,address,uint256,uint256,string,bool)
           handler: handleagentRegistered
         - event: agentSubscriptionPurchased(uint16,address,address)
           handler: handleagentSubscriptionPurchased
         - event: agentVersionRegistered(uint16,string,uint16,address,string)
           handler: handleagentVersionRegistered
-        - event: rewardMechanismRegistered(string,string,bytes32,uint8[])
-          handler: handlerewardMechanismRegistered
       file: ./src/agent-handler.ts
