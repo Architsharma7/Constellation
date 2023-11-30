@@ -5,13 +5,14 @@ import {
   rewardMechanismRegistered as rewardMechanismRegisteredEvent,
 } from "../generated/AgentHandler/AgentHandler";
 import { Agent, Creator, SubscriptionEntity, User } from "../generated/schema";
-import { Bytes } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 
 export function handleagentRegistered(event: agentRegisteredEvent): void {
   let creator = Creator.load(event.params.creator);
   if (creator == null) {
     creator = new Creator(event.params.creator);
     creator.address = event.params.creator;
+    creator.save();
   }
 
   let entity = new Agent(Bytes.fromI32(event.params.agentID));
@@ -51,9 +52,12 @@ export function handleagentSubscriptionPurchased(
   if (user == null) {
     user = new User(event.params.subscriber);
     user.address = event.params.subscriber;
+    user.save();
   }
 
   entity.buyer = user.id;
+  entity.createdAt = event.block.timestamp;
+  entity.expiresAt = BigInt.fromI32(event.block.timestamp.toI32() + 2592000);
 
   entity.save();
 }
@@ -65,6 +69,7 @@ export function handleagentVersionRegistered(
   if (creator == null) {
     creator = new Creator(event.params.creator);
     creator.address = event.params.creator;
+    creator.save();
   }
 
   let entity = new Agent(Bytes.fromI32(event.params.agentVersionID));
