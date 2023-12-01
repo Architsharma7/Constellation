@@ -1,9 +1,14 @@
-body{
-  background-color: black;
-} 
+
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* rgb(69, 66, 66) */
+
+@layer base {
+  html {
+    @apply bg-gradient-to-r from-white via-white to-rose-100;
+  }
+}
+
