@@ -20,15 +20,86 @@ import { Badge } from "@chakra-ui/react";
 import { IoIosSend } from "react-icons/io";
 
 const Create = () => {
+  const assistantID = "asst_5Kb4YaFhdPOouQgxMvoffDM5";
+  const threadID = "thread_EIjcK12Z2KESi8YkYtMMNmQQ";
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
-  const [agentDetails, setAgentDetails] = useState<any>({
+  const [inputPrompt, setInputPrompt] = useState<string>();
+  const [agentDetails, setAgentDetails] = useState<{
+    agentName: string;
+    agentDesc: string;
+    agentPrice: string;
+    agentBP: string;
+    agentImage: string | undefined;
+  }>({
     agentName: "",
     agentDesc: "",
     agentPrice: "",
     agentBP: "",
-    agentImage: null,
+    agentImage: undefined,
   });
+
+  const createAssistant = () => {
+    try {
+      console.log("creating Assistant... Calling OpenAI");
+      if (!agentDetails) {
+        console.log("Agent Details missing");
+        return;
+      }
+      fetch("/api/openai/createAssistants", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          assistantName: agentDetails.agentName,
+          assistantDesc: agentDetails.agentDesc,
+          tools: [
+            {
+              type: "code_interpreter",
+            },
+          ],
+          fileIds: [],
+        }),
+      })
+        .then(async (res) => {
+          console.log(res);
+          const data = await res.json();
+          console.log(data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const createThread = () => {
+    try {
+      console.log("creating thread... Calling OpenAI");
+      if (!assistantID) {
+        console.log("Agent Details missing");
+        return;
+      }
+      fetch("/api/openai/createThreads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then(async (res) => {
+          console.log(res);
+          const data = await res.json();
+          console.log(data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const [agentOpenFor, setAgentOpenFor] = useState<boolean>(false);
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
@@ -117,7 +188,12 @@ const Create = () => {
               >
                 Configure
               </Button>
-              <Button className="mx-3 border border-b-4 border-black">
+              <Button
+                onClick={() => {
+                  createAssistant();
+                }}
+                className="mx-3 border border-b-4 border-black"
+              >
                 Save
               </Button>
             </div>
@@ -151,11 +227,15 @@ const Create = () => {
                             type="text"
                             className="font-semibold"
                             placeholder="enter prompt for training agent ..."
+                            onChange={(e) => setInputPrompt(e.target.value)}
                           ></Input>
                           <InputRightAddon
                             bgColor="white"
                             borderColor="white"
                             height="inherit"
+                            onClick={() => {
+                              createThread();
+                            }}
                           >
                             <IoIosSend className="text-xl cursor-pointer"></IoIosSend>
                           </InputRightAddon>
