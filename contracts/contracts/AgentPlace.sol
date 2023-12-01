@@ -11,12 +11,15 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import { Base64 } from "./library/Base64.sol";
+
 /**
  * @title AgentPlace
  * @notice
  * @dev
  */
 contract AgentPlace is ChainlinkConsumer {
+
     IUnlockV12 unlockContract;
 
     struct AgentInitConfig {
@@ -54,6 +57,7 @@ contract AgentPlace is ChainlinkConsumer {
 
     event agentSubscriptionPurchased(
         uint16 agentID,
+        uint256 tokenId,
         address agentCreator,
         address subscriber
     );
@@ -102,10 +106,12 @@ contract AgentPlace is ChainlinkConsumer {
                 agentConfig.basisPoint
             );
         IPublicLockV12(newLockAddress).setEventHooks(
+            // onKeyPurchase hook
             address(this),
             address(0),
             address(0),
-            address(0),
+            // tokenURI hook
+            address(this),
             address(0),
             address(0),
             address(0)
@@ -139,6 +145,12 @@ contract AgentPlace is ChainlinkConsumer {
             agents[_agentID].isOpenForContributions,
             "agent is not open for contributions"
         );
+
+        require(
+            agents[_agentVersionID].creator == address(0), 
+            "agent already exists"
+        );
+
         // Check Subscription plan
         agents[_agentVersionID] = AgentStruct({
             creator: msg.sender,
@@ -175,7 +187,7 @@ contract AgentPlace is ChainlinkConsumer {
         address[] memory _keyManagers = new address[](1);
         uint256[] memory _values = new uint256[](1);
         bytes[] memory _data = new bytes[](1);
-
+        uint256[] memory tokenID = new uint256[](1);
         address agentLockAddress = agents[_agentID].lockAddress;
         // If the agent that we want to subscribe is a subVersion then
         // Pay the main agentID and give a referre fee to the contributor
@@ -194,7 +206,8 @@ contract AgentPlace is ChainlinkConsumer {
                 address(this),
                 _priceToPay
             );
-            IPublicLockV12(agentLockAddress).purchase(
+
+            tokenID = IPublicLockV12(agentLockAddress).purchase(
                 _values,
                 _recipients,
                 _referrers,
@@ -202,7 +215,7 @@ contract AgentPlace is ChainlinkConsumer {
                 _data
             );
         } else {
-            IPublicLockV12(agentLockAddress).purchase{value: msg.value}(
+            tokenID = IPublicLockV12(agentLockAddress).purchase{value: msg.value}(
                 _values,
                 _recipients,
                 _referrers,
@@ -213,10 +226,49 @@ contract AgentPlace is ChainlinkConsumer {
 
         emit agentSubscriptionPurchased(
             _agentID,
+            tokenID[0],
             agents[_agentID].creator,
             msg.sender
         );
     }
+
+    function extendSubscription(uint256 _value, uint256 _tokenId, uint16 _agentID) external payable {
+        require(
+            agents[_agentID].creator != address(0),
+            "agent does not exists"
+        );
+
+        bytes memory _data;
+        address _referrer;
+        address agentLockAddress = agents[_agentID].lockAddress;
+        address tokenAddress = IPublicLockV12(agentLockAddress).tokenAddress();
+        uint _priceToPay = IPublicLockV12(agentLockAddress).keyPrice();
+
+        if (!agents[_agentID].isOpenForContributions) {
+            _referrer = agents[_agentID].creator;
+        }
+
+        if (tokenAddress != address(0)) {
+            IERC20(tokenAddress).transferFrom(
+                msg.sender,
+                address(this),
+                _priceToPay
+            );
+            IPublicLockV12(agentLockAddress).extend(
+                _value,
+                _tokenId,
+                _referrer,
+                _data
+            );
+        } else {
+            IPublicLockV12(agentLockAddress).extend{value: msg.value}(
+                _value,
+                _tokenId,
+                _referrer,
+                _data
+            );
+        }
+    } 
 
     /**
      * @dev withdraw function for an agentID
@@ -281,5 +333,9 @@ contract AgentPlace is ChainlinkConsumer {
         bytes calldata /* data */
     ) external view returns (uint minKeyPrice) {
         return IPublicLockV12(msg.sender).keyPrice();
+    }
+
+    function tokenURI(address lockAddress, address operator, address owner, uint256 keyId, uint256 expirationTimestamp) external pure returns (string memory){
+        return Base64.tokenURI(lockAddress, operator, owner, keyId, expirationTimestamp);
     }
 }

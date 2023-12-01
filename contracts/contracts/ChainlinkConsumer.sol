@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
-
-import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
-
 import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/libraries/FunctionsRequest.sol";
 
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
+import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
+
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+
+import {ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-
-import {ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import "./library/Helpers.sol";
 
@@ -35,6 +35,7 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
 
     //Callback gas limit
     uint32 gasLimit = 300000;
+
     // donID
     bytes32 donID;
 
@@ -44,26 +45,36 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
         bool isOpenForContributions;
     }
 
+    struct RequestData {
+        bool executed;
+        bytes32 sourceID;
+    }
+
+    struct FunctionData {
+        address functionForwarder;
+        uint8 numberOfWinners;
+    }
+
     // Mapping from agentID to agentStruct
     mapping(uint16 => AgentStruct) public agents;
 
     // Mapping from agentID to agentVersionID
-    mapping(uint16 => uint16) agentVersions;
+    mapping(uint16 => uint16) public agentVersions;
 
     // Mapping from requestID to response containing the topK agents
-    mapping(bytes32 => bytes) private round_winners;
+    mapping(bytes32 => bytes) public round_winners;
 
     // JavaScript source codes for the reward mechanisms
     mapping(bytes32 => string) public sources;
 
     // Reward distributions for the reward mechanisms
-    mapping(bytes32 => uint8[]) public rewardDistributions;
-
-    // Mapping from requestID to sourceID 
-    mapping(bytes32 => bytes32) public requestToSource;
+    mapping(bytes32 => mapping(uint8 => uint256)) public rewardDistributions;
 
     // Mapping from sourceID to functionForwarder that can call the performUpkeep
-    mapping(bytes32 => address) public functionsForwarders;
+    mapping(bytes32 => FunctionData) public functionData;
+
+    // Mapping from requestID to sourceID 
+    mapping(bytes32 => RequestData) public requestData;
     
     // Custom error type
     error UnexpectedRequestID(bytes32 requestId);
@@ -79,7 +90,13 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
         string sourceName,
         string sourceCode,
         bytes32 sourceID,
-        uint8[] rewardDistributions
+        uint256[] rewardDistributions
+    );
+
+    event RoundRewardsDistributed(
+        bytes32 requestId,
+        bytes32 sourceID,
+        uint16[] topkAgents
     );
 
     /// @notice Initializes the contract
@@ -108,13 +125,13 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
         string memory _sourceName, 
         string memory _sourceCode, 
         address _functionForwader,
-        uint8[] memory _rewardDistributions
+        uint256[] memory _rewardDistributions
     ) external onlyOwner {
         bytes32 _sourceID = createSourceID(_sourceName);
-        functionsForwarders[_sourceID] = _functionForwader;
+        functionData[_sourceID].functionForwarder = _functionForwader;
         sources[_sourceID] = _sourceCode;
         for(uint8 i = 0; i < _rewardDistributions.length; i++){
-            rewardDistributions[_sourceID].push(_rewardDistributions[i]);
+            rewardDistributions[_sourceID][i] = _rewardDistributions[i];
         }
         emit rewardMechanismRegistered(_sourceName, _sourceCode, _sourceID, _rewardDistributions);
     }
@@ -126,7 +143,7 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
     function sendRequest(
         bytes32 sourceID
     ) external {
-        require(functionsForwarders[sourceID] == msg.sender);
+        require(functionData[sourceID].functionForwarder == msg.sender);
         FunctionsRequest.Request memory req;
         req.initializeRequestForInlineJavaScript(sources[sourceID]); // Initialize the request with JS code
 
@@ -138,7 +155,7 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
             donID
         );
 
-        requestToSource[reqID] = sourceID;
+        requestData[reqID].sourceID = sourceID;
     }
 
     /**
@@ -154,24 +171,32 @@ abstract contract ChainlinkConsumer is FunctionsClient, Ownable , ERC20 {
 
         round_winners[requestId] = response;
         // Emit an event to log the RoundWinners response from a sourceID mechanism
-        emit RoundWinners(requestId, requestToSource[requestId], response);
+        emit RoundWinners(requestId, requestData[requestId].sourceID, response);
     }
 
     function rewardsDistribution(bytes32 _requestID) external{
+
+        require(requestData[_requestID].executed == false, "Already executed");
+        
+        requestData[_requestID].executed = true;
+
         string memory winners = string(round_winners[_requestID]);
 
         bytes memory decodedResponse = Helpers.stringToBytes(winners);
 
         uint16[] memory topkAgents = Helpers.decodeUint16ArrayRLE(decodedResponse);
 
-        bytes32 rewardMechanismID = requestToSource[_requestID];
+        bytes32 _sourceID = requestData[_requestID].sourceID;
 
-        for(uint8 i = 0; i < rewardDistributions[rewardMechanismID].length; i++){
+        for(uint8 i = 0; i < functionData[_sourceID].numberOfWinners; i++){
             address tempWinner = agents[topkAgents[i]].creator;
-            uint256 tempReward = rewardDistributions[rewardMechanismID][i] * 10 ** 18;
+            uint256 tempReward = rewardDistributions[_sourceID][i];
             // Minting tokens to the topK agents 
-            _mint(tempWinner, tempReward);
+            _mint(tempWinner, tempReward * 10 ** 18 );
         }
+
+        emit RoundRewardsDistributed(_requestID, _sourceID, topkAgents);
+
     }
      
     function createSourceID(string memory _sourceID) internal pure returns(bytes32){
