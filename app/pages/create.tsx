@@ -18,6 +18,7 @@ import { Switch } from "@chakra-ui/react";
 import { useRef } from "react";
 import { Badge } from "@chakra-ui/react";
 import { IoIosSend } from "react-icons/io";
+import { FaTwitter } from "react-icons/fa6";
 
 const Create = () => {
   const assistantID = "asst_5Kb4YaFhdPOouQgxMvoffDM5";
@@ -101,6 +102,8 @@ const Create = () => {
     }
   };
   const [agentOpenFor, setAgentOpenFor] = useState<boolean>(false);
+  const [actions, setActions] = useState<string>("");
+
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
       <div>
@@ -350,6 +353,24 @@ const Create = () => {
                   <Badge colorScheme="green" className="mx-3">
                     yes
                   </Badge>
+                </div>
+              </div>
+              <div className="mt-6">
+                <p className="text-xl text-black font-semibold">Actions</p>
+                <div className="mt-2">
+                  <p className="text-sm font-mono">Post on </p>
+                  <div
+                    className={` ${
+                      actions === "twitter" && "border-2 border-blue-500"
+                    } border-2 border-black rounded-full px-3 py-2.5 w-12 mt-3 cursor-pointer`}
+                    onClick={() => setActions("twitter")}
+                  >
+                    <FaTwitter
+                      className={`${
+                        actions === "twitter" && "text-blue-500 text-2xl"
+                      } text-black text-2xl`}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
