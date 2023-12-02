@@ -19,6 +19,8 @@ import { useRef } from "react";
 import { Badge } from "@chakra-ui/react";
 import { IoIosSend } from "react-icons/io";
 import { FaTwitter } from "react-icons/fa6";
+import { MdOutlineAttachFile } from "react-icons/md";
+import { IoIosMail } from "react-icons/io";
 
 const Create = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -31,19 +33,44 @@ const Create = () => {
     agentImage: null,
   });
   const [agentOpenFor, setAgentOpenFor] = useState<boolean>(false);
-  const [actions, setActions] = useState<string>("");
+  const [tweet, setTweet] = useState<boolean>(false);
+  const [mail, setMail] = useState<boolean>(false);
+  const [agentInstructions, setAgentInstructions] = useState<string>();
+  const [file, setFile] = useState("");
+  const [codeInterpreter, setCodeInterpreter] = useState<boolean>(false);
+  const [fileInterpreter, setFileInterpreter] = useState<boolean>(false);
+  const [imageGeneration, setImageGeneration] = useState<boolean>(false);
+
+  const hiddenFileInput = useRef(null);
+  const handleClick = () => {
+    hiddenFileInput?.current?.click();
+  };
+  const handleChange = (event: any) => {
+    const fileUploaded = event.target.files[0];
+    console.log(fileUploaded);
+    setFile(fileUploaded);
+  };
 
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
-      <div>
-        <p className="text-orange-600 text-2xl font-bold mx-10 pt-3 pb-2">
-          Create an Agent
-        </p>
+      <div className="flex justify-between mx-10 pt-3 pb-2">
+        <p className="text-orange-600 text-2xl font-bold">Create an Agent</p>
+        <div>
+          <Button
+            ref={btnRef}
+            className="mx-3 bg-orange-600 border border-b-4 border-black"
+            colorScheme=""
+            onClick={onOpen}
+          >
+            Configure
+          </Button>
+          <Button className="mx-3 border border-b-4 border-black">Save</Button>
+        </div>
       </div>
       <hr className="h-0.5 bg-black" />
       <div className="flex h-full">
-        <div className="w-1/3 bg-orange-100 px-10 flex flex-col border-r-8 border-t-2 border-black rounded-2xl">
-          <div className="mt-10">
+        <div className="w-1/3 bg-orange-100 px-10 flex flex-col overflow-scroll border-r-8 border-t-2 border-black rounded-2xl">
+          <div className="mt-5">
             <p className="text-black text-2xl font-semibold text-center">
               Agent Details
             </p>
@@ -60,14 +87,14 @@ const Create = () => {
                 />
               </WrapItem>
             </Wrap>
-            <input
+            {/* <input
               type="image"
               className="rounded-xl border mx-auto items-center border-white px-2 py-1 mt-4"
               onChange={(e) =>
                 setAgentDetails({ ...agentDetails, agentImage: e.target.value })
               }
               alt="select"
-            ></input>
+            ></input> */}
           </div>
           <div>
             <div className="mt-7">
@@ -87,11 +114,22 @@ const Create = () => {
             </div>
             <div className="mt-7">
               <p className="text-xl text-black font-semibold">
+                Agent Instructions
+              </p>
+              <textarea
+                placeholder="You are a helpful assistant"
+                className="px-5 py-2 rounded-xl mt-2 w-full font-semibold h-32 border border-black"
+                onChange={(e) => setAgentInstructions(e.target.value)}
+                value={agentInstructions}
+              ></textarea>
+            </div>
+            <div className="mt-5">
+              <p className="text-xl text-black font-semibold">
                 Agent Description
               </p>
               <textarea
                 placeholder="tell what the agent does ..."
-                className="px-5 py-2 rounded-xl mt-2 w-full font-semibold h-44 border border-black"
+                className="px-5 py-2 rounded-xl mt-2 w-full font-semibold h-36 border border-black"
                 onChange={(e) =>
                   setAgentDetails({
                     ...agentDetails,
@@ -100,6 +138,32 @@ const Create = () => {
                 }
                 value={agentDetails.agentDesc}
               ></textarea>
+            </div>
+            <div className="mt-4 w-full flex justify-between">
+              <p className="font-semibold text-md">Code Interpreter</p>
+              <Switch
+                onChange={() => setCodeInterpreter(!codeInterpreter)}
+                size="lg"
+                colorScheme="blue"
+              />
+            </div>
+            <div className="mt-4 mb-3 w-full flex justify-between">
+              <p className="font-semibold text-md">File Interpreter</p>
+              <Switch
+                onChange={() => setFileInterpreter(!fileInterpreter)}
+                size="lg"
+                colorScheme="blue"
+              />
+            </div>
+            <div className="mt-4 mb-3 w-full flex justify-between">
+              <p className="font-semibold text-md">Files</p>
+              <div className="">
+                <MdOutlineAttachFile className="text-2xl cursor-pointer text-green-500"></MdOutlineAttachFile>
+                <input type="file" style={{ display: "none" }} />
+                {file && (
+                  <p className="text-xs w-20 h-5 overflow-clip">{file?.name}</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -112,17 +176,12 @@ const Create = () => {
               </p>
             </div>
             <div>
-              <Button
-                ref={btnRef}
-                className="mx-3 bg-orange-600 border border-b-4 border-black"
-                colorScheme=""
-                onClick={onOpen}
-              >
-                Configure
-              </Button>
-              <Button className="mx-3 border border-b-4 border-black">
-                Save
-              </Button>
+              <button className="px-6 py-1.5 bg-blue-100 rounded-lg font-semibold mx-3">
+                Run
+              </button>
+              <button className="px-6 py-1.5 bg-green-100 rounded-lg font-semibold mx-3">
+                Clear
+              </button>
             </div>
           </div>
           <div>
@@ -134,7 +193,7 @@ const Create = () => {
               variant="soft-rounded"
             >
               <TabList>
-                <Tab textColor="black">Create</Tab>
+                <Tab textColor="black">Thread</Tab>
                 <Tab textColor="black">Review</Tab>
               </TabList>
               <TabPanels>
@@ -160,7 +219,23 @@ const Create = () => {
                             borderColor="white"
                             height="inherit"
                           >
-                            <IoIosSend className="text-xl cursor-pointer"></IoIosSend>
+                            <>
+                              <MdOutlineAttachFile
+                                onClick={handleClick}
+                                className="text-xl cursor-pointer"
+                              ></MdOutlineAttachFile>
+                              <input
+                                type="file"
+                                onChange={handleChange}
+                                ref={hiddenFileInput}
+                                style={{ display: "none" }}
+                              />
+                              {file && (
+                                <p className="text-xs w-20 overflow-clip">
+                                  {file?.name}
+                                </p>
+                              )}
+                            </>
                           </InputRightAddon>
                         </InputGroup>
                       </div>
@@ -277,18 +352,46 @@ const Create = () => {
               </div>
               <div className="mt-6">
                 <p className="text-xl text-black font-semibold">Actions</p>
-                <div className="mt-2">
-                  <p className="text-sm font-mono">Post on </p>
-                  <div
-                    className={` ${
-                      actions === "twitter" && "border-2 border-blue-500"
-                    } border-2 border-black rounded-full px-3 py-2.5 w-12 mt-3 cursor-pointer`}
-                    onClick={() => setActions("twitter")}
-                  >
-                    <FaTwitter
-                      className={`${
-                        actions === "twitter" && "text-blue-500 text-2xl"
-                      } text-black text-2xl`}
+                <div className="mt-2 flex">
+                  <div className="mx-3">
+                    <p className="text-sm font-mono">Post on </p>
+                    <div
+                      className={` ${
+                        tweet === true && "border-2 border-blue-500"
+                      } border-2 border-black rounded-full px-3 py-2.5 w-12 mt-3 cursor-pointer`}
+                      onClick={() => setTweet(!tweet)}
+                    >
+                      <FaTwitter
+                        className={`${
+                          tweet === true && "text-blue-500 text-2xl"
+                        } text-black text-2xl`}
+                      />
+                    </div>
+                  </div>
+                  <div className="mx-3">
+                    <p className="text-sm font-mono">Send</p>
+                    <div
+                      className={` ${
+                        mail === true && "border-2 border-red-500"
+                      } border-2 border-black rounded-full px-2.5 py-2.5 w-12 mt-3 cursor-pointer`}
+                      onClick={() => setMail(!mail)}
+                    >
+                      <IoIosMail
+                        className={`${
+                          mail === true && "text-red-500 text-2xl text-center"
+                        } text-black text-2xl text-center`}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-5">
+                  <p className="text-sm font-mono">Tools</p>
+                  <div className="flex justify-between w-full mt-2">
+                    <p className="text-md font-semibold">Image Generation</p>
+                    <Switch
+                      size="lg"
+                      onChange={() => setImageGeneration(!imageGeneration)}
+                      colorScheme="orange"
                     />
                   </div>
                 </div>
