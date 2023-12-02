@@ -39,6 +39,22 @@ type SubscriptionEntity @entity {
   expiresAt: BigInt!
 }
 
+type RewardMechanism @entity {
+  id: Bytes! # sourceId
+  sourceName: String! #rewardCategory
+  sourceCode: String!
+  rewardDistributions: [BigInt!]!
+  recentRounds: [Round!] @derivedFrom(field: "rewardMechanism")
+}
+
+type Round @entity {
+  id: Bytes! # requestId
+  rewardMechanism: RewardMechanism! # bytes32
+  topkAgents: [Int!]! # uint16[]
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
 ## Locks from unlock
 
 ## keys from unlock
@@ -64,7 +80,7 @@ type SubscriptionEntity @entity {
 
 # type RequestFulfilled @entity(immutable: true) {
 #   id: Bytes!
-#   AgentHandler_id: Bytes! # bytes32
+#   AgentHandlerV2_id: Bytes! # bytes32
 #   blockNumber: BigInt!
 #   blockTimestamp: BigInt!
 #   transactionHash: Bytes!
@@ -72,15 +88,26 @@ type SubscriptionEntity @entity {
 
 # type RequestSent @entity(immutable: true) {
 #   id: Bytes!
-#   AgentHandler_id: Bytes! # bytes32
+#   AgentHandlerV2_id: Bytes! # bytes32
 #   blockNumber: BigInt!
 #   blockTimestamp: BigInt!
 #   transactionHash: Bytes!
 # }
 
-# type Response @entity(immutable: true) {
+# type RoundRewardsDistributed @entity(immutable: true) {
 #   id: Bytes!
 #   requestId: Bytes! # bytes32
+#   sourceID: Bytes! # bytes32
+#   topkAgents: [Int!]! # uint16[]
+#   blockNumber: BigInt!
+#   blockTimestamp: BigInt!
+#   transactionHash: Bytes!
+# }
+
+# type RoundWinners @entity(immutable: true) {
+#   id: Bytes!
+#   requestId: Bytes! # bytes32
+#   sourceID: Bytes! # bytes32
 #   response: Bytes! # bytes
 #   blockNumber: BigInt!
 #   blockTimestamp: BigInt!
@@ -102,8 +129,8 @@ type SubscriptionEntity @entity {
 #   agentName: String! # string
 #   agentID: Int! # uint16
 #   creator: Bytes! # address
-#   UnlockSubscriptionContract: Bytes! # address
-#   KeyPrice: BigInt! # uint256
+#   unlockSubscriptionContract: Bytes! # address
+#   keyPrice: BigInt! # uint256
 #   basisPoint: BigInt! # uint256
 #   categories: String! # string
 #   isOpenForContributions: Boolean! # bool
@@ -115,6 +142,7 @@ type SubscriptionEntity @entity {
 # type agentSubscriptionPurchased @entity(immutable: true) {
 #   id: Bytes!
 #   agentID: Int! # uint16
+#   tokenId: BigInt! # uint256
 #   agentCreator: Bytes! # address
 #   subscriber: Bytes! # address
 #   blockNumber: BigInt!
@@ -139,7 +167,7 @@ type SubscriptionEntity @entity {
 #   sourceName: String! # string
 #   sourceCode: String! # string
 #   sourceID: Bytes! # bytes32
-#   rewardDistributions: [Int!]! # uint8[]
+#   rewardDistributions: [BigInt!]! # uint256[]
 #   blockNumber: BigInt!
 #   blockTimestamp: BigInt!
 #   transactionHash: Bytes!
