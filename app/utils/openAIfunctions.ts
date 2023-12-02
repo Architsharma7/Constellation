@@ -16,7 +16,7 @@ export const createAssistant = async (
     const assistant = await openai.beta.assistants.create({
       name: assistantName,
       description: assistantDesc,
-      model: "gpt-4-1106-preview",
+      model: "gpt-3.5-turbo-1106",
       tools: tools, // can also pass extra functions
       file_ids: fileIds,
     });

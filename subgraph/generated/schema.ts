@@ -59,8 +59,8 @@ export class Creator extends Entity {
     this.set("address", Value.fromBytes(value));
   }
 
-  get agentdCreated(): Array<Bytes> | null {
-    let value = this.get("agentdCreated");
+  get agentsCreated(): Array<Bytes> | null {
+    let value = this.get("agentsCreated");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -117,8 +117,8 @@ export class User extends Entity {
     this.set("address", Value.fromBytes(value));
   }
 
-  get agentSubscribedTo(): Array<Bytes> | null {
-    let value = this.get("agentSubscribedTo");
+  get agentsSubscribedTo(): Array<Bytes> | null {
+    let value = this.get("agentsSubscribedTo");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -175,17 +175,17 @@ export class Agent extends Entity {
     this.set("assistantId", Value.fromString(value));
   }
 
-  get agentID(): i32 {
+  get agentID(): BigInt {
     let value = this.get("agentID");
     if (!value || value.kind == ValueKind.NULL) {
-      return 0;
+      throw new Error("Cannot return null for a required field.");
     } else {
-      return value.toI32();
+      return value.toBigInt();
     }
   }
 
-  set agentID(value: i32) {
-    this.set("agentID", Value.fromI32(value));
+  set agentID(value: BigInt) {
+    this.set("agentID", Value.fromBigInt(value));
   }
 
   get creator(): Bytes {
@@ -214,8 +214,8 @@ export class Agent extends Entity {
     this.set("unlockSubAddress", Value.fromBytes(value));
   }
 
-  get KeyPrice(): BigInt {
-    let value = this.get("KeyPrice");
+  get keyPrice(): BigInt {
+    let value = this.get("keyPrice");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -223,8 +223,8 @@ export class Agent extends Entity {
     }
   }
 
-  set KeyPrice(value: BigInt) {
-    this.set("KeyPrice", Value.fromBigInt(value));
+  set keyPrice(value: BigInt) {
+    this.set("keyPrice", Value.fromBigInt(value));
   }
 
   get basisPoint(): BigInt {
@@ -240,8 +240,21 @@ export class Agent extends Entity {
     this.set("basisPoint", Value.fromBigInt(value));
   }
 
-  get categories(): string {
-    let value = this.get("categories");
+  get rewardCategory(): Bytes {
+    let value = this.get("rewardCategory");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set rewardCategory(value: Bytes) {
+    this.set("rewardCategory", Value.fromBytes(value));
+  }
+
+  get agentCategory(): string {
+    let value = this.get("agentCategory");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -249,8 +262,8 @@ export class Agent extends Entity {
     }
   }
 
-  set categories(value: string) {
-    this.set("categories", Value.fromString(value));
+  set agentCategory(value: string) {
+    this.set("agentCategory", Value.fromString(value));
   }
 
   get isOpenForContributions(): boolean {
@@ -399,6 +412,32 @@ export class SubscriptionEntity extends Entity {
     this.set("buyer", Value.fromBytes(value));
   }
 
+  get threadID(): string {
+    let value = this.get("threadID");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set threadID(value: string) {
+    this.set("threadID", Value.fromString(value));
+  }
+
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
   get createdAt(): BigInt {
     let value = this.get("createdAt");
     if (!value || value.kind == ValueKind.NULL) {
@@ -423,5 +462,192 @@ export class SubscriptionEntity extends Entity {
 
   set expiresAt(value: BigInt) {
     this.set("expiresAt", Value.fromBigInt(value));
+  }
+}
+
+export class RewardMechanism extends Entity {
+  constructor(id: Bytes) {
+    super();
+    this.set("id", Value.fromBytes(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save RewardMechanism entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.BYTES,
+        `Entities of type RewardMechanism must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("RewardMechanism", id.toBytes().toHexString(), this);
+    }
+  }
+
+  static load(id: Bytes): RewardMechanism | null {
+    return changetype<RewardMechanism | null>(
+      store.get("RewardMechanism", id.toHexString())
+    );
+  }
+
+  get id(): Bytes {
+    let value = this.get("id");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set id(value: Bytes) {
+    this.set("id", Value.fromBytes(value));
+  }
+
+  get sourceName(): string {
+    let value = this.get("sourceName");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set sourceName(value: string) {
+    this.set("sourceName", Value.fromString(value));
+  }
+
+  get sourceCode(): string {
+    let value = this.get("sourceCode");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set sourceCode(value: string) {
+    this.set("sourceCode", Value.fromString(value));
+  }
+
+  get rewardDistributions(): Array<BigInt> {
+    let value = this.get("rewardDistributions");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigIntArray();
+    }
+  }
+
+  set rewardDistributions(value: Array<BigInt>) {
+    this.set("rewardDistributions", Value.fromBigIntArray(value));
+  }
+
+  get recentRounds(): Array<Bytes> | null {
+    let value = this.get("recentRounds");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytesArray();
+    }
+  }
+}
+
+export class Round extends Entity {
+  constructor(id: Bytes) {
+    super();
+    this.set("id", Value.fromBytes(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Round entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.BYTES,
+        `Entities of type Round must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Round", id.toBytes().toHexString(), this);
+    }
+  }
+
+  static load(id: Bytes): Round | null {
+    return changetype<Round | null>(store.get("Round", id.toHexString()));
+  }
+
+  get id(): Bytes {
+    let value = this.get("id");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set id(value: Bytes) {
+    this.set("id", Value.fromBytes(value));
+  }
+
+  get rewardMechanism(): Bytes {
+    let value = this.get("rewardMechanism");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set rewardMechanism(value: Bytes) {
+    this.set("rewardMechanism", Value.fromBytes(value));
+  }
+
+  get topkAgents(): Array<Bytes> {
+    let value = this.get("topkAgents");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytesArray();
+    }
+  }
+
+  set topkAgents(value: Array<Bytes>) {
+    this.set("topkAgents", Value.fromBytesArray(value));
+  }
+
+  get topkUsers(): Array<Bytes> {
+    let value = this.get("topkUsers");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytesArray();
+    }
+  }
+
+  set topkUsers(value: Array<Bytes>) {
+    this.set("topkUsers", Value.fromBytesArray(value));
+  }
+
+  get blockTimestamp(): BigInt {
+    let value = this.get("blockTimestamp");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set blockTimestamp(value: BigInt) {
+    this.set("blockTimestamp", Value.fromBigInt(value));
+  }
+
+  get transactionHash(): Bytes {
+    let value = this.get("transactionHash");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set transactionHash(value: Bytes) {
+    this.set("transactionHash", Value.fromBytes(value));
   }
 }

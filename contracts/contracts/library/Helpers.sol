@@ -3,8 +3,8 @@ pragma solidity 0.8.20;
 
 library Helpers {
 
-    function stringToBytes(string memory input) internal pure returns (bytes memory) {
-        bytes memory temp = bytes(input);
+    function stringToBytes(string memory data) internal pure returns (bytes memory) {
+        bytes memory temp = bytes(data);
         require(temp.length >= 2, "Source string not properly formatted.");
         require(temp[0] == '0' && (temp[1] == 'x' || temp[1] == 'X'), "Source string must start with '0x'.");
 
@@ -37,38 +37,58 @@ library Helpers {
         revert("Invalid character in string");
     }
 
-    function decodeUint16ArrayRLE(bytes memory data) internal pure returns (uint16[] memory) {
+    function decodeBytesToUint32Array(bytes memory input) internal pure returns (uint32[] memory) {
+
+        string memory decodedString = string(input);
+
+        bytes memory data = stringToBytes(decodedString);
+
         require(data.length % 4 == 0, "Data length must be a multiple of 4");
 
-        uint256 decodedSize = 0;
+        uint32[] memory decodedArray = new uint32[](data.length / 4);
 
-        // First pass: calculate the total size of the decoded array
-        for (uint256 i = 0; i < data.length; i += 4) {
-            uint16 count = toUint16(data, i);
-            decodedSize += count;
-        }
-
-        uint16[] memory decodedArray = new uint16[](decodedSize);
-        uint256 decodedIndex = 0;
-
-        // Second pass: decode the RLE data
-        for (uint256 i = 0; i < data.length; i += 4) {
-            uint16 count = toUint16(data, i);
-            uint16 value = toUint16(data, i + 2);
-            for (uint16 j = 0; j < count; j++) {
-                decodedArray[decodedIndex++] = value;
-            }
+        for (uint256 i = 0; i < decodedArray.length; i++) {
+            decodedArray[i] = toUint32(data, i * 4);
         }
 
         return decodedArray;
     }
 
-    function toUint16(bytes memory data, uint256 startIndex) internal pure returns (uint16) {
-        require(startIndex + 2 <= data.length, "Index out of bounds");
-        uint16 value;
+    function toUint32(bytes memory data, uint256 startIndex) internal pure returns (uint32) {
+        require(startIndex + 4 <= data.length, "Index out of bounds");
+
+        uint32 value;
         assembly {
-            value := mload(add(add(data, 0x2), startIndex))
+            value := mload(add(add(data, 0x4), startIndex))
         }
         return value;
+    }
+
+    function splitConcatenatedAddresses(bytes memory input) internal pure returns (address[] memory) {
+
+        string memory decodedString = string(input);
+
+        bytes memory data = stringToBytes(decodedString);
+
+        require(data.length % 20 == 0, "Data length must be a multiple of 20 bytes");
+
+        uint256 numberOfAddresses = data.length / 20;
+        address[] memory addresses = new address[](numberOfAddresses);
+
+        for (uint256 i = 0; i < numberOfAddresses; i++) {
+            bytes memory addressBytes = new bytes(20);
+            for (uint256 j = 0; j < 20; j++) {
+                addressBytes[j] = data[i * 20 + j];
+            }
+            addresses[i] = bytesToAddress(addressBytes);
+        }
+
+        return addresses;
+    }
+
+    function bytesToAddress(bytes memory bys) internal pure returns (address addr) {
+        assembly {
+            addr := mload(add(bys, 20))
+        }
     }
 }

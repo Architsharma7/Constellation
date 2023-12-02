@@ -9,7 +9,7 @@ export default async function handler(
 
   // we might have to add other checks here in case of authentication if the user is allowed to create the or not
   const { assistantName, assistantDesc, tools, fileIds } = req.body;
-
+  console.log(assistantName, assistantDesc, tools, fileIds);
   try {
     const result = await createAssistant(
       assistantName,
@@ -17,6 +17,7 @@ export default async function handler(
       tools,
       fileIds
     );
+    console.log(result);
     if (result) {
       res.status(200).json(result);
     } else {
