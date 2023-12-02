@@ -11,20 +11,22 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import {ILogAutomation} from "./interfaces/ILogAutomation.sol";
+
 import { Base64 } from "./library/Base64.sol";
 
 /**
- * @title AgentPlace
+ * @title DAIM (Decentralized Artificial Intelligence Marketplace)
  * @notice
  * @dev
  */
-contract AgentPlace is ChainlinkConsumer {
+contract DAIM is ChainlinkConsumer , ILogAutomation {
 
     IUnlockV12 unlockContract;
 
     struct AgentInitConfig {
         string agentName; //  assistant Id
-        uint16 agentID; // assistant id of the assitant model into uint16
+        uint32 agentID; // assistant id of the assitant model into uint32
         uint subscriptionExpirationDuration; // Take from Creator
         address tokenAddress; // native for now
         uint keyPrice; // amount for the Sub
@@ -32,32 +34,35 @@ contract AgentPlace is ChainlinkConsumer {
         string lockName; // `Subscription of AssistantName`
         string lockSymbol; // SOA``
         string baseTokenURI;
-        string category; // Category
+        string rewardCategory; // Category
+        string actualCategory; // Category
         bool isOpenForContributions; // check to make it open For Contributions
     }
 
     event agentRegistered(
         string agentName,
-        uint16 agentID,
+        uint32 agentID,
         address creator,
         address unlockSubscriptionContract,
         uint keyPrice,
         uint basisPoint,
-        string categories,
+        string rewardCategory,
+        string actualCategory,
         bool isOpenForContributions
     );
 
     event agentVersionRegistered(
-        uint16 agentID,
+        uint32 agentID,
         string agentVersionName,
-        uint16 agentVersionID,
+        uint32 agentVersionID,
         address creator,
         string agentMetadataCID
     );
 
     event agentSubscriptionPurchased(
-        uint16 agentID,
+        uint32 agentID,
         uint256 tokenId,
+        string threadID,
         address agentCreator,
         address subscriber
     );
@@ -81,10 +86,6 @@ contract AgentPlace is ChainlinkConsumer {
             agents[agentConfig.agentID].creator == address(0),
             "agent already exists"
         );
-
-        uint256 max = type(uint).max;
-
-        uint256 month = 31 days;
 
         address newLockAddress = unlockContract.createLock(
             // Expiration duration of subscription
@@ -130,14 +131,15 @@ contract AgentPlace is ChainlinkConsumer {
             newLockAddress,
             agentConfig.keyPrice,
             agentConfig.basisPoint,
-            agentConfig.category,
+            agentConfig.rewardCategory,
+            agentConfig.actualCategory,
             agentConfig.isOpenForContributions
         );
     }
 
     function registerAgentVersion(
-        uint16 _agentID,
-        uint16 _agentVersionID,
+        uint32 _agentID,
+        uint32 _agentVersionID,
         string memory _agentVersionName,
         string memory _agentMetadataCID
     ) external {
@@ -175,8 +177,9 @@ contract AgentPlace is ChainlinkConsumer {
      * @param _value array of tokens amount to pay for this purchase >= the current keyPrice - any applicable discount
      */
     function purchaseSubscription(
-        uint16 _agentID,
-        uint256 _value
+        uint32 _agentID,
+        uint256 _value,
+        string memory _threadID
     ) external payable {
         require(
             agents[_agentID].creator != address(0),
@@ -227,12 +230,13 @@ contract AgentPlace is ChainlinkConsumer {
         emit agentSubscriptionPurchased(
             _agentID,
             tokenID[0],
+            _threadID,
             agents[_agentID].creator,
             msg.sender
         );
     }
 
-    function extendSubscription(uint256 _value, uint256 _tokenId, uint16 _agentID) external payable {
+    function extendSubscription(uint256 _value, uint256 _tokenId, uint32 _agentID) external payable {
         require(
             agents[_agentID].creator != address(0),
             "agent does not exists"
@@ -276,7 +280,7 @@ contract AgentPlace is ChainlinkConsumer {
      * income from that agent the platform keeps 30% of that amount
      * @param _agentID to withdraw money from the lock contract
      */
-    function withdraw(uint16 _agentID) external {
+    function withdraw(uint32 _agentID) external {
         AgentStruct memory _agent = agents[_agentID];
         IPublicLockV12 AgentLockContract = IPublicLockV12(_agent.lockAddress);
         uint balance = address(_agent.lockAddress).balance;
@@ -314,6 +318,23 @@ contract AgentPlace is ChainlinkConsumer {
         }
     }
 
+    // Chainlink log automation functions
+
+    function checkLog(
+        Log calldata log,
+        bytes memory
+    ) external pure returns (bool upkeepNeeded, bytes memory performData) {
+        upkeepNeeded = true;
+        performData = abi.encode(log.topics[1]);
+    }
+
+    function performUpkeep(bytes calldata performData) external override {
+        bytes32 _requestID = abi.decode(performData, (bytes32));
+        rewardsDistribution(_requestID);
+    }
+
+    // Unlock Protocol custom hooks
+
     function onKeyPurchase(
         uint /* tokenId */,
         address from,
@@ -335,7 +356,13 @@ contract AgentPlace is ChainlinkConsumer {
         return IPublicLockV12(msg.sender).keyPrice();
     }
 
-    function tokenURI(address lockAddress, address operator, address owner, uint256 keyId, uint256 expirationTimestamp) external pure returns (string memory){
+    function tokenURI(
+        address lockAddress, 
+        address operator, 
+        address owner, 
+        uint256 keyId, 
+        uint256 expirationTimestamp
+    ) external pure returns (string memory){
         return Base64.tokenURI(lockAddress, operator, owner, keyId, expirationTimestamp);
     }
 }

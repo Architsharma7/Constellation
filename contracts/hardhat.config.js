@@ -12,17 +12,19 @@ module.exports = {
       optimizer: {
         enabled: true,
         runs: 200,
+        
       },
+      viaIR: true,
     },
   },
   
-  // defaultNetwork: "sepolia",
+  // defaultNetwork: "avax",
   defaultNetwork: "mumbai",
 
   networks: {
-    sepolia: {
-      chainId: 11155111,
-      url: "https://ethereum-sepolia.blockpi.network/v1/rpc/public	",
+    avax: {
+      chainId: 43114,
+      url: "https://api.avax.network/ext/bc/C/rpc",
       accounts: [PRIVATE_KEY],
     },
     mumbai: {

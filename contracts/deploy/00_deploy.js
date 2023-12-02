@@ -8,6 +8,7 @@ const {
   getAgentID,
   deployment_config,
   codeString,
+  codeStringU,
   distributionRewards,
   getSourceID,
   _forwarderAddress,
@@ -22,7 +23,7 @@ module.exports = async ({ deployments }) => {
   console.log("Wallet+ Ethereum Address:", wallet.address);
 
   // Deploy the contract
-  const AgentPlace = await deploy("AgentPlace", {
+  const AgentPlace = await deploy("DAIM", {
     from: wallet.address,
     args: deployment_config,
     log: false,
@@ -34,39 +35,43 @@ module.exports = async ({ deployments }) => {
     constructorArguments: deployment_config,
   });
 
-  const agentPlace = await ethers.getContractFactory("AgentPlace");
+  const agentPlace = await ethers.getContractFactory("DAIM");
 
   const agentPlaceInstance = agentPlace.attach(AgentPlace.address);
 
-  console.log(getSourceID("source1"));
-
+  console.log(getSourceID("source2"));
+  console.log(getAgentID("example1"));
   // -------------------------------- STEP 1 --------------------------------
   // First step then execute the second step to test the functionality separately
 
   // Add the reward mechanism to the contract
   // let tx = await agentPlaceInstance.addRewardMechanism(
-  //   "source1",
-  //   codeString,
+  //   "usersRewardMechanism",
+  //   codeStringU,
   //   // This should be the chainlink forwarder address after creating
   //   // the time based upkeep job to call the function sendRequest with the
   //   //  sourceID as parameter sourceID is a bytes32 to identify the source
   //   // getSourceID("source1")
-  //   // wallet.address,
-  //   _forwarderAddress,
+  //   wallet.address,
+  //   // _forwarderAddress,
   //   // An array of the amount of the reward "tokens" that each agent will receive
   //   // 1st agent 1st index, 2nd agent 2nd index, etc ...
-  //   distributionRewards
+  //   distributionRewards,
+  //   { gasLimit: 10000000 }
   // );
   // await tx.wait();
 
-  // // // Register the agent
+  // console.log("Reward mechanism added");
+
+  // Register the agent
   // tx = await agentPlaceInstance.registerAgent([
-  //   "example2",
-  //   getAgentID("example2"),
-  //   1,
+  //   "example1",
+  //   getAgentID("example1"),
+  //   1000,
   //   "0x0000000000000000000000000000000000000000",
   //   10000,
   //   500,
+  //   "test",
   //   "test",
   //   "test",
   //   "test",
@@ -75,7 +80,9 @@ module.exports = async ({ deployments }) => {
   // ]);
   // await tx.wait();
 
-  // // Purchase the subscription of the agentName "example1" and ID getAgentID("example1")
+  // console.log("Agent registered");
+
+  // Purchase the subscription of the agentName "example1" and ID getAgentID("example1")
   // tx = await agentPlaceInstance.purchaseSubscription(
   //   getAgentID("example2"),
   //   10000,
@@ -84,12 +91,15 @@ module.exports = async ({ deployments }) => {
   // await tx.wait();
 
   // // Register the agent version as contribution
+
   // tx = await agentPlaceInstance.registerAgentVersion(
+  //   getAgentID("example1"),
   //   getAgentID("example2"),
-  //   getAgentID("example3"),
-  //   "example3",
+  //   "example2",
   //   "test"
   // );
+
+  // console.log("Agent version registered");
 
   // tx = await agentPlaceInstance.extendSubscription(
   //   10000,
@@ -104,8 +114,10 @@ module.exports = async ({ deployments }) => {
   // // Call this allone after the first step to test the functionality
   // // If chainlink automation is registered then this function will be called automaticly
 
-  // let tx = await agentPlaceInstance.sendRequest(getSourceID("source1"));
-  // await tx.wait();
+  //  tx = await agentPlaceInstance.sendRequest(getSourceID("usersRewardMechanism"), {
+  //     gasLimit: 10000000,
+  //   });
+  //   await tx.wait();
 
-  // console.log(AgentPlace.address);
+  console.log(AgentPlace.address);
 };
