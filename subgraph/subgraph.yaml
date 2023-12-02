@@ -3,12 +3,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: AgentHandler
+    name: AgentHandlerV2
     network: mumbai
     source:
-      address: "0x0294e2aC7043c7d2D861F5C921ccec8f7A559188"
-      abi: AgentHandler
-      startBlock: 42987275
+      address: "0xBd1767206D13601f162cd18eA006B798775f798b"
+      abi: AgentHandlerV2
+      startBlock: 43095064
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -17,15 +17,22 @@ dataSources:
         - Creator
         - User
         - Agent
-        - Subscription
+        - SubscriptionEntity
+        - RewardMechanism
+        - RoundWinners
+        - Round
       abis:
-        - name: AgentHandler
-          file: ./abis/AgentHandler.json
+        - name: AgentHandlerV2
+          file: ./abis/AgentHandlerV2.json
       eventHandlers:
-        - event: agentRegistered(string,uint16,address,address,uint256,uint256,string,bool)
+        - event: RoundRewardsDistributed(bytes32,bytes32,uint32[],address[])
+          handler: handleRoundRewardsDistributed
+        - event: agentRegistered(string,uint32,address,address,uint256,uint256,string,string,bool)
           handler: handleagentRegistered
-        - event: agentSubscriptionPurchased(uint16,address,address)
+        - event: agentSubscriptionPurchased(uint32,uint256,string,address,address)
           handler: handleagentSubscriptionPurchased
-        - event: agentVersionRegistered(uint16,string,uint16,address,string)
+        - event: agentVersionRegistered(uint32,string,uint32,address,string)
           handler: handleagentVersionRegistered
-      file: ./src/agent-handler.ts
+        - event: rewardMechanismRegistered(string,string,bytes32,uint256[])
+          handler: handlerewardMechanismRegistered
+      file: ./src/agent-handler-v-2.ts
