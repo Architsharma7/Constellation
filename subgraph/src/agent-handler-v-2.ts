@@ -79,6 +79,7 @@ export function handleagentRegistered(event: agentRegisteredEvent): void {
   if (creator == null) {
     creator = new Creator(event.params.creator);
     creator.address = event.params.creator;
+    creator.totalRevenue = BigInt.zero();
     creator.save();
   }
   let entity = new Agent(Bytes.fromI32(event.params.agentID.toI32()));
@@ -89,6 +90,7 @@ export function handleagentRegistered(event: agentRegisteredEvent): void {
   entity.keyPrice = event.params.keyPrice;
   entity.basisPoint = event.params.basisPoint;
   entity.agentCategory = event.params.actualCategory;
+  entity.totalRevenue = BigInt.zero();
   // need to convert the rewardCategory name to rewardCategory Id
   // if this does not work ,convert this off chain and pass only the sourceID in the place of rewardCategory name
 
@@ -111,8 +113,10 @@ export function handleagentSubscriptionPurchased(
 ): void {
   //UserAddress-AgentId
   let entity = new SubscriptionEntity(
-    event.params.subscriber.concat(Bytes.fromI32(event.params.agentID.toI32()))
+    Bytes.fromHexString(`${event.params.subscriber}-${event.params.agentID}`)
   );
+  // event.params.subscriber.concat(Bytes.fromI32(event.params.agentID.toI32()))
+
   let agent = Agent.load(Bytes.fromI32(event.params.agentID.toI32()));
   if (agent == null) {
     return;
@@ -181,6 +185,7 @@ export function handleagentVersionRegistered(
   if (creator == null) {
     creator = new Creator(event.params.creator);
     creator.address = event.params.creator;
+    creator.totalRevenue = BigInt.zero();
     creator.save();
   }
 
