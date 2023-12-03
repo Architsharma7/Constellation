@@ -117,7 +117,10 @@ export function handleagentSubscriptionPurchased(
   if (agent == null) {
     return;
   }
+  const subscriptionAmount = agent.keyPrice;
   entity.agent = agent.id;
+  agent.totalRevenue = agent.totalRevenue.plus(subscriptionAmount);
+  agent.save();
 
   let creator = Creator.load(event.params.agentCreator);
   if (creator == null) {
@@ -125,6 +128,35 @@ export function handleagentSubscriptionPurchased(
   }
 
   entity.agentCreator = creator.id;
+  if (agent.isImprovedVersion) {
+    // only add the referred amount
+    const referAmount = subscriptionAmount.times(
+      agent.basisPoint.div(BigInt.fromI32(10000))
+    );
+
+    // if a parentAgent is set , then perform the action
+    // if (agent.parentAgent) {
+    //   let parentAgent = Agent.load(agent.parentAgent);
+    //   if (parentAgent == null) {
+    //     return;
+    //   }
+    //   let parentCreator = Creator.load(parentAgent.creator);
+    //   if (parentCreator == null) {
+    //     return;
+    //   }
+
+    //   parentCreator.totalRevenue = parentCreator.totalRevenue.plus(
+    //     subscriptionAmount.minus(referAmount)
+    //   );
+    //   parentCreator.save();
+    // }
+
+    creator.totalRevenue = creator.totalRevenue.plus(referAmount);
+    creator.save();
+  } else {
+    creator.totalRevenue = creator.totalRevenue.plus(subscriptionAmount);
+    creator.save();
+  }
 
   let user = User.load(event.params.subscriber);
   if (user == null) {

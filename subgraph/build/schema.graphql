@@ -4,6 +4,7 @@ type Creator @entity {
   address: Bytes!
   agentsCreated: [Agent!] @derivedFrom(field: "creator")
   roundsWon: [Round!] @derivedFrom(field: "topkCreators")
+  totalRevenue: BigInt!
 }
 # Extra maybe Rounds won , total rev
 
@@ -12,7 +13,7 @@ type User @entity {
   id: Bytes!
   address: Bytes!
   agentsSubscribedTo: [SubscriptionEntity!] @derivedFrom(field: "buyer")
-  roundWon: [Round!] @derivedFrom(field: "topkUsers")
+  roundsWon: [Round!] @derivedFrom(field: "topkUsers")
 }
 # Extra maybe Rounds won
 
@@ -30,11 +31,11 @@ type Agent @entity {
   isOpenForContributions: Boolean! # bool
   isImprovedVersion: Boolean!
   AgentVersions: [Agent!] @derivedFrom(field: "parentAgent")
-  roundWon: [Round!] @derivedFrom(field: "topkAgents") # the issue the link is on the basis of Id
+  roundWon: [Round!] @derivedFrom(field: "topkAgents") # Rounds won # the issue the link is on the basis of Id
   parentAgent: Agent
   metadataCID: String
+  totalRevenue: BigInt!
 }
-# Rounds won
 
 ## Subscription
 type SubscriptionEntity @entity {

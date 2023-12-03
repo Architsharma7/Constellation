@@ -76,6 +76,19 @@ export class Creator extends Entity {
       return value.toBytesArray();
     }
   }
+
+  get totalRevenue(): BigInt {
+    let value = this.get("totalRevenue");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set totalRevenue(value: BigInt) {
+    this.set("totalRevenue", Value.fromBigInt(value));
+  }
 }
 
 export class User extends Entity {
@@ -135,8 +148,8 @@ export class User extends Entity {
     }
   }
 
-  get roundWon(): Array<Bytes> | null {
-    let value = this.get("roundWon");
+  get roundsWon(): Array<Bytes> | null {
+    let value = this.get("roundsWon");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -360,6 +373,19 @@ export class Agent extends Entity {
     } else {
       this.set("metadataCID", Value.fromString(<string>value));
     }
+  }
+
+  get totalRevenue(): BigInt {
+    let value = this.get("totalRevenue");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set totalRevenue(value: BigInt) {
+    this.set("totalRevenue", Value.fromBigInt(value));
   }
 }
 
