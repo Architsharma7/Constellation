@@ -9,18 +9,21 @@ import { gql } from "@apollo/client";
 // Query for the explorer page
 export const allAgentsQuery = gql`
   query ($first: Int) {
-    agents(first: $first) {
-      KeyPrice
+    agents(first: 10) {
+      agentCategory
       agentID
-      id
       assistantId
       basisPoint
-      categories
-      isOpenForContributions
-      parentAgent {
-        agentID
+      rewardCategory {
+        id
+        rewardDistributions
+        sourceName
       }
+      isOpenForContributions
+      keyPrice
+      id
       unlockSubAddress
+      isImprovedVersion
     }
   }
 `;
@@ -29,22 +32,36 @@ export const allAgentsQuery = gql`
 export const indivAgentQuery = gql`
   query ($id: String) {
     agent(id: $id) {
-      KeyPrice
+      agentCategory
+      AgentVersions {
+        assistantId
+        agentID
+        creator {
+          address
+          id
+        }
+      }
       agentID
       assistantId
       basisPoint
-      categories
-      isOpenForContributions
-      id
-      metadataCID
-      unlockSubAddress
-      parentAgent {
-        id
-        assistantId
-        agentID
-      }
       creator {
         address
+        id
+      }
+      id
+      isImprovedVersion
+      isOpenForContributions
+      keyPrice
+      metadataCID
+      parentAgent {
+        agentID
+        assistantId
+      }
+      unlockSubAddress
+      rewardCategory {
+        rewardDistributions
+        id
+        sourceName
       }
     }
   }
@@ -54,14 +71,25 @@ export const indivAgentQuery = gql`
 export const allCreatorsQuery = gql`
   query ($first: Int) {
     creators(first: $first) {
-      address
       id
-      agentdCreated {
+      address
+      agentsCreated {
         id
         assistantId
         agentID
-        KeyPrice
+        agentCategory
+        keyPrice
+        unlockSubAddress
         isOpenForContributions
+      }
+      roundsWon {
+        blockTimestamp
+        id
+        rewardMechanism {
+          id
+          sourceName
+        }
+        transactionHash
       }
     }
   }
@@ -72,12 +100,30 @@ export const indivCreatorQuery = gql`
     creator(id: $id) {
       address
       id
+      roundsWon {
+        id
+        blockTimestamp
+        rewardMechanism {
+          id
+          sourceName
+          rewardDistributions
+        }
+        transactionHash
+      }
       agentsCreated {
-        KeyPrice
+        agentCategory
         agentID
         assistantId
-        id
+        basisPoint
         isOpenForContributions
+        isImprovedVersion
+        keyPrice
+        unlockSubAddress
+        rewardCategory {
+          sourceName
+          rewardDistributions
+          id
+        }
       }
     }
   }
@@ -93,13 +139,98 @@ export const indivUserQuery = gql`
         agentCreator {
           address
         }
+        createdAt
+        expiresAt
+        id
+        threadID
+        tokenId
         agent {
           agentID
           assistantId
           id
-          metadataCID
           unlockSubAddress
+          isOpenForContributions
+          agentCategory
+          rewardCategory {
+            sourceName
+            rewardDistributions
+            id
+          }
+          keyPrice
+          basisPoint
         }
+      }
+    }
+  }
+`;
+
+export const indivRoundQuery = gql`
+  query ($id: String) {
+    round(id: $id) {
+      id
+      blockTimestamp
+      transactionHash
+      rewardMechanism {
+        id
+        sourceName
+        rewardDistributions
+      }
+      topkAgents {
+        agentID
+        assistantId
+        agentCategory
+      }
+      topkUsers {
+        address
+        id
+      }
+    }
+  }
+`;
+
+export const indivSubscriptionQuery = gql`
+  query ($id: String) {
+    subscriptionEntity(id: $id) {
+      createdAt
+      expiresAt
+      id
+      threadID
+      tokenId
+      agent {
+        agentID
+        assistantId
+        id
+      }
+      agentCreator {
+        address
+        id
+      }
+      buyer {
+        address
+        id
+      }
+    }
+  }
+`;
+
+export const allRoundsQuery = gql`
+  query ($first: Int) {
+    round(first: $first) {
+      blockTimestamp
+      id
+      transactionHash
+      topkUsers {
+        address
+        id
+      }
+      rewardMechanism {
+        sourceName
+        id
+      }
+      topkAgents {
+        agentID
+        assistantId
+        agentCategory
       }
     }
   }

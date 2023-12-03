@@ -1,8 +1,11 @@
 import {
   allAgentsQuery,
   allCreatorsQuery,
+  allRoundsQuery,
   indivAgentQuery,
   indivCreatorQuery,
+  indivRoundQuery,
+  indivSubscriptionQuery,
   indivUserQuery,
 } from "@/constants/graphQuery";
 import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
@@ -96,6 +99,60 @@ export const getUser = async (id: string) => {
       query: indivUserQuery,
       variables: {
         id: id,
+      },
+    })
+    .then((res) => {
+      console.log(res.data);
+      return res.data;
+    })
+    .catch((err) => {
+      console.error(err);
+      return err;
+    });
+};
+
+export const getRound = async (id: string) => {
+  return await client
+    .query({
+      query: indivRoundQuery,
+      variables: {
+        id: id,
+      },
+    })
+    .then((res) => {
+      console.log(res.data);
+      return res.data;
+    })
+    .catch((err) => {
+      console.error(err);
+      return err;
+    });
+};
+
+export const getSubscription = async (id: string) => {
+  return await client
+    .query({
+      query: indivSubscriptionQuery,
+      variables: {
+        id: id,
+      },
+    })
+    .then((res) => {
+      console.log(res.data);
+      return res.data;
+    })
+    .catch((err) => {
+      console.error(err);
+      return err;
+    });
+};
+
+export const getAllRounds = async (roundsToFetch: number) => {
+  return await client
+    .query({
+      query: allRoundsQuery,
+      variables: {
+        first: roundsToFetch,
       },
     })
     .then((res) => {
