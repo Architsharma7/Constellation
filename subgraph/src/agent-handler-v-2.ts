@@ -22,7 +22,7 @@ import {
   Round,
   RewardMechanism,
 } from "../generated/schema";
-import { convertIdtoBytes } from "./helpers";
+import { convertAddresstoBytes, convertIdtoBytes } from "./helpers";
 
 export function handleRoundRewardsDistributed(
   event: RoundRewardsDistributedEvent
@@ -38,7 +38,7 @@ export function handleRoundRewardsDistributed(
   // we get agent Id in num form , we have to convert them to Bytes form for the Id
   entity.topkAgents = convertIdtoBytes(event.params.topkAgents);
   // directly can point to user or creator , as the user have same Ids
-  entity.topkUsers = event.params.topkUsers;
+  entity.topkUsers = convertAddresstoBytes(event.params.topkUsers);
 
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;

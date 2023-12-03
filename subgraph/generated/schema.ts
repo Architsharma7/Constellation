@@ -67,6 +67,15 @@ export class Creator extends Entity {
       return value.toBytesArray();
     }
   }
+
+  get roundsWon(): Array<Bytes> | null {
+    let value = this.get("roundsWon");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytesArray();
+    }
+  }
 }
 
 export class User extends Entity {

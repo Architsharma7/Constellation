@@ -3,8 +3,8 @@ type Creator @entity {
   id: Bytes!
   address: Bytes!
   agentsCreated: [Agent!] @derivedFrom(field: "creator")
+  roundsWon: [Round!] @derivedFrom(field: "topkUsers")
 }
-# roundsWon: [Round!] @derivedFrom(field: "topkUsers")
 # Extra maybe Rounds won , total rev
 
 ## User
@@ -60,7 +60,7 @@ type Round @entity {
   id: Bytes! # requestId
   rewardMechanism: RewardMechanism! # bytes32
   topkAgents: [Agent!]! # uint16[] could be Agent
-  topkUsers: [Bytes!]! # address[] could be Users
+  topkUsers: [Creator!]! # address[] could be Users
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
