@@ -3,7 +3,7 @@ type Creator @entity {
   id: Bytes!
   address: Bytes!
   agentsCreated: [Agent!] @derivedFrom(field: "creator")
-  roundsWon: [Round!] @derivedFrom(field: "topkUsers")
+  roundsWon: [Round!] @derivedFrom(field: "topkCreators")
 }
 # Extra maybe Rounds won , total rev
 
@@ -12,8 +12,8 @@ type User @entity {
   id: Bytes!
   address: Bytes!
   agentsSubscribedTo: [SubscriptionEntity!] @derivedFrom(field: "buyer")
+  roundWon: [Round!] @derivedFrom(field: "topkUsers")
 }
-# roundWon: [Round!] @derivedFrom(field: "topkUsers")
 # Extra maybe Rounds won
 
 ## Agent
@@ -30,10 +30,10 @@ type Agent @entity {
   isOpenForContributions: Boolean! # bool
   isImprovedVersion: Boolean!
   AgentVersions: [Agent!] @derivedFrom(field: "parentAgent")
+  roundWon: [Round!] @derivedFrom(field: "topkAgents") # the issue the link is on the basis of Id
   parentAgent: Agent
   metadataCID: String
 }
-# roundWon: [Round!] @derivedFrom(field: "topkAgents") - the issue the link is on the basis of Id
 # Rounds won
 
 ## Subscription
@@ -60,7 +60,8 @@ type Round @entity {
   id: Bytes! # requestId
   rewardMechanism: RewardMechanism! # bytes32
   topkAgents: [Agent!]! # uint16[] could be Agent
-  topkUsers: [Creator!]! # address[] could be Users
+  topkCreators: [Creator!] # address[]only creators
+  topkUsers: [User!] # only Users
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }

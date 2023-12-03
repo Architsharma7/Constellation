@@ -34,11 +34,15 @@ export function handleRoundRewardsDistributed(
     return;
   }
   entity.rewardMechanism = rewardMechanism.id;
-
-  // we get agent Id in num form , we have to convert them to Bytes form for the Id
-  entity.topkAgents = convertIdtoBytes(event.params.topkAgents);
-  // directly can point to user or creator , as the user have same Ids
-  entity.topkUsers = convertAddresstoBytes(event.params.topkUsers);
+  if (event.params.topkAgents.length > 0) {
+    // we get agent Id in num form , we have to convert them to Bytes form for the Id
+    entity.topkAgents = convertIdtoBytes(event.params.topkAgents);
+    // directly can point to creator  if there are agentIds, as they have same Ids
+    entity.topkCreators = convertAddresstoBytes(event.params.topkUsers);
+  } else {
+    // directly can point to user or creator , as the user have same Ids
+    entity.topkUsers = convertAddresstoBytes(event.params.topkUsers);
+  }
 
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;

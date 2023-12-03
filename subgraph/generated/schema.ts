@@ -134,6 +134,15 @@ export class User extends Entity {
       return value.toBytesArray();
     }
   }
+
+  get roundWon(): Array<Bytes> | null {
+    let value = this.get("roundWon");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytesArray();
+    }
+  }
 }
 
 export class Agent extends Entity {
@@ -303,6 +312,15 @@ export class Agent extends Entity {
 
   get AgentVersions(): Array<Bytes> | null {
     let value = this.get("AgentVersions");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytesArray();
+    }
+  }
+
+  get roundWon(): Array<Bytes> | null {
+    let value = this.get("roundWon");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -621,17 +639,38 @@ export class Round extends Entity {
     this.set("topkAgents", Value.fromBytesArray(value));
   }
 
-  get topkUsers(): Array<Bytes> {
-    let value = this.get("topkUsers");
+  get topkCreators(): Array<Bytes> | null {
+    let value = this.get("topkCreators");
     if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
+      return null;
     } else {
       return value.toBytesArray();
     }
   }
 
-  set topkUsers(value: Array<Bytes>) {
-    this.set("topkUsers", Value.fromBytesArray(value));
+  set topkCreators(value: Array<Bytes> | null) {
+    if (!value) {
+      this.unset("topkCreators");
+    } else {
+      this.set("topkCreators", Value.fromBytesArray(<Array<Bytes>>value));
+    }
+  }
+
+  get topkUsers(): Array<Bytes> | null {
+    let value = this.get("topkUsers");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytesArray();
+    }
+  }
+
+  set topkUsers(value: Array<Bytes> | null) {
+    if (!value) {
+      this.unset("topkUsers");
+    } else {
+      this.set("topkUsers", Value.fromBytesArray(<Array<Bytes>>value));
+    }
   }
 
   get blockTimestamp(): BigInt {
