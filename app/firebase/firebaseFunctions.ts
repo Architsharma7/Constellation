@@ -14,7 +14,7 @@ import {
 import { db } from "./config";
 
 export const createAgent = async (agentId: number) => {
-  const docsRef = doc(db, "AgentTweets", `${agentId}`);
+  const docsRef = doc(db, "Agents", `${agentId}`);
 
   await setDoc(docsRef, {
     avgRating: 0,
@@ -26,7 +26,7 @@ export const createAgent = async (agentId: number) => {
 
 // AgentId is the uint16 id recorded in the contracts
 export const addTweets = async (agentId: number, tweetId: string) => {
-  const docsRef = doc(db, "AgentTweets", `${agentId}`);
+  const docsRef = doc(db, "Agents", `${agentId}`);
 
   await updateDoc(docsRef, {
     tweets: arrayUnion(tweetId),
@@ -37,8 +37,8 @@ export const addTweets = async (agentId: number, tweetId: string) => {
 
 // we can store any other kind of data related to metrices off chain in firebase
 
-export const getTweets = async (agentId: number) => {
-  const docsRef = doc(db, "AgentTweets", `${agentId}`);
+export const getAgent = async (agentId: number) => {
+  const docsRef = doc(db, "Agents", `${agentId}`);
   const docSnap = await getDoc(docsRef);
   const data = docSnap.data();
   return data;
@@ -51,7 +51,7 @@ export const addReview = async (
   newReview: string,
   userName: string
 ) => {
-  const colRef = collection(db, "AgentTweets", `${agentId}`, "Reviews");
+  const colRef = collection(db, "Agents", `${agentId}`, "Reviews");
 
   await addDoc(colRef, {
     rating: newRating,
@@ -63,7 +63,7 @@ export const addReview = async (
   const snapshot = await getAggregateFromServer(colRef, {
     averageRating: average("rating"),
   });
-  const docsRef = doc(db, "AgentTweets", `${agentId}`);
+  const docsRef = doc(db, "Agents", `${agentId}`);
 
   await updateDoc(docsRef, {
     avgRating: snapshot.data().averageRating,
@@ -71,7 +71,7 @@ export const addReview = async (
 };
 
 export const getAvgRating = async (agentId: number): Promise<number | null> => {
-  const colRef = collection(db, "AgentTweets", `${agentId}`, "Reviews");
+  const colRef = collection(db, "Agents", `${agentId}`, "Reviews");
   const snapshot = await getAggregateFromServer(colRef, {
     averageRating: average("rating"),
   });
