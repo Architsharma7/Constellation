@@ -11,6 +11,8 @@ export default async function handler(
 
   try {
     const result = await getThreadMessage(thread);
+    console.log(result);
+
     // we'll have to see if we want to run the Thread and produce the output
     if (result) {
       res.status(200).json(result);

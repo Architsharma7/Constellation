@@ -9,13 +9,15 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export const createAssistant = async (
   assistantName: string,
   assistantDesc: string,
+  assistantInstruc: string,
   tools: any[],
-  fileIds: []
+  fileIds: string[]
 ): Promise<OpenAI.Beta.Assistants.Assistant | undefined> => {
   try {
     const assistant = await openai.beta.assistants.create({
       name: assistantName,
       description: assistantDesc,
+      instructions: assistantInstruc,
       model: "gpt-3.5-turbo-1106",
       tools: tools, // can also pass extra functions
       file_ids: fileIds,
@@ -65,6 +67,7 @@ export const createMessage = async (
   fileIds: any[]
 ): Promise<OpenAI.Beta.Threads.Messages.ThreadMessage | undefined> => {
   try {
+    openai.beta.chat.completions;
     const threadMessages = await openai.beta.threads.messages.create(
       thread.id, // thread_id
       { role: "user", content: messageContent, file_ids: fileIds }
@@ -85,6 +88,28 @@ export const runThread = async (
     const run = await openai.beta.threads.runs.create(thread.id, {
       assistant_id: assistant.id,
       instructions: instructions,
+    });
+    return run;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const createAndRunThread = async (
+  messageContent: string,
+  assistant: OpenAI.Beta.Assistants.Assistant,
+  instructions: string,
+  fileIds: any[]
+): Promise<OpenAI.Beta.Threads.Runs.Run | undefined> => {
+  try {
+    const run = await openai.beta.threads.createAndRun({
+      assistant_id: assistant.id,
+      instructions: instructions,
+      thread: {
+        messages: [
+          { role: "user", content: messageContent, file_ids: fileIds },
+        ],
+      },
     });
     return run;
   } catch (error) {

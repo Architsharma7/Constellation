@@ -21,34 +21,152 @@ import { IoIosSend } from "react-icons/io";
 import { FaTwitter } from "react-icons/fa6";
 import { MdOutlineAttachFile } from "react-icons/md";
 import { IoIosMail } from "react-icons/io";
+import { createAgent } from "@/firebase/firebaseFunctions";
 
 const Create = () => {
-  const assistantID = "asst_5Kb4YaFhdPOouQgxMvoffDM5";
-  const threadID = "thread_EIjcK12Z2KESi8YkYtMMNmQQ";
+  const assistID = "asst_5Kb4YaFhdPOouQgxMvoffDM5";
+  const threadId = "thread_EIjcK12Z2KESi8YkYtMMNmQQ";
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
   const [inputPrompt, setInputPrompt] = useState<string>();
+  const [assistantID, setAssistantID] = useState<string>();
   const [agentDetails, setAgentDetails] = useState<{
     agentName: string;
     agentDesc: string;
+    agentInstruc: string;
     agentPrice: string;
     agentBP: string;
+    agentCategory: string;
     agentImage: string | undefined;
   }>({
     agentName: "",
     agentDesc: "",
     agentPrice: "",
+    agentInstruc: "",
     agentBP: "",
+    agentCategory: "",
     agentImage: undefined,
   });
+
+  const [threadID, setThreadID] = useState<string>();
+  const [openToContribution, setOpenToContribution] = useState<boolean>(false);
+  const [tweet, setTweet] = useState<boolean>(false);
+  const [mail, setMail] = useState<boolean>(false);
+  const [file, setFile] = useState("");
+  const [codeInterpreter, setCodeInterpreter] = useState<boolean>(false);
+  const [fileInterpreter, setFileInterpreter] = useState<boolean>(false);
+  const [imageGeneration, setImageGeneration] = useState<boolean>(false);
+
+  const hiddenFileInput = useRef(null);
+  const handleClick = () => {
+    hiddenFileInput?.current?.click();
+  };
+  const handleChange = (event: any) => {
+    const fileUploaded = event.target.files[0];
+    console.log(fileUploaded);
+    setFile(fileUploaded);
+  };
+
+  const getTools = (): any[] => {
+    let tools: any[] = [];
+
+    if (codeInterpreter) {
+      tools.push({
+        type: "code_interpreter",
+      });
+    }
+
+    if (fileInterpreter) {
+      tools.push({
+        type: "retrieval",
+      });
+    }
+
+    if (tweet) {
+      tools.push({
+        type: "function",
+        function: {
+          name: "tweet_ads",
+          description:
+            "Create a twitter ads post from the user's account for the inputs provided",
+          parameters: {
+            type: "object",
+            properties: {
+              tweetText: {
+                type: "string",
+                description: "The text for the tweet (the twitter post)",
+              },
+              imageLink: {
+                type: "string",
+                description: "Link of the image created by DALL - e",
+              },
+            },
+            required: ["tweetText"],
+          },
+        },
+      });
+    }
+
+    if (mail) {
+      tools.push({
+        type: "function",
+        function: {
+          name: "create_mail",
+          description: "Prompt users  to send an email with the generated",
+          parameters: {
+            type: "object",
+            properties: {
+              emailContent: {
+                type: "string",
+                description: "Content of the Email",
+              },
+              emailSubject: {
+                type: "string",
+                description: "Subject for the Email",
+              },
+            },
+            required: ["emailContent"],
+          },
+        },
+      });
+    }
+
+    if (imageGeneration) {
+      tools.push({
+        type: "function",
+        function: {
+          name: "generate_image",
+          description:
+            "To generate Image using a prompt with the help of Dall-E and return an DALL-e response",
+          parameters: {
+            type: "object",
+            properties: {
+              imagePrompt: {
+                type: "string",
+                description: "prompt for Image creation via Dall-e ",
+              },
+            },
+            required: ["imagePrompt"],
+          },
+        },
+      });
+    }
+
+    return tools;
+  };
 
   const createAssistant = () => {
     try {
       console.log("creating Assistant... Calling OpenAI");
-      if (!agentDetails) {
+      if (
+        agentDetails.agentInstruc == "" &&
+        agentDetails.agentDesc == "" &&
+        agentDetails.agentName == ""
+      ) {
         console.log("Agent Details missing");
         return;
       }
+      const tools = getTools();
       fetch("/api/openai/createAssistants", {
         method: "POST",
         headers: {
@@ -57,11 +175,48 @@ const Create = () => {
         body: JSON.stringify({
           assistantName: agentDetails.agentName,
           assistantDesc: agentDetails.agentDesc,
-          tools: [
-            {
-              type: "code_interpreter",
-            },
-          ],
+          tools: tools,
+          fileIds: [],
+        }),
+      })
+        .then(async (res) => {
+          console.log(res);
+          const data = await res.json();
+          console.log(data);
+          setAssistantID(data?.id);
+
+          // peform the tx
+
+          // createAgent()
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const createAndRunThread = async () => {
+    try {
+      console.log("Creating & running thread... Calling OpenAI");
+      if (!assistantID) {
+        console.log("Agent Details missing");
+        return;
+      }
+      if (!inputPrompt) {
+        console.log("Input prompt missing");
+        return;
+      }
+      await fetch("/api/openai/createAndRunThread", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messageContent: inputPrompt,
+          assistantId: assistantID,
+          instructions: "",
           fileIds: [],
         }),
       })
@@ -78,18 +233,72 @@ const Create = () => {
     }
   };
 
-  const createThread = () => {
+  const createThread = async (): Promise<void | { id: string } | undefined> => {
     try {
       console.log("creating thread... Calling OpenAI");
       if (!assistantID) {
         console.log("Agent Details missing");
         return;
       }
-      fetch("/api/openai/createThreads", {
+      const data = await fetch("/api/openai/createThreads", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+      })
+        .then(async (res) => {
+          console.log(res);
+          const data = await res.json();
+          console.log(data);
+          return {
+            id: data?.id,
+          };
+          setThreadID(data?.id);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const sendMessage = async () => {
+    try {
+      console.log("Sending msg... Calling OpenAI");
+      if (!assistantID) {
+        console.log("Agent Details missing");
+        return;
+      }
+      if (!inputPrompt) {
+        console.log("Input prompt missing");
+        return;
+      }
+      let _threadID;
+      if (!threadID) {
+        console.log("Thread id missing...");
+        const data = await createThread();
+        if (data) {
+          _threadID = data?.id;
+        } else {
+          console.log("Issue in creating thread...");
+          return;
+        }
+      } else {
+        _threadID = threadID;
+      }
+
+      fetch("/api/openai/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          threadID: _threadID,
+          messageContent: inputPrompt,
+          fileIds: [],
+        }),
       })
         .then(async (res) => {
           console.log(res);
@@ -103,23 +312,42 @@ const Create = () => {
       console.log(error);
     }
   };
-  const [agentOpenFor, setAgentOpenFor] = useState<boolean>(false);
-  const [tweet, setTweet] = useState<boolean>(false);
-  const [mail, setMail] = useState<boolean>(false);
-  const [agentInstructions, setAgentInstructions] = useState<string>();
-  const [file, setFile] = useState("");
-  const [codeInterpreter, setCodeInterpreter] = useState<boolean>(false);
-  const [fileInterpreter, setFileInterpreter] = useState<boolean>(false);
-  const [imageGeneration, setImageGeneration] = useState<boolean>(false);
 
-  const hiddenFileInput = useRef(null);
-  const handleClick = () => {
-    hiddenFileInput?.current?.click();
-  };
-  const handleChange = (event: any) => {
-    const fileUploaded = event.target.files[0];
-    console.log(fileUploaded);
-    setFile(fileUploaded);
+  const runThread = async () => {
+    try {
+      console.log("running thread... Calling OpenAI");
+      if (!assistantID) {
+        console.log("Agent Details missing");
+        return;
+      }
+
+      if (!threadID) {
+        console.log("thread Details missing");
+        return;
+      }
+
+      await fetch("/api/openai/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          threadId: threadID,
+          assistantId: assistantID,
+          instructions: "",
+        }),
+      })
+        .then(async (res) => {
+          console.log(res);
+          const data = await res.json();
+          console.log(data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -135,7 +363,12 @@ const Create = () => {
           >
             Configure
           </Button>
-          <Button onClick={() => createAssistant()} className="mx-3 border border-b-4 border-black">Save</Button>
+          <Button
+            onClick={() => createAssistant()}
+            className="mx-3 border border-b-4 border-black"
+          >
+            Create
+          </Button>
         </div>
       </div>
       <hr className="h-0.5 bg-black" />
@@ -190,8 +423,13 @@ const Create = () => {
               <textarea
                 placeholder="You are a helpful assistant"
                 className="px-5 py-2 rounded-xl mt-2 w-full font-semibold h-32 border border-black"
-                onChange={(e) => setAgentInstructions(e.target.value)}
-                value={agentInstructions}
+                onChange={(e) =>
+                  setAgentDetails({
+                    ...agentDetails,
+                    agentInstruc: e.target.value,
+                  })
+                }
+                value={agentDetails.agentInstruc}
               ></textarea>
             </div>
             <div className="mt-5">
@@ -219,7 +457,7 @@ const Create = () => {
               />
             </div>
             <div className="mt-4 mb-3 w-full flex justify-between">
-              <p className="font-semibold text-md">File Interpreter</p>
+              <p className="font-semibold text-md">File Retrieval</p>
               <Switch
                 onChange={() => setFileInterpreter(!fileInterpreter)}
                 size="lg"
@@ -247,7 +485,12 @@ const Create = () => {
               </p>
             </div>
             <div>
-              <button className="px-6 py-1.5 bg-blue-100 rounded-lg font-semibold mx-3">
+              <button
+                onClick={() => {
+                  runThread();
+                }}
+                className="px-6 py-1.5 bg-blue-100 rounded-lg font-semibold mx-3"
+              >
                 Run
               </button>
               <button className="px-6 py-1.5 bg-green-100 rounded-lg font-semibold mx-3">
@@ -264,7 +507,7 @@ const Create = () => {
               variant="soft-rounded"
             >
               <TabList>
-                <Tab textColor="black">Thread</Tab>
+                <Tab textColor="black">Train</Tab>
                 <Tab textColor="black">Review</Tab>
               </TabList>
               <TabPanels>
@@ -290,9 +533,6 @@ const Create = () => {
                             bgColor="white"
                             borderColor="white"
                             height="inherit"
-                            onClick={() => {
-                              createThread();
-                            }}
                           >
                             <>
                               <MdOutlineAttachFile
@@ -331,14 +571,20 @@ const Create = () => {
                             bgColor="white"
                             type="text"
                             className="font-semibold"
-                            placeholder="enter prompt for training agent ..."
+                            placeholder="enter prompt to interact with the agent ..."
+                            onChange={(e) => setInputPrompt(e.target.value)}
                           ></Input>
                           <InputRightAddon
                             bgColor="white"
                             borderColor="white"
                             height="inherit"
                           >
-                            <IoIosSend className="text-xl cursor-pointer"></IoIosSend>
+                            <IoIosSend
+                              onClick={() => {
+                                createAndRunThread();
+                              }}
+                              className="text-xl cursor-pointer"
+                            ></IoIosSend>
                           </InputRightAddon>
                         </InputGroup>
                       </div>
@@ -385,11 +631,13 @@ const Create = () => {
                 ></input>
               </div>
               <div className="mt-6">
-                <p className="text-xl text-black font-semibold">Basis point</p>
+                <p className="text-xl text-black font-semibold">
+                  Basis point ( BP )
+                </p>
                 <input
                   type="number"
                   className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
-                  placeholder="in ethers"
+                  placeholder="in range of 100-10000"
                   onChange={(e) =>
                     setAgentDetails({
                       ...agentDetails,
@@ -404,12 +652,18 @@ const Create = () => {
                 <input
                   type="number"
                   className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
-                  placeholder=""
+                  placeholder="like coding , fitness"
+                  onChange={(e) =>
+                    setAgentDetails({
+                      ...agentDetails,
+                      agentCategory: e.target.value,
+                    })
+                  }
                 ></input>
               </div>
               <div className="mt-6">
                 <p className="text-xl text-black font-semibold">
-                  Allow to Update
+                  Open to Contributions ( training )
                 </p>
                 <div className="mt-2">
                   <Badge colorScheme="red" className="mx-3">
@@ -417,7 +671,7 @@ const Create = () => {
                   </Badge>
                   <Switch
                     size="lg"
-                    onChange={() => setAgentOpenFor(!agentOpenFor)}
+                    onChange={() => setOpenToContribution(!openToContribution)}
                     colorScheme="orange"
                   />
                   <Badge colorScheme="green" className="mx-3">

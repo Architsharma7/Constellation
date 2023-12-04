@@ -11,6 +11,7 @@ export default async function handler(
 
   try {
     const result = await checkRun(thread, runObj);
+    console.log(result);
 
     // after checking , we'll might have to run the function , and submit the Output here or directly in the
     if (result) {
