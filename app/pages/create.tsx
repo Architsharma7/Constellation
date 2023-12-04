@@ -24,8 +24,8 @@ import { IoIosMail } from "react-icons/io";
 import { createAgent } from "@/firebase/firebaseFunctions";
 
 const Create = () => {
-  const assistID = "asst_5Kb4YaFhdPOouQgxMvoffDM5";
-  const threadId = "thread_EIjcK12Z2KESi8YkYtMMNmQQ";
+  const assistID = "asst_4YruN6LyHritMXIFQX0NGmht";
+  const threadId = "thread_0xBV2sYKFkHvwbD6IQefwc9B";
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
   const [inputPrompt, setInputPrompt] = useState<string>();
@@ -175,6 +175,7 @@ const Create = () => {
         body: JSON.stringify({
           assistantName: agentDetails.agentName,
           assistantDesc: agentDetails.agentDesc,
+          assistantInstruc: agentDetails.agentInstruc,
           tools: tools,
           fileIds: [],
         }),
@@ -187,7 +188,7 @@ const Create = () => {
 
           // peform the tx
 
-          // createAgent()
+          // createAgent(agentId)
         })
         .catch((err) => {
           console.log(err);
@@ -224,6 +225,7 @@ const Create = () => {
           console.log(res);
           const data = await res.json();
           console.log(data);
+          setThreadID(data?.id);
         })
         .catch((err) => {
           console.log(err);
@@ -231,6 +233,39 @@ const Create = () => {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const getThread = async () => {
+    console.log("Fetching thread... Calling OpenAI");
+    if (!assistantID) {
+      console.log("Agent Details missing");
+      return;
+    }
+
+    if (!threadID) {
+      console.log("thread Details missing");
+      return;
+    }
+    // body: JSON.stringify({
+    //   threadId: threadID,
+    // }),
+    const data = await fetch(`/api/openai/getChat?threadId=${threadID}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(async (res) => {
+        console.log(res);
+        const data = await res.json();
+        console.log(data);
+        const messages = data.data;
+        console.log(messages);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return data;
   };
 
   const createThread = async (): Promise<void | { id: string } | undefined> => {
@@ -493,7 +528,12 @@ const Create = () => {
               >
                 Run
               </button>
-              <button className="px-6 py-1.5 bg-green-100 rounded-lg font-semibold mx-3">
+              <button
+                onClick={() => {
+                  getThread();
+                }}
+                className="px-6 py-1.5 bg-green-100 rounded-lg font-semibold mx-3"
+              >
                 Clear
               </button>
             </div>
@@ -581,7 +621,11 @@ const Create = () => {
                           >
                             <IoIosSend
                               onClick={() => {
-                                createAndRunThread();
+                                if (!threadID) {
+                                  createAndRunThread();
+                                } else {
+                                  sendMessage();
+                                }
                               }}
                               className="text-xl cursor-pointer"
                             ></IoIosSend>
