@@ -127,7 +127,7 @@ const AgentId = () => {
       agentDesciption: assitantData?.description,
       agentInstructions: assitantData?.instructions,
       agentRating: firebaseData?.avgRating,
-      agentCategory: agentGraphData?.agentCategory,
+      agentCategory: agentGraphData?.agentGraphData,
       agentPrice: agentGraphData?.keyPrice, // convert to Ethers
       agentBP: agentGraphData?.basisPoint, // convert into %
       agentCreator: agentGraphData?.creator?.address,
