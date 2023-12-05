@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -12,21 +12,131 @@ import {
   Select,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { useRouter } from "next/router";
+import { getAgentFirebase, getReviews } from "@/firebase/firebaseFunctions";
+import { getAgent } from "@/utils/graphFunctions";
+
+import { formatEther } from "viem";
+// import { Bytes } from "firebase/firestore";
+// import { Bytes } from "@graphprotocol/graph-ts";
+interface agentReviewType {}
+
+interface agentDataType {
+  agentId: number;
+  assistantId: number;
+  agentName: string;
+  agentDesciption: string;
+  agentInstructions: string;
+  agentRating: string;
+  agentCategory: string;
+  agentCreator: string;
+  agentVersions: any[];
+  agentPrice: bigint;
+  agentBP: string;
+  openForContribution: boolean;
+}
 
 const AgentId = () => {
+  const router = useRouter();
+  const _agentId = router.query.agentId;
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [agentData, setAgentData] = useState<agentDataType>();
   const [rating, setRating] = useState<number>(0);
   const [feedback, setFeedBack] = useState<string>("");
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);
   };
 
-  // get Assistant Data
-  const getAgentData = () => {
-    // graph QL
-    // firebase
-    // openAI
+  useEffect(() => {
+    console.log(_agentId, typeof _agentId);
+    if (_agentId && !agentData) {
+      if (typeof _agentId == "string") {
+        getAgentData(_agentId);
+      }
+    }
+  }, [_agentId]);
+
+  const getAssistant = async (assistantID: string) => {
+    console.log("Fetching thread... Calling OpenAI");
+    if (!assistantID) {
+      console.log("Agent Details missing");
+      return;
+    }
+
+    const data = await fetch(
+      `/api/openai/getAssistant?assistantId=${assistantID}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then(async (res) => {
+        // console.log(res);
+        const data = await res.json();
+        console.log(data);
+        return data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return data;
   };
+
+  // get Assistant Data
+  const getAgentData = async (
+    agentId: string
+  ): Promise<agentDataType | undefined> => {
+    if (!agentId) {
+      console.log("No agent Id found");
+      return;
+    }
+
+    // TODO Convert AgentID to Bytes form
+    const agentIdBytes = agentId;
+    console.log(agentIdBytes);
+    const agentGraphData = (await getAgent(agentIdBytes)).agent;
+    console.log(agentGraphData);
+
+    // TODO , Convert the agent ID to the one given in params
+    // get partial data from firebase
+    const firebaseData = await getAgentFirebase(agentGraphData?.agentID);
+    console.log(firebaseData);
+
+    // get Reviews
+    const firebaseReviews = await getReviews(agentGraphData?.agentID);
+
+    // other partial from openAI
+    // TODO : update the assistantID we get from graphQl
+    // const assitantData = await getAssistant(agentGraphData?.assistantId);
+    const assitantData: any = await getAssistant(
+      "asst_4YruN6LyHritMXIFQX0NGmht"
+    );
+    console.log(assitantData);
+    const agentData: agentDataType = {
+      agentId: agentGraphData?.agentID,
+      assistantId: agentGraphData?.assistantId,
+      agentName: assitantData?.name,
+      agentDesciption: assitantData?.description,
+      agentInstructions: assitantData?.instructions,
+      agentRating: firebaseData?.avgRating,
+      agentCategory: agentGraphData?.agentCategory,
+      agentPrice: agentGraphData?.keyPrice, // convert to Ethers
+      agentBP: agentGraphData?.basisPoint, // convert into %
+      agentCreator: agentGraphData?.creator?.address,
+      agentVersions: agentGraphData?.AgentVersions,
+      openForContribution: agentGraphData?.isOpenForContributions,
+    };
+    console.log(agentData);
+    setAgentData(agentData);
+  };
+
+  const formatBP = (basisPoint: number): number => {
+    const bpPercent = 10000 / basisPoint;
+    return bpPercent;
+  };
+
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
       <div className="flex flex-col">
@@ -36,19 +146,26 @@ const AgentId = () => {
               <p className="text-sm font-mono font-thin text-gray-500">
                 Agent Name
               </p>
-              <p className="text-xl text-black font-semibold mt-2">ElonAgent</p>
+              <p className="text-xl text-black font-semibold mt-2">
+                {agentData && agentData.agentName}
+              </p>
             </div>
             <div className="border-2 bg-white border-b-8 flex flex-col px-14 py-3 border-black shadow-2xl">
               <p className="text-sm font-mono font-thin text-gray-500">
                 Agent Category
               </p>
-              <p className="text-xl text-black font-semibold mt-2">Chatbot</p>
+              <p className="text-xl text-black font-semibold mt-2">
+                {agentData && agentData.agentCategory}
+              </p>
             </div>
             <div className="border-2 bg-blue-100 border-b-8 flex flex-col px-14 py-3 border-black shadow-2xl">
               <p className="text-sm font-mono font-thin text-gray-500">
                 Agent Creator
               </p>
-              <p className="text-xl text-black font-semibold mt-2">Archit</p>
+              <p className="text-xl text-black font-semibold mt-2">
+                {agentData && agentData.agentCreator.slice(0, 4)}...{" "}
+                {agentData && agentData.agentCreator.slice(-4)}
+              </p>
             </div>
             <div className="border-2 bg-violet-100 border-b-8 flex flex-col px-14 py-3 border-black shadow-2xl">
               <p className="text-sm font-mono font-thin text-gray-500">
@@ -57,8 +174,16 @@ const AgentId = () => {
               {/* <p className="text-xl text-black font-semibold mt-2">1.1.0</p> */}
               <select className="mt-2 px-2 py-1 rounded-lg bg-violet-100">
                 <option className="text-xl text-black font-semibold">
-                  1.1.0
+                  1.0.0
                 </option>
+                {agentData &&
+                  agentData.agentVersions.map((agentV) => {
+                    return (
+                      <option className="text-xl text-black font-semibold">
+                        {agentV?.agentID}
+                      </option>
+                    );
+                  })}
               </select>
             </div>
           </div>
@@ -69,21 +194,17 @@ const AgentId = () => {
               Description
             </p>
             <p className="text-lg font-semibold text-black mt-4">
-              ElonAgent is an innovative AI companion designed to enhance
-              productivity and streamline decision-making. Embodying the
-              visionary spirit of Elon Musk, this intelligent virtual assistant
-              integrates cutting-edge natural language processing and machine
-              learning algorithms to provide personalized assistance. From
-              automating tasks and answering queries to offering insightful
-              recommendations, ElonAgent adapts to user preferences, fostering
-              efficiency in both personal and professional spheres. With a
-              user-friendly interface and continuous learning capabilities,
-              ElonAgent mirrors the forward-thinking approach of its namesake,
-              empowering users to navigate complexities effortlessly. Elevate
-              your digital experience with ElonAgent, a smart and intuitive AI
-              partner for the modern era.
+              {agentData && agentData.agentDesciption}
             </p>
           </div>
+          {/* <div className="w-2/3 border bg-orange-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
+            <p className="text-xl font-mono font-thin text-gray-600">
+              Instructions (Prompt)
+            </p>
+            <p className="text-lg font-semibold text-black mt-4">
+              {agentData && agentData.agentInstructions}
+            </p>
+          </div> */}
           <div className="w-1/3 border flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
             <p className="text-xl font-mono font-thin text-gray-600">
               Agent Details
@@ -91,7 +212,9 @@ const AgentId = () => {
             <div className="mt-4 flex justify-between">
               <div>
                 <p className="text-sm">Agent Price</p>
-                <p className="mt-1 font-semibold text-lg">0.01 Ethers</p>
+                <p className="mt-1 font-semibold text-lg">
+                  {agentData && formatEther(agentData.agentPrice)} Ethers
+                </p>
               </div>
               <div>
                 <p className="text-sm">Duration</p>
@@ -100,11 +223,15 @@ const AgentId = () => {
             </div>
             <div className="mt-4">
               <p className="text-sm">Agent Basis Point</p>
-              <p className="mt-1 font-semibold text-lg">30%</p>
+              <p className="mt-1 font-semibold text-lg">
+                {agentData && formatBP(Number(agentData.agentBP))}{" "}
+              </p>
             </div>
             <div className="mt-4">
               <p className="text-sm">Agent Open for Contribution</p>
-              <p className="mt-1 font-semibold text-lg">True</p>
+              <p className="mt-1 font-semibold text-lg">
+                {agentData && agentData.openForContribution}{" "}
+              </p>
             </div>
             <div className="mt-4 flex flex-col">
               <button

@@ -8,6 +8,7 @@ import {
   doc,
   getAggregateFromServer,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
 } from "firebase/firestore";
@@ -37,7 +38,7 @@ export const addTweets = async (agentId: number, tweetId: string) => {
 
 // we can store any other kind of data related to metrices off chain in firebase
 
-export const getAgent = async (agentId: number) => {
+export const getAgentFirebase = async (agentId: number) => {
   const docsRef = doc(db, "Agents", `${agentId}`);
   const docSnap = await getDoc(docsRef);
   const data = docSnap.data();
@@ -68,6 +69,17 @@ export const addReview = async (
   await updateDoc(docsRef, {
     avgRating: snapshot.data().averageRating,
   });
+};
+
+export const getReviews = async (agentId: number) => {
+  const colRef = collection(db, "Agents", `${agentId}`, "Reviews");
+
+  const querySnapshot = await getDocs(colRef);
+  console.log(querySnapshot);
+  // querySnapshot.forEach((doc) => {
+  //   // doc.data() is never undefined for query doc snapshots
+  //   console.log(doc.id, " => ", doc.data());
+  // });
 };
 
 export const getAvgRating = async (agentId: number): Promise<number | null> => {

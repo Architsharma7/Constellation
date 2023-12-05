@@ -9,7 +9,7 @@ import {
   TagCloseButton,
 } from "@chakra-ui/react";
 import { getAllAgents } from "@/utils/graphFunctions";
-import { getAgent } from "@/firebase/firebaseFunctions";
+import { getAgentFirebase } from "@/firebase/firebaseFunctions";
 
 interface agentDataType {
   agentId: number;
@@ -61,7 +61,7 @@ const Index = () => {
       return;
     }
     // get partial data from firebase
-    const firebaseData = await getAgent(agentGraphData?.agentID);
+    const firebaseData = await getAgentFirebase(agentGraphData?.agentID);
     console.log(firebaseData);
     // other partial from openAI
     // TODO : update the assistantID we get from graphQl
