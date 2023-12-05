@@ -1,7 +1,107 @@
-import React from "react";
-import { Avatar, Wrap, WrapItem } from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
+import { Avatar, Wrap, WrapItem, calc } from "@chakra-ui/react";
+import {
+  getAllAgents,
+  getAllRounds,
+  getLockData,
+} from "@/utils/graphFunctions";
+import { getRatingsRank } from "@/firebase/firebaseFunctions";
 
 const Leaderboard = () => {
+  const [roundData, setRoundData] = useState<any[]>();
+  const [agentsData, setAgentsData] = useState<any[]>();
+  // fetch the data
+  // 1. Overall filter based on different filters , Ratings , Revenue ,  no of Rounds Won
+  // 2. Round based
+
+  useEffect(() => {
+    if (!roundData) {
+      // getRounds();
+    }
+  }, []);
+
+  const getLeaderboardRatings = async () => {
+    try {
+      const data = await getRatingsRank();
+      console.log(data);
+      // we'll get the orderedData , just display it when user's select on the basis of Ratings
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getLeadeboardData = async () => {
+    try {
+      // get EachAgent's record
+      const data = await getAllAgents(25);
+      console.log(data);
+      console.log(data.agents);
+
+      getLeaderboardRevenue(data.agents);
+      getLeaderboardTotalRounds(data.agents);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getLeaderboardRevenue = async (agents: any[]) => {
+    try {
+      let promises: any[] = [];
+      for (let i = 0; i < agents.length; i++) {
+        const totalRevenue = calculateRevenue(agents[i].unlockSubAddress);
+        const newAgent = {
+          ...agents[i],
+          totalRevenue: totalRevenue,
+        };
+        promises.push(newAgent);
+      }
+      const agentsData = await Promise.all(promises);
+      setAgentsData(agentsData);
+      return agentsData;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const calculateRevenue = async (
+    lockAddress: string
+  ): Promise<number | undefined> => {
+    try {
+      const data = await getLockData(lockAddress);
+      const totalRevenue =
+        Number(data?.lock.price) * Number(data?.lock.totalKeys);
+      console.log(totalRevenue);
+      return totalRevenue;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getLeaderboardTotalRounds = (agents: any[]): any[] | undefined => {
+    try {
+      let agentsData: any[] = [];
+      for (let i = 0; i < agents.length; i++) {
+        const newAgent = {
+          ...agents[i],
+          totalRoundsWon: agents[i].roundsWon.length,
+        };
+        agentsData.push(newAgent);
+      }
+      setAgentsData(agentsData);
+      return agentsData;
+      // calculate the totalRounds they have won
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getRounds = async () => {
+    const data = await getAllRounds(5);
+    console.log(data);
+    setRoundData(data.rounds);
+    // an array of Round data is returend here
+  };
+
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
       <div className="w-5/6 flex flex-col justify-center mx-auto mb-2">

@@ -152,6 +152,7 @@ const AgentId = () => {
         return;
       }
 
+      // TODO : Check the subID again after the new graph V
       const subId = userAccount.concat(agentId?.slice(2));
       // console.log(subId);
       const subscriptionData = await getSubscription(subId);
