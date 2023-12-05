@@ -15,7 +15,8 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { getAgentFirebase, getReviews } from "@/firebase/firebaseFunctions";
 import { getAgent, getSubscription } from "@/utils/graphFunctions";
-
+import { useContractWrite, useChainId } from "wagmi";
+import { CONTRACTS } from "@/constants/contracts";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
 // import { Bytes } from "firebase/firestore";
@@ -38,6 +39,8 @@ interface agentDataType {
 }
 
 const AgentId = () => {
+  const chainID = useChainId();
+
   const router = useRouter();
   const { address: userAccount } = useAccount();
   const _agentId = router.query.agentId;
@@ -49,6 +52,14 @@ const AgentId = () => {
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);
   };
+
+  const { write, data, isLoading, isSuccess, isError } = useContractWrite({
+    // @ts-ignore
+    address: CONTRACTS.AIMarket[chainID].contract,
+    // @ts-ignore
+    abi: CONTRACTS.AIMarket[chainID].abi,
+    functionName: "purchaseSubscription",
+  });
 
   useEffect(() => {
     // console.log(_agentId, typeof _agentId);
@@ -172,6 +183,14 @@ const AgentId = () => {
       console.log(threadId?.id);
 
       // TODO: call contract to complete the contract flow
+      // @ts-ignore
+      write({
+        args: [
+          agentData?.agentId,
+          agentData?.agentPrice,
+          threadId?.id,
+        ]
+      })
     } catch (error) {
       console.log(error);
     }

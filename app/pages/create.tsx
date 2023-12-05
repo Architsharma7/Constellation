@@ -21,9 +21,12 @@ import { IoIosSend } from "react-icons/io";
 import { FaTwitter } from "react-icons/fa6";
 import { MdOutlineAttachFile } from "react-icons/md";
 import { IoIosMail } from "react-icons/io";
+import { useContractWrite, usePrepareContractWrite, useChainId } from "wagmi";
+import { CONTRACTS } from "@/constants/contracts";
+import { getAgentID, getSourceID,getRewardCategory } from "@/utils/chainlinkFunctions";
 import { createAgent } from "@/firebase/firebaseFunctions";
-
 const Create = () => {
+  const chainID = useChainId();
   const assistID = "asst_4YruN6LyHritMXIFQX0NGmht";
   const threadId = "thread_0xBV2sYKFkHvwbD6IQefwc9B";
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -47,6 +50,30 @@ const Create = () => {
     agentCategory: "",
     agentImage: undefined,
   });
+  const { config, error } = usePrepareContractWrite({
+    // @ts-ignore
+    address: CONTRACTS.AIMarket[chainID].contract,
+    // @ts-ignore
+    abi: CONTRACTS.AIMarket[chainID].abi,
+    functionName: "registerAgent",
+    args: [[
+      assistantID,
+      getAgentID(assistantID as string),
+      0,
+      "0x0000000000000000000000000000000000000000",
+      agentDetails.agentPrice,
+      agentDetails.agentBP,
+      agentDetails.agentName,
+      agentDetails.agentName,
+      "tokenURL",
+      // Reward Category 0 rating based - 1 tweetAds based - 2 email based
+      getSourceID(getRewardCategory(agentDetails.agentCategory)),
+      getRewardCategory(agentDetails.agentCategory),
+      isOpen,
+    ]],
+  });
+  const { write, data, isLoading, isSuccess, isError } =
+    useContractWrite(config);
 
   const [threadID, setThreadID] = useState<string>();
   const [openToContribution, setOpenToContribution] = useState<boolean>(false);
@@ -185,10 +212,13 @@ const Create = () => {
           const data = await res.json();
           console.log(data);
           setAssistantID(data?.id);
+          let agentId = data?.agentId
 
           // peform the tx
+          // @ts-ignore
+          write();
 
-          // createAgent(agentId)
+          createAgent(getAgentID(agentId))
         })
         .catch((err) => {
           console.log(err);
@@ -399,7 +429,7 @@ const Create = () => {
             Configure
           </Button>
           <Button
-            onClick={() => createAssistantFirebase()}
+            onClick={() => createAssistant()}
             className="mx-3 border border-b-4 border-black"
           >
             Create

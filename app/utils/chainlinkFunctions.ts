@@ -1,7 +1,7 @@
 import { AbiCoder, keccak256 } from "ethers";
 
 export const getAgentID = (agentNameID: string) => {
-  const abi = new AbiCoder;
+  const abi = new AbiCoder();
 
   let agentId_bytes = abi.encode(["string"], [agentNameID]);
 
@@ -12,49 +12,56 @@ export const getAgentID = (agentNameID: string) => {
   // Perform the uint64 conversion
   const uint64Value = uint256Value & BigInt("0xFFFFFFFFFFFFFFFF");
 
-  // Perform the uint16 conversion
-  const uint16Value = Number(uint64Value & BigInt("0xFFFF"));
+  // Perform the uint32 conversion
+  const uint32Value = Number(uint64Value & BigInt("0xFFFFFFFF"));
 
-  return uint16Value;
+  return uint32Value;
 };
 
-export const encodeUint16ArrayRLE = (agentsIDs: any[]) => {
-  // Ensure agentsIDs is an array of uint16 values
-  if (
-    !Array.isArray(agentsIDs) ||
-    agentsIDs.some((id) => typeof id !== "number" || id < 0 || id > 65535)
-  ) {
-    throw new Error("Input must be an array of uint16 values");
+export const encodeUint32ArrayToBytes = (uint32Array: any[]) => {
+  if (!Array.isArray(uint32Array)) {
+    throw new Error("Input must be an array");
   }
 
-  // Initialize the encoded array
-  const encodedArray = [];
+  let bytes = "0x";
+  for (let i = 0; i < uint32Array.length; i++) {
+    bytes += uint32Array[i].toString(16).padStart(8, "0");
+  }
+  return bytes;
+};
 
-  // Initialize variables for the current value and count
-  let currentValue = agentsIDs[0];
-  let count = 1;
+export const concatenateAddresses = (addressArray: any[]) => {
+  if (!Array.isArray(addressArray)) {
+    throw new Error("Input must be an array of addresses");
+  }
 
-  // Start from the second element and perform RLE encoding
-  for (let i = 1; i < agentsIDs.length; i++) {
-    if (agentsIDs[i] === currentValue) {
-      // If the current value is the same as the previous, increase the count
-      count++;
-    } else {
-      // If the current value is different, push the count and value to the encoded array
-      // Ensure both count and currentValue are encoded as uint16
-      encodedArray.push(count & 0xffff, currentValue & 0xffff);
-      currentValue = agentsIDs[i];
-      count = 1;
+  let concatenatedBytes = "0x";
+  for (const address of addressArray) {
+    if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+      throw new Error("Invalid Ethereum address format");
     }
+    concatenatedBytes += address.substring(2);
   }
+  return concatenatedBytes;
+};
 
-  // Push the final count and value, encoded as uint16
-  encodedArray.push(count & 0xffff, currentValue & 0xffff);
+export const getSourceID = (sourceName: string) => {
+  const abi = new AbiCoder();
 
-  // Convert the encoded array to a hexadecimal string
-  const hexString =
-    "0x" +
-    encodedArray.map((item) => item.toString(16).padStart(4, "0")).join("");
+  let sourceNameBytes = abi.encode(["string"], [sourceName || "_"]);
 
-  return hexString;
+  const sourceID = keccak256(sourceNameBytes);
+
+  return sourceID;
+};
+
+export const getRewardCategory = (input: any) => {
+  switch (input) {
+    case "0":
+      return "ratings";
+    case "1":
+      return "tweetAds";
+    default:
+      return "Unknown";
+  }
 };
