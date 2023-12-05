@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { IoIosArrowRoundForward } from "react-icons/io";
 import {
   Tag,
@@ -8,8 +8,111 @@ import {
   TagRightIcon,
   TagCloseButton,
 } from "@chakra-ui/react";
+import { getAllAgents } from "@/utils/graphFunctions";
+import { getAgent } from "@/firebase/firebaseFunctions";
+
+interface agentDataType {
+  agentId: number;
+  assistantId: number;
+  agentName: string;
+  agentDesciption: string;
+  agentRating: string;
+  agentCategory: string;
+}
 
 const Index = () => {
+  const [agentsData, setAgentsData] = useState<agentDataType[] | undefined>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const getAssistant = async (assistantID: string) => {
+    console.log("Fetching thread... Calling OpenAI");
+    if (!assistantID) {
+      console.log("Agent Details missing");
+      return;
+    }
+
+    const data = await fetch(
+      `/api/openai/getAssistant?assistantId=${assistantID}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then(async (res) => {
+        // console.log(res);
+        const data = await res.json();
+        console.log(data);
+        return data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return data;
+  };
+
+  // Explore agent page
+  const getAgentData = async (
+    agentGraphData: any
+  ): Promise<agentDataType | undefined> => {
+    if (!agentGraphData) {
+      console.log("No agent Data found");
+      return;
+    }
+    // get partial data from firebase
+    const firebaseData = await getAgent(agentGraphData?.agentID);
+    console.log(firebaseData);
+    // other partial from openAI
+    // TODO : update the assistantID we get from graphQl
+    // const assitantData = await getAssistant(agentGraphData?.assistantId);
+    const assitantData: any = await getAssistant(
+      "asst_4YruN6LyHritMXIFQX0NGmht"
+    );
+    console.log(assitantData);
+    const agentData: agentDataType = {
+      agentId: agentGraphData?.agentID,
+      assistantId: agentGraphData?.assistantId,
+      agentName: assitantData?.name,
+      agentDesciption: assitantData?.description,
+      agentRating: firebaseData?.avgRating,
+      agentCategory: agentGraphData?.agentCategory,
+    };
+    return agentData;
+  };
+
+  const getAgents = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getAllAgents(10);
+      console.log(data);
+      console.log(data.agents);
+
+      const promises = [];
+      if (data.agents.length) {
+        for (let i = 0; i < data.agents.length; i++) {
+          const agentData = getAgentData(data?.agents[i]);
+          promises.push(agentData);
+        }
+      }
+
+      const agentsData = await Promise.all(promises);
+      console.log(agentsData);
+      if (agentsData) {
+        setAgentsData(agentsData);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!agentsData) {
+      getAgents();
+    }
+  }, []);
   const router = useRouter();
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
@@ -54,11 +157,12 @@ const Index = () => {
         </div>
         <div className="mt-10 w-5/6 mx-auto">
           <div className="grid grid-flow-row grid-cols-3 gap-x-10 gap-y-10">
+            {/* TODO : Comment the default Component */}
             <div className="px-6 py-3 bg-white border-b-8 shadow-xl border border-black">
               <div className="flex mx-auto">
                 <p className="text-center text-xl font-semibold">ElonAgent</p>
                 <Tag size="sm" className="ml-2 mt-0.5" colorScheme="yellow">
-                ★ 3.3
+                  ★ 3.3
                 </Tag>
               </div>
               <p className="text-sm font-mono h-40 mt-3 overflow-clip overflow-ellipsis">
@@ -87,6 +191,45 @@ const Index = () => {
                 Try it out
               </button>
             </div>
+            {agentsData ? (
+              agentsData.map((agent) => {
+                return (
+                  <div className="px-6 py-3 bg-white border-b-8 shadow-xl border border-black">
+                    <div className="flex mx-auto">
+                      <p className="text-center text-xl font-semibold">
+                        {agent.agentName}
+                      </p>
+                      <Tag
+                        size="sm"
+                        className="ml-2 mt-0.5"
+                        colorScheme="yellow"
+                      >
+                        ★{agent.agentRating}
+                      </Tag>
+                    </div>
+                    <p className="text-sm font-mono h-40 mt-3 overflow-clip overflow-ellipsis">
+                      {agent.agentDesciption}
+                    </p>
+                    <div className="flex mt-3">
+                      <p className="font-sm font-semibold">Categories : </p>
+                      <Tag size="sm" className="ml-3 mt-1">
+                        {agent.agentCategory}
+                      </Tag>
+                    </div>
+                    <button
+                      onClick={() => {
+                        router.push(`/agents/${agent.agentId}`);
+                      }}
+                      className="px-12 mt-4 flex mx-auto border border-black font-semibold text-lg py-1.5 rounded-lg bg-green-100"
+                    >
+                      Try it out
+                    </button>
+                  </div>
+                );
+              })
+            ) : (
+              <a>{isLoading ? <a> Loading .. </a> : <a>No Agents Found</a>}</a>
+            )}
           </div>
         </div>
       </div>

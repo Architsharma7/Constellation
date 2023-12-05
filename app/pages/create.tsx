@@ -399,7 +399,7 @@ const Create = () => {
             Configure
           </Button>
           <Button
-            onClick={() => createAssistant()}
+            onClick={() => createAssistantFirebase()}
             className="mx-3 border border-b-4 border-black"
           >
             Create

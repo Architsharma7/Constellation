@@ -28,6 +28,18 @@ export const createAssistant = async (
   }
 };
 
+// 4. Run the thread, to perform the message
+export const getAssitant = async (
+  assistantId: string
+): Promise<OpenAI.Beta.Assistants.Assistant | undefined> => {
+  try {
+    const assistant = await openai.beta.assistants.retrieve(assistantId);
+    return assistant;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 // {
 //     type: "function",
 //     function: {

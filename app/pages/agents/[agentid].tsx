@@ -20,6 +20,13 @@ const AgentId = () => {
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);
   };
+
+  // get Assistant Data
+  const getAgentData = () => {
+    // graph QL
+    // firebase
+    // openAI
+  };
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
       <div className="flex flex-col">
