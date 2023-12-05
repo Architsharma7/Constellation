@@ -17,6 +17,7 @@ import { getAgentFirebase, getReviews } from "@/firebase/firebaseFunctions";
 import { getAgent } from "@/utils/graphFunctions";
 
 import { formatEther } from "viem";
+import { useAccount } from "wagmi";
 // import { Bytes } from "firebase/firestore";
 // import { Bytes } from "@graphprotocol/graph-ts";
 interface agentReviewType {}
@@ -38,6 +39,7 @@ interface agentDataType {
 
 const AgentId = () => {
   const router = useRouter();
+  const { address: userAccount } = useAccount();
   const _agentId = router.query.agentId;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [agentData, setAgentData] = useState<agentDataType>();
@@ -135,6 +137,55 @@ const AgentId = () => {
   const formatBP = (basisPoint: number): number => {
     const bpPercent = 10000 / basisPoint;
     return bpPercent;
+  };
+
+  // check For Subscription when user hit useAgent
+  const checkSubscription = () => {
+    // maybe possible via graphQl
+    // or Unlock protocol graphQl
+    // Or contract balance ERC721 method
+  };
+
+  // if not then subscribe via Model
+  const subscribeAgent = async () => {
+    try {
+      const threadId = await createThread();
+      console.log(threadId?.id);
+
+      // TODO: call contract to complete the contract flow
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const createThread = async (): Promise<void | { id: string } | undefined> => {
+    try {
+      console.log("creating thread... Calling OpenAI");
+      if (!agentData?.assistantId) {
+        console.log("Agent Details missing");
+        return;
+      }
+      const data = await fetch("/api/openai/createThreads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then(async (res) => {
+          console.log(res);
+          const data = await res.json();
+          console.log(data);
+          return {
+            id: data?.id,
+          };
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -257,7 +308,8 @@ const AgentId = () => {
                         <div>
                           <p className="text-sm">Agent Price</p>
                           <p className="mt-1 font-semibold text-lg">
-                            0.01 Ethers
+                            {agentData && formatEther(agentData.agentPrice)}{" "}
+                            Ethers
                           </p>
                         </div>
                         <div>
