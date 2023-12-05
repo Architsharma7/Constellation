@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { getAgentFirebase, getReviews } from "@/firebase/firebaseFunctions";
-import { getAgent } from "@/utils/graphFunctions";
+import { getAgent, getSubscription } from "@/utils/graphFunctions";
 
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
@@ -44,16 +44,20 @@ const AgentId = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [agentData, setAgentData] = useState<agentDataType>();
   const [rating, setRating] = useState<number>(0);
+  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
   const [feedback, setFeedBack] = useState<string>("");
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);
   };
 
   useEffect(() => {
-    console.log(_agentId, typeof _agentId);
+    // console.log(_agentId, typeof _agentId);
     if (_agentId && !agentData) {
       if (typeof _agentId == "string") {
         getAgentData(_agentId);
+        if (userAccount && !isSubscribed) {
+          checkSubscription(_agentId);
+        }
       }
     }
   }, [_agentId]);
@@ -140,10 +144,24 @@ const AgentId = () => {
   };
 
   // check For Subscription when user hit useAgent
-  const checkSubscription = () => {
-    // maybe possible via graphQl
-    // or Unlock protocol graphQl
-    // Or contract balance ERC721 method
+  const checkSubscription = async (agentId: string) => {
+    try {
+      // maybe possible via graphQl
+      if (!userAccount) {
+        console.log("user not found");
+        return;
+      }
+
+      const subId = userAccount.concat(agentId?.slice(2));
+      // console.log(subId);
+      const subscriptionData = await getSubscription(subId);
+      console.log(subscriptionData);
+      // or Unlock protocol graphQl
+      // Or contract balance ERC721 method
+      setIsSubscribed(subscriptionData?.subscriptionEntity);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // if not then subscribe via Model
@@ -286,7 +304,9 @@ const AgentId = () => {
             </div>
             <div className="mt-4 flex flex-col">
               <button
-                onClick={() => onOpen()}
+                onClick={() => {
+                  !isSubscribed ? onOpen() : router.push(`dashboard`);
+                }}
                 className="font-semibold text-xl bg-pink-100 px-10 py-2 border border-black border-b-4 rounded-xl cursor-pointer"
               >
                 Use Agent
