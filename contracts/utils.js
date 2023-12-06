@@ -36,15 +36,33 @@ function getTopKAgents(agentsIDs) {
 
 // Mumbai
 const _oracle = "0x6E2dc0F9DB014aE19888F539E59285D2Ea04244C";
-const _forwarderAddress = "0xA5706f43A9fDBA635Ddda9E1a81101cbc5aabaA6";
+const _forwRatings = "0xA5706f43A9fDBA635Ddda9E1a81101cbc5aabaA6";
+const _forwUsers = "0xb61AEa6C66fF253D14d0fa853D6F116E1df5f608"
+const _forwTwitter = "0x55504F116EB8051a6401Aa64398E29BB9A29BD66"
 const _unlockContract = "0x1FF7e338d5E582138C46044dc238543Ce555C963";
 const _donID =
   "0x66756e2d706f6c79676f6e2d6d756d6261692d31000000000000000000000000";
 const _subscriptionId = 785;
 
-const codeString = `
+const codeStringT = `
   const apiResponse = await Functions.makeHttpRequest({
     url: 'https://constellation-opal.vercel.app/api/functions/getTopAgents'
+  });
+
+  if (apiResponse.error) {
+    console.error(apiResponse.error);
+    throw Error('Request failed');
+  }
+
+  const { data } = apiResponse;
+
+  // Return tok agents IDs encoded as a hexadecimal string
+  return Functions.encodeString(data.encodedIDs);
+`;
+
+const codeStringR = `
+  const apiResponse = await Functions.makeHttpRequest({
+    url: 'https://constellation-opal.vercel.app/api/functions/getTopAgentsByRatings'
   });
 
   if (apiResponse.error) {
@@ -74,7 +92,7 @@ const codeStringU = `
   return Functions.encodeString(data.encodedIDs);
 `;
 
-const distributionRewards = [200, 100];
+const distributionRewards = [100, 50, 25, 10, 5];
 const sourceForwarder = "";
 const deployment_config = [_oracle, _unlockContract, _donID, _subscriptionId];
 
@@ -83,9 +101,13 @@ module.exports = {
   getAgentID,
   getTopKAgents,
   deployment_config,
-  codeString,
+  codeStringT,
+  codeStringR,
   codeStringU,
   distributionRewards,
   getSourceID,
-  _forwarderAddress,
+  _forwRatings,
+  _forwUsers,
+  _forwTwitter,
+  codeStringR
 };
