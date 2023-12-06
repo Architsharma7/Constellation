@@ -228,7 +228,7 @@ const Index = () => {
                 );
               })
             ) : (
-              <a>{isLoading ? <a> Loading .. </a> : <a>No Agents Found</a>}</a>
+              <a>{isLoading ? <p> Loading .. </p> : <p>No Agents Found</p>}</a>
             )}
           </div>
         </div>

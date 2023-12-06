@@ -5,15 +5,44 @@ const Leaderboard = () => {
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
       <div className="w-5/6 flex flex-col justify-center mx-auto mb-2">
+        {/* <div className="flex"> */}
         <div className="mt-10 mx-auto items-center">
-          <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-indigo-200 to bg-indigo-500 text-center">
-            LEADERBOARD
-          </p>
+          <div className="flex justify-between w-full">
+            <p></p>
+            <p></p>
+            <p></p>
+            <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-indigo-200 to bg-indigo-500 text-center">
+              LEADERBOARD
+            </p>
+            <div className="r-0 flex items-center">
+              <div>
+                <p className="font-semibold text-md mx-1">Sort</p>
+              </div>
+              <div>
+                <select className="px-3 py-1 rounded-lg mx-1 font-semibold">
+                  <option>Rating</option>
+                  <option>Revenue</option>
+                </select>
+              </div>
+            </div>
+          </div>
           <p className="text-center font-md font-mono text-gray-600 mt-2 items-center w-2/3 mx-auto">
             Leaderboards are based on either revenue or ratings and feedbacks of
             the agent
           </p>
         </div>
+        {/* <div className="r-0 mt-10 flex items-center">
+          <div>
+            <p className="font-semibold text-md mx-1">Sort</p>
+          </div>
+          <div>
+            <select className="px-3 py-1 rounded-lg mx-1 font-semibold">
+              <option>Rating</option>
+              <option>Revenue</option>
+            </select>
+          </div>
+        </div> */}
+        {/* </div> */}
         {[1, 2, 3, 4, 5].map((value) => (
           <div className="mt-6 flex flex-col mx-auto">
             <div className="w-full flex">
