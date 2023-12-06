@@ -4,6 +4,7 @@ import {
   allRoundsQuery,
   indivAgentQuery,
   indivCreatorQuery,
+  indivLockQuery,
   indivRoundQuery,
   indivSubscriptionQuery,
   indivUserQuery,
@@ -14,8 +15,16 @@ import { Bytes } from "@graphprotocol/graph-ts";
 const APIURL =
   "https://api.studio.thegraph.com/query/59864/c-demo/version/latest";
 
+const UNLOCK_APIURL =
+  "https://api.thegraph.com/subgraphs/name/unlock-protocol/mumbai-v2";
+
 const client = new ApolloClient({
   uri: APIURL,
+  cache: new InMemoryCache(),
+});
+
+const unlockClient = new ApolloClient({
+  uri: UNLOCK_APIURL,
   cache: new InMemoryCache(),
 });
 
@@ -134,6 +143,24 @@ export const getSubscription = async (id: string) => {
   return await client
     .query({
       query: indivSubscriptionQuery,
+      variables: {
+        id: id,
+      },
+    })
+    .then((res) => {
+      console.log(res.data);
+      return res.data;
+    })
+    .catch((err) => {
+      console.error(err);
+      return err;
+    });
+};
+
+export const getLockData = async (id: string) => {
+  return await unlockClient
+    .query({
+      query: indivLockQuery,
       variables: {
         id: id,
       },

@@ -9,6 +9,9 @@ import {
   getAggregateFromServer,
   getDoc,
   getDocs,
+  limit,
+  orderBy,
+  query,
   setDoc,
   updateDoc,
 } from "firebase/firestore";
@@ -76,10 +79,28 @@ export const getReviews = async (agentId: number) => {
 
   const querySnapshot = await getDocs(colRef);
   console.log(querySnapshot);
-  // querySnapshot.forEach((doc) => {
-  //   // doc.data() is never undefined for query doc snapshots
-  //   console.log(doc.id, " => ", doc.data());
-  // });
+
+  let reviewData: any[] = [];
+  querySnapshot.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    reviewData.push(doc.data());
+  });
+  return reviewData;
+};
+
+export const getRatingsRank = async () => {
+  const colRef = collection(db, "Agents");
+  const q = query(colRef, orderBy("avgRating"), limit(20));
+  const querySnapshot = await getDocs(q);
+  console.log(querySnapshot);
+
+  let ratingsRankData: any[] = [];
+  querySnapshot.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    // console.log(doc.id, " => ", doc.data());
+    ratingsRankData.push(doc.data());
+  });
+  return ratingsRankData;
 };
 
 export const getAvgRating = async (agentId: number): Promise<number | null> => {

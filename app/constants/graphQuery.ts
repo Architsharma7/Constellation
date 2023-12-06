@@ -215,7 +215,7 @@ export const indivSubscriptionQuery = gql`
 
 export const allRoundsQuery = gql`
   query ($first: Int) {
-    round(first: $first) {
+    rounds(first: $first) {
       blockTimestamp
       id
       transactionHash
@@ -232,6 +232,19 @@ export const allRoundsQuery = gql`
         assistantId
         agentCategory
       }
+    }
+  }
+`;
+
+export const indivLockQuery = gql`
+  query ($id: String) {
+    lock(id: $id) {
+      address
+      deployer
+      id
+      name
+      price
+      totalKeys
     }
   }
 `;

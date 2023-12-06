@@ -1,8 +1,46 @@
 import React from "react";
 import { Avatar, Wrap, WrapItem } from "@chakra-ui/react";
 import Navbar from "@/components/navbar";
+import { useEffect } from "react";
+import { useAccount } from "wagmi";
+import { getCreator, getUser } from "@/utils/graphFunctions";
 
 const User = () => {
+  const { address: creatorAccount } = useAccount();
+
+  // display the Creator Data like rounds they have won , and the agents they have created
+  // NOTE : Could also add more start for the agents , but perhaps not need as of now
+  const getCreatorData = async () => {
+    if (!creatorAccount) {
+      console.log("User Account not found");
+      return;
+    }
+
+    const data = await getCreator(creatorAccount);
+    console.log(data);
+  };
+  const { address: userAccount } = useAccount();
+
+  // display the User Data like the agents they have subscribed too
+  // NOTE : Could also add more start for the agents , but perhaps not need as of now
+  const getUserData = async () => {
+    if (!userAccount) {
+      console.log("User Account not found");
+      return;
+    }
+
+    const data = await getUser(userAccount);
+    console.log(data);
+  };
+
+  useEffect(() => {
+    if (userAccount) {
+      getCreatorData();
+    }
+    if (userAccount) {
+      getUserData();
+    }
+  }, [userAccount, creatorAccount]);
   return (
     <div>
       <Navbar />
