@@ -69,33 +69,6 @@ const Create = () => {
   const { data: walletClient } = useWalletClient();
   const [threadMessages, setThreadMessages] = useState<any>();
 
-  // const { config, error } = usePrepareContractWrite({
-  //   // @ts-ignore
-  //   address: CONTRACTS.AIMarket[chainID].contract,
-  //   // @ts-ignore
-  //   abi: CONTRACTS.AIMarket[chainID].abi,
-  //   functionName: "registerAgent",
-  //   args: [
-  //     [
-  //       assistantID,
-  //       getAgentID(assistantID as string),
-  //       0,
-  //       "0x0000000000000000000000000000000000000000",
-  //       agentDetails.agentPrice,
-  //       agentDetails.agentBP,
-  //       agentDetails.agentName,
-  //       agentDetails.agentName,
-  //       "tokenURL",
-  //       // Reward Category 0 rating based - 1 tweetAds based - 2 email based
-  //       getSourceID(getRewardCategory(agentDetails.agentCategory)),
-  //       getRewardCategory(agentDetails.agentCategory),
-  //       isOpen,
-  //     ],
-  //   ],
-  // });
-  // const { write, data, isLoading, isSuccess, isError } =
-  //   useContractWrite(config);
-
   const [threadID, setThreadID] = useState<string>();
   const [openToContribution, setOpenToContribution] = useState<boolean>(false);
   const [tweet, setTweet] = useState<boolean>(false);
@@ -704,6 +677,7 @@ const Create = () => {
                               />
                               {file && (
                                 <p className="text-xs w-20 overflow-clip">
+                                  {/* @ts-ignore */}
                                   { file?.name}
                                 </p>
                               )}

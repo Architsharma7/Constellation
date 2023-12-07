@@ -10,7 +10,7 @@ import {
   indivUserQuery,
 } from "@/constants/graphQuery";
 import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
-import { Bytes } from "@graphprotocol/graph-ts";
+// import { Bytes } from "@graphprotocol/graph-ts";
 
 const APIURL =
   "https://api.studio.thegraph.com/query/59864/c-demo/version/latest";

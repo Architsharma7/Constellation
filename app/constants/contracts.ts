@@ -1,14 +1,5 @@
 import AIMarket from "./AIMarket.json";
 
-// export const CONTRACTS = {
-//   AIMarket: {
-//     80001: {
-//       contract: AIMarket.address,
-//       abi: AIMarket.abi,
-//     },
-//   },
-// };
-
 export const CONTRACT_ADDRESSES = "0xBd1767206D13601f162cd18eA006B798775f798b";
 export const CONTRACT_ABI = [
   {
