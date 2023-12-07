@@ -18,7 +18,10 @@ const Leaderboard = () => {
 
   useEffect(() => {
     if (!roundData) {
-      // getRounds();
+      getRounds();
+    }
+    if (!agentsData) {
+      getLeaderboardRatings();
     }
   }, []);
 
@@ -26,6 +29,7 @@ const Leaderboard = () => {
     try {
       const data = await getRatingsRank();
       console.log(data);
+      setAgentsData(data);
       // we'll get the orderedData , just display it when user's select on the basis of Ratings
     } catch (error) {
       console.log(error);
@@ -39,15 +43,19 @@ const Leaderboard = () => {
       console.log(data);
       console.log(data.agents);
 
-      getLeaderboardRevenue(data.agents);
-      getLeaderboardTotalRounds(data.agents);
+      // getLeaderboardRevenue(data.agents);
+      // getLeaderboardTotalRounds(data.agents);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const getLeaderboardRevenue = async (agents: any[]) => {
+  const getLeaderboardRevenue = async () => {
     try {
+      const data = await getAllAgents(25);
+      console.log(data);
+      console.log(data.agents);
+      let agents = data.agents;
       let promises: any[] = [];
       for (let i = 0; i < agents.length; i++) {
         const totalRevenue = calculateRevenue(agents[i].unlockSubAddress);
@@ -58,8 +66,16 @@ const Leaderboard = () => {
         promises.push(newAgent);
       }
       const agentsData = await Promise.all(promises);
+      //sort the agentsData on the basis of totalRevenue
+      agentsData.sort((a, b) => {
+        return b.totalRevenue - a.totalRevenue;
+      });
+
+      console.log(agentsData);
       setAgentsData(agentsData);
-      return agentsData;
+
+      // TODO : Need to display the agent's name here , so find a way to fetch it from OpenAi for each agent
+      // return agentsData;
     } catch (error) {
       console.log(error);
     }
@@ -79,8 +95,12 @@ const Leaderboard = () => {
     }
   };
 
-  const getLeaderboardTotalRounds = (agents: any[]): any[] | undefined => {
+  const getLeaderboardTotalRounds = async () => {
     try {
+      const data = await getAllAgents(25);
+      console.log(data);
+      console.log(data.agents);
+      let agents = data.agents;
       let agentsData: any[] = [];
       for (let i = 0; i < agents.length; i++) {
         const newAgent = {
@@ -89,8 +109,16 @@ const Leaderboard = () => {
         };
         agentsData.push(newAgent);
       }
+      console.log(agentsData);
+      // sort the agentsData on the basis of totalRoundsWon
+      agentsData.sort((a, b) => {
+        return b.totalRoundsWon - a.totalRoundsWon;
+      });
+      console.log(agentsData);
+
       setAgentsData(agentsData);
-      return agentsData;
+
+      // return agentsData;
       // calculate the totalRounds they have won
     } catch (error) {
       console.log(error);
@@ -102,6 +130,18 @@ const Leaderboard = () => {
     console.log(data);
     setRoundData(data.rounds);
     // an array of Round data is returend here
+  };
+
+  const handleFilter = (choice: string) => {
+    if (choice == "rating") {
+      getLeaderboardRatings();
+    } else if (choice == "revenue") {
+      getLeaderboardRevenue();
+    } else if (choice == "rounds") {
+      getLeaderboardTotalRounds();
+    } else {
+      getLeadeboardData();
+    }
   };
 
   return (
@@ -136,44 +176,83 @@ const Leaderboard = () => {
             <Tabs variant="soft-rounded" colorScheme="purple">
               <TabList>
                 <Tab>All</Tab>
-                {[1, 2, 3, 4, 5].map((value, key) => (
-                  <Tab>Round {value}</Tab>
-                ))}
+                {roundData &&
+                  roundData.map((round, key) => <Tab>Round {key + 1}</Tab>)}
               </TabList>
               <TabPanels>
                 <TabPanel>
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <div className="mt-6 flex flex-col mx-auto">
-                      <div className="w-full flex">
-                        <div className="px-6 py-3.5 w-16 rounded-lg items-center border-orange-200 border-4 mx-3">
-                          <p className="text-2xl font-semibold text-center my-auto">
-                            {value}
-                          </p>
-                        </div>
-                        <div className="px-4 cursor-pointer py-2 flex align-middle border border-white bg-gradient-to-r from-pink-100 to-orange-200  mx-3 rounded-lg w-96">
-                          <div className="flex items-center">
-                            <div>
-                              <Wrap>
-                                <WrapItem>
-                                  <Avatar
-                                    colorScheme="pink"
-                                    size="md"
-                                    color="black"
-                                  />
-                                </WrapItem>
-                              </Wrap>
-                            </div>
-                            <div>
-                              <p className="m-0 ml-3 font-semibold text-2xl">
-                                ElonAgent
-                              </p>
+                  {agentsData &&
+                    agentsData.map((agent, key) => (
+                      <div className="mt-6 flex flex-col mx-auto">
+                        <div className="w-full flex">
+                          <div className="px-6 py-3.5 w-16 rounded-lg items-center border-orange-200 border-4 mx-3">
+                            <p className="text-2xl font-semibold text-center my-auto">
+                              {key}
+                            </p>
+                          </div>
+                          <div className="px-4 cursor-pointer py-2 flex align-middle border border-white bg-gradient-to-r from-pink-100 to-orange-200  mx-3 rounded-lg w-96">
+                            <div className="flex items-center">
+                              <div>
+                                <Wrap>
+                                  <WrapItem>
+                                    <Avatar
+                                      colorScheme="pink"
+                                      size="md"
+                                      color="black"
+                                    />
+                                  </WrapItem>
+                                </Wrap>
+                              </div>
+                              <div>
+                                <p className="m-0 ml-3 font-semibold text-2xl">
+                                  {agent.agentID}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </TabPanel>
+                {roundData &&
+                  roundData.map((round, key) => (
+                    <TabPanel>
+                      {round.topkAgents.map((winner: {}, key: number) => (
+                        <div className="mt-6 flex flex-col mx-auto">
+                          <div className="w-full flex">
+                            <div className="px-6 py-3.5 w-16 rounded-lg items-center border-orange-200 border-4 mx-3">
+                              <p className="text-2xl font-semibold text-center my-auto">
+                                {key}
+                              </p>
+                            </div>
+                            <div className="px-4 cursor-pointer py-2 flex align-middle border border-white bg-gradient-to-r from-pink-100 to-orange-200  mx-3 rounded-lg w-96">
+                              <div className="flex items-center">
+                                <div>
+                                  <Wrap>
+                                    <WrapItem>
+                                      <Avatar
+                                        colorScheme="pink"
+                                        size="md"
+                                        color="black"
+                                      />
+                                    </WrapItem>
+                                  </Wrap>
+                                </div>
+                                <div>
+                                  <p className="m-0 ml-3 font-semibold text-2xl">
+                                    {winner.agentID}
+                                    {/* TODO : Need to display the agent's name here ,
+                                    not the Id , but need to fetch it from
+                                    OpenAI */}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </TabPanel>
+                  ))}
               </TabPanels>
             </Tabs>
             <div className="flex mt-1">
@@ -181,10 +260,15 @@ const Leaderboard = () => {
                 <p className="font-semibold text-md mx-1 mt-1">Sort</p>
               </div>
               <div>
-                <select className="px-3 py-1 rounded-3xl mx-1 font-semibold  bg-violet-200">
-                  <option>Rating</option>
-                  <option>Revenue</option>
-                  <option>No. of rounds</option>
+                <select
+                  onChange={(e) => {
+                    handleFilter(e.target.value);
+                  }}
+                  className="px-3 py-1 rounded-3xl mx-1 font-semibold  bg-violet-200"
+                >
+                  <option value="rating">Rating</option>
+                  <option value="revenue">Revenue</option>
+                  <option value="rounds">No. of rounds</option>
                 </select>
               </div>
             </div>

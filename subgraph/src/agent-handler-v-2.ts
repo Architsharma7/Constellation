@@ -113,8 +113,9 @@ export function handleagentSubscriptionPurchased(
 ): void {
   //UserAddress-AgentId
   let entity = new SubscriptionEntity(
-    Bytes.fromHexString(`${event.params.subscriber}-${event.params.agentID}`)
+    Bytes.fromHexString(event.params.subscriber.toHexString())
   );
+  // event.transaction.hash.concatI32(event.logIndex.toI32())
   // event.params.subscriber.concat(Bytes.fromI32(event.params.agentID.toI32()))
 
   let agent = Agent.load(event.params.agentID.toString());

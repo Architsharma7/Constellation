@@ -19,6 +19,11 @@ export const allAgentsQuery = gql`
         rewardDistributions
         sourceName
       }
+      roundsWon {
+        id
+        blockTimestamp
+        transactionHash
+      }
       isOpenForContributions
       keyPrice
       id
