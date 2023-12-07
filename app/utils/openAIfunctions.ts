@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import fs from "fs";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
 
 // 1. Create the Assistant first
 // NOTE : Actions and Function calling , add extra functions
