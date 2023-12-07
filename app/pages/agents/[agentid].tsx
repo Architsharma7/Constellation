@@ -15,10 +15,16 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { getAgentFirebase, getReviews } from "@/firebase/firebaseFunctions";
 import { getAgent, getSubscription } from "@/utils/graphFunctions";
-import { useContractWrite, useChainId } from "wagmi";
-import { CONTRACTS } from "@/constants/contracts";
-import { formatEther } from "viem";
+import {
+  useContractWrite,
+  useChainId,
+  usePublicClient,
+  useWalletClient,
+} from "wagmi";
+
 import { useAccount } from "wagmi";
+import { CONTRACT_ADDRESSES, CONTRACT_ABI } from "@/constants/contracts";
+import { formatEther } from "ethers";
 // import { Bytes } from "firebase/firestore";
 // import { Bytes } from "@graphprotocol/graph-ts";
 interface agentReviewType {}
@@ -43,7 +49,8 @@ const AgentId = () => {
 
   const router = useRouter();
   const { address: userAccount } = useAccount();
-  const _agentId = router.query.agentId;
+  const _agentId = router.query.agentid;
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [agentData, setAgentData] = useState<agentDataType>();
   const [rating, setRating] = useState<number>(0);
@@ -53,16 +60,26 @@ const AgentId = () => {
     setRating(newRating);
   };
 
-  const { write, data, isLoading, isSuccess, isError } = useContractWrite({
+  const { address: account } = useAccount();
+  const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
+
+  const {
+    write: purchaseSubscription,
+    data,
+    isLoading,
+    isSuccess,
+    isError,
+  } = useContractWrite({
     // @ts-ignore
-    address: CONTRACTS.AIMarket[chainID].contract,
+    address: CONTRACT_ADDRESSES,
     // @ts-ignore
-    abi: CONTRACTS.AIMarket[chainID].abi,
+    abi: CONTRACT_ABI,
     functionName: "purchaseSubscription",
   });
 
   useEffect(() => {
-    // console.log(_agentId, typeof _agentId);
+    console.log(_agentId, typeof _agentId);
     if (_agentId && !agentData) {
       if (typeof _agentId == "string") {
         getAgentData(_agentId);
@@ -71,13 +88,17 @@ const AgentId = () => {
         }
       }
     }
-  }, [_agentId]);
+  }, [router]);
 
   const getAssistant = async (assistantID: string) => {
     console.log("Fetching thread... Calling OpenAI");
     if (!assistantID) {
       console.log("Agent Details missing");
       return;
+    }
+
+    if (!assistantID.startsWith("asst_")) {
+      return null;
     }
 
     const data = await fetch(
@@ -111,6 +132,7 @@ const AgentId = () => {
     }
 
     // TODO Convert AgentID to Bytes form
+    // NO need now , graph can fetch data for this given agentID
     const agentIdBytes = agentId;
     console.log(agentIdBytes);
     const agentGraphData = (await getAgent(agentIdBytes)).agent;
@@ -118,18 +140,21 @@ const AgentId = () => {
 
     // TODO , Convert the agent ID to the one given in params
     // get partial data from firebase
-    const firebaseData = await getAgentFirebase(agentGraphData?.agentID);
+    const firebaseData = await getAgentFirebase(Number(agentId));
     console.log(firebaseData);
 
     // get Reviews
-    const firebaseReviews = await getReviews(agentGraphData?.agentID);
+    const firebaseReviews = await getReviews(Number(agentId));
+    console.log(firebaseReviews);
 
     // other partial from openAI
+
     // TODO : update the assistantID we get from graphQl
     // const assitantData = await getAssistant(agentGraphData?.assistantId);
     const assitantData: any = await getAssistant(
       "asst_4YruN6LyHritMXIFQX0NGmht"
     );
+
     console.log(assitantData);
     const agentData: agentDataType = {
       agentId: agentGraphData?.agentID,
@@ -179,18 +204,41 @@ const AgentId = () => {
   // if not then subscribe via Model
   const subscribeAgent = async () => {
     try {
+      if (agentData?.agentPrice === undefined) {
+        console.log("Agent Price not found");
+        return;
+      }
+      if (agentData?.agentId === undefined) {
+        console.log("Agent Price not found");
+        return;
+      }
       const threadId = await createThread();
       console.log(threadId?.id);
+      if (threadId?.id == undefined) {
+        console.log("Thread Id could not be created");
+        return;
+      }
 
-      // TODO: call contract to complete the contract flow
-      // @ts-ignore
-      write({
-        args: [
-          agentData?.agentId,
-          agentData?.agentPrice,
-          threadId?.id,
-        ]
-      })
+      const data = await publicClient?.simulateContract({
+        account,
+        address: CONTRACT_ADDRESSES,
+        abi: CONTRACT_ABI,
+        functionName: "purchaseSubscription",
+        args: [agentData?.agentId, agentData?.agentPrice, threadId?.id],
+        value: agentData?.agentPrice,
+      });
+
+      console.log(data);
+      if (!walletClient) {
+        console.log("Wallet client not found");
+        return;
+      }
+      const hash = await walletClient.writeContract(data.request);
+      console.log("Transaction Sent");
+      const transaction = await publicClient.waitForTransactionReceipt({
+        hash: hash,
+      });
+      console.log(transaction);
     } catch (error) {
       console.log(error);
     }
@@ -357,7 +405,10 @@ const AgentId = () => {
                           <p className="mt-1 font-semibold text-lg">1 Month</p>
                         </div>
                       </div>
-                      <button className="mt-5 cursor-pointer mb-3 px-10 py-2 bg-green-100 border border-black border-b-4 rounded-xl text-x font-semibold text-black">
+                      <button
+                        onClick={() => subscribeAgent()}
+                        className="mt-5 cursor-pointer mb-3 px-10 py-2 bg-green-100 border border-black border-b-4 rounded-xl text-x font-semibold text-black"
+                      >
                         Subscribe
                       </button>
                     </div>

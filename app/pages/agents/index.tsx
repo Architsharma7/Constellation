@@ -31,6 +31,10 @@ const Index = () => {
       return;
     }
 
+    if (!assistantID.startsWith("asst_")) {
+      return null;
+    }
+
     const data = await fetch(
       `/api/openai/getAssistant?assistantId=${assistantID}`,
       {
@@ -66,9 +70,7 @@ const Index = () => {
     // other partial from openAI
     // TODO : update the assistantID we get from graphQl
     // const assitantData = await getAssistant(agentGraphData?.assistantId);
-    const assitantData: any = await getAssistant(
-      "asst_4YruN6LyHritMXIFQX0NGmht"
-    );
+    const assitantData: any = await getAssistant(agentGraphData?.assistantId);
     console.log(assitantData);
     const agentData: agentDataType = {
       agentId: agentGraphData?.agentID,
