@@ -8,19 +8,87 @@ import { useAccount } from "wagmi";
 import { getRatingsRank } from "@/firebase/firebaseFunctions";
 
 export default function Home() {
+  const { address: userAccount } = useAccount();
+
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
-  const [threadMessages, setthreadMessages] = useState<any>();
+  const [threadMessages, setthreadMessages] = useState<any[]>();
 
   // NOTE : Set the thread ID and assistantID according to whatever agent user selects from the usage section
 
   const [threadID, setThreadID] = useState<string>();
   const [assistantID, setAssistantID] = useState<string>();
   const [inputPrompt, setInputPrompt] = useState<string>();
+  const [subscriptionsData, setSubscriptionsData] = useState<any[]>();
+
+  const getAssistant = async (assistantID: string) => {
+    console.log("Fetching thread... Calling OpenAI");
+    if (!assistantID) {
+      console.log("Agent Details missing");
+      return;
+    }
+
+    if (!assistantID.startsWith("asst_")) {
+      return null;
+    }
+
+    const data = await fetch(
+      `/api/openai/getAssistant?assistantId=${assistantID}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then(async (res) => {
+        // console.log(res);
+        const data = await res.json();
+        console.log(data);
+        return data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return data;
+  };
+
+  const getUserData = async () => {
+    if (!userAccount) {
+      console.log("User Account not found");
+      return;
+    }
+
+    const data = await getUser(userAccount);
+    console.log(data.user.agentsSubscribedTo);
+    const agentsSubscribedTo = data.user.agentsSubscribedTo;
+    let agentSubscriptionData = [];
+    for (let i = 0; i < agentsSubscribedTo.length; i++) {
+      const assistantId = agentsSubscribedTo[i].agent.assistantId;
+
+      // TODO : Remove this hardcoded assistant ID
+      const assistantData = await getAssistant("asst_4YruN6LyHritMXIFQX0NGmht");
+      // const assistantData = await getAssistant(assistantId);
+
+      console.log(assistantData);
+      const agentSubscription = {
+        agentName: assistantData?.name,
+        agentId: agentsSubscribedTo[i].agent.agentID,
+        assistantId: agentsSubscribedTo[i].agent.assistantId,
+        threadID: agentsSubscribedTo[i].threadID,
+      };
+      agentSubscriptionData.push(agentSubscription);
+    }
+
+    setSubscriptionsData(agentSubscriptionData);
+  };
 
   useEffect(() => {
+    if (userAccount && !threadMessages) {
+      getUserData();
+    }
     // getRatingsRank();
-  }, []);
+  }, [userAccount]);
 
   const handleChat = async () => {
     try {
@@ -111,21 +179,21 @@ export default function Home() {
     }
   };
 
-  const getThread = async () => {
+  const getThread = async (_threadID: string, _assistantID: string) => {
     console.log("Fetching thread... Calling OpenAI");
-    if (!assistantID) {
+    if (!_assistantID) {
       console.log("Agent Details missing");
       return;
     }
 
-    if (!threadID) {
+    if (!_threadID) {
       console.log("thread Details missing");
       return;
     }
     // body: JSON.stringify({
     //   threadId: threadID,
     // }),
-    const data = await fetch(`/api/openai/getChat?threadId=${threadID}`, {
+    const data = await fetch(`/api/openai/getChat?threadId=${_threadID}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -137,6 +205,7 @@ export default function Home() {
         console.log(data);
         const messages = data.data;
         console.log(messages);
+        setthreadMessages(messages);
       })
       .catch((err) => {
         console.log(err);
@@ -166,6 +235,7 @@ export default function Home() {
                     </div>
                   </div>
                 </li>
+
                 <li>
                   <button
                     type="button"
@@ -175,23 +245,31 @@ export default function Home() {
                     <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
                       ElonAgent
                     </span>
-                    <svg
-                      className="w-3 h-3"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 10 6"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="m1 1 4 4 4-4"
-                      />
-                    </svg>
                   </button>
                 </li>
+                {subscriptionsData &&
+                  subscriptionsData.map((subscription: any) => {
+                    return (
+                      <li>
+                        <button
+                          type="button"
+                          className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
+                          onClick={() => {
+                            setAssistantID(subscription.assistantId);
+                            setThreadID(subscription.threadID);
+                            getThread(
+                              subscription.threadID,
+                              subscription.assistantId
+                            );
+                          }}
+                        >
+                          <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
+                            {subscription.agentName}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
               </ul>
             </div>
           </aside>
