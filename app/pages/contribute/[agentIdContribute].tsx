@@ -50,6 +50,7 @@ const AgentIdContribute = () => {
   const _agentId = router.query.agentId;
 
   const publicClient = usePublicClient();
+  const [threadMessages, setThreadMessages] = useState<any>();
 
   const [assistantID, setAssistantID] = useState<string>();
   const [agentDetails, setAgentDetails] = useState<{
@@ -539,7 +540,49 @@ const AgentIdContribute = () => {
                 </TabPanel>
                 <TabPanel>
                   <div className="flex flex-col">
-                    <div className="flex mx-auto w-full">
+                    <div className="flex flex-col mx-auto w-full">
+                    <div className="mt-6 flex">
+                        {
+                          <div className="justify-start flex bg-orange-100 px-4 py-1 rounded-xl">
+                            {threadMessages &&
+                              threadMessages
+                                .filter(
+                                  (message: any) => message.role === "user"
+                                )
+                                .map((userMessage: any) => {
+                                  const content = userMessage.content[0];
+                                  return (
+                                    <p className="text-md font-semibold">
+                                      {content &&
+                                        content.type === "text" &&
+                                        content.text.value}
+                                    </p>
+                                  );
+                                })}
+                          </div>
+                        }
+                      </div>
+                      <div className="mt-6 flex">
+                        {
+                          <div className="justify-start flex bg-pink-100 px-4 py-1 rounded-xl">
+                            {threadMessages &&
+                              threadMessages
+                                .filter(
+                                  (message: any) => message.role === "assistant"
+                                )
+                                .map((assistantMessage: any) => {
+                                  const content = assistantMessage.content[0];
+                                  return (
+                                    <p className="text-md font-semibold">
+                                      {content &&
+                                        content.type === "text" &&
+                                        content.text.value}
+                                    </p>
+                                  );
+                                })}
+                          </div>
+                        }
+                      </div>
                       <div className="fixed bottom-0 mb-3 py-3 px-3 rounded-xl w-[60%]">
                         <InputGroup>
                           <Input
