@@ -58,6 +58,7 @@ const AgentId = () => {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [agentData, setAgentData] = useState<agentDataType>();
+  const [agentReviews, setAgentReviews] = useState<any[]>();
   const [rating, setRating] = useState<number>(0);
   const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
   const [feedback, setFeedBack] = useState<string>("");
@@ -151,6 +152,16 @@ const AgentId = () => {
     // get Reviews
     const firebaseReviews = await getReviews(Number(agentId));
     console.log(firebaseReviews);
+    /// only pass firebaseReviews who has review content in the object and not just rating
+
+    const filteredReviews = firebaseReviews?.filter((review) => {
+      if (review?.review) {
+        return review;
+      }
+    });
+    const reviews = firebaseReviews?.slice(0, 3);
+    console.log(filteredReviews);
+    setAgentReviews(reviews);
 
     // other partial from openAI
 
@@ -168,7 +179,7 @@ const AgentId = () => {
       agentDesciption: assitantData?.description,
       agentInstructions: assitantData?.instructions,
       agentRating: firebaseData?.avgRating,
-      agentCategory: agentGraphData?.agentGraphData,
+      agentCategory: agentGraphData?.agentCategory,
       agentPrice: agentGraphData?.keyPrice, // convert to Ethers
       agentBP: agentGraphData?.basisPoint, // convert into %
       agentCreator: agentGraphData?.creator?.address,
@@ -180,7 +191,7 @@ const AgentId = () => {
   };
 
   const formatBP = (basisPoint: number): number => {
-    const bpPercent = 10000 / basisPoint;
+    const bpPercent = basisPoint / 100;
     return bpPercent;
   };
 
@@ -193,10 +204,10 @@ const AgentId = () => {
         return;
       }
 
-      // TODO : Check the subID again after the new graph V
-      const subId = userAccount.concat(agentId?.slice(2));
+      // // TODO : Check the subID again after the new graph V
+      // const subId = userAccount.concat(agentId?.slice(2));
       // console.log(subId);
-      const subscriptionData = await getSubscription(subId);
+      const subscriptionData = await getSubscription(userAccount);
       console.log(subscriptionData);
       // or Unlock protocol graphQl
       // Or contract balance ERC721 method
@@ -338,6 +349,13 @@ const AgentId = () => {
             <p className="text-lg font-semibold text-black mt-4">
               {agentData && agentData.agentDesciption}
             </p>
+
+            <p className="mt-10 text-xl font-mono font-thin text-gray-600">
+              Instructions
+            </p>
+            <p className="text-lg font-semibold text-black mt-4">
+              {agentData && agentData.agentInstructions}
+            </p>
           </div>
           {/* <div className="w-2/3 border bg-orange-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
             <p className="text-xl font-mono font-thin text-gray-600">
@@ -372,13 +390,13 @@ const AgentId = () => {
             <div className="mt-4">
               <p className="text-sm">Agent Open for Contribution</p>
               <p className="mt-1 font-semibold text-lg">
-                {agentData && agentData.openForContribution}{" "}
+                {agentData && agentData.openForContribution ? "Yes" : "No"}
               </p>
             </div>
             <div className="mt-4 flex flex-col">
               <button
                 onClick={() => {
-                  !isSubscribed ? onOpen() : router.push(`dashboard`);
+                  !isSubscribed ? onOpen() : router.push(`/`);
                 }}
                 className="font-semibold text-xl bg-pink-100 px-10 py-2 border border-black border-b-4 rounded-xl cursor-pointer"
               >
@@ -473,11 +491,38 @@ const AgentId = () => {
             </div>
           </div>
 
-          <div className="w-2/3 border flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-[420px] overflow-scroll">
+          <div className="w-2/3 border flex flex-col border-black mx-3 rounded-xl px-10 py-3 h-[350px] overflow-scroll">
             <p className="text-xl font-mono font-thin text-gray-600">
               User Feedbacks
             </p>
-            <div className="mt-4">
+            <div className="grid grid-cols-3 grid-rows-1 gap-x-1 grid-flow-row">
+              {agentReviews &&
+                agentReviews.map((review) => {
+                  return (
+                    <div className="mt-10">
+                      <div className="w-11/12 flex flex-col px-3 py-1 h-56 rounded-xl bg-white border border-zinc-200">
+                        <div className="flex justify-between">
+                          <p className="font-semibold text-black">
+                            {review?.user.slice(0, 6)}...{" "}
+                            {review?.user.slice(-4)}
+                          </p>
+                          <Tag
+                            size="sm"
+                            className="ml-2 mt-0.5"
+                            colorScheme="yellow"
+                          >
+                            ★ {review?.rating}
+                          </Tag>
+                        </div>
+                        <p className="mt-3 text-md text-black">
+                          {review?.review}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}{" "}
+            </div>
+            {/* <div className="mt-4">
               <div className="w-5/6 flex flex-col px-6 py-1 rounded-xl bg-white border border-zinc-200">
                 <div className="flex justify-between">
                   <p className="font-semibold text-black">
@@ -497,7 +542,7 @@ const AgentId = () => {
                   future.
                 </p>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

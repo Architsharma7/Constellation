@@ -21,7 +21,6 @@ import { FaTwitter } from "react-icons/fa6";
 import { MdOutlineAttachFile } from "react-icons/md";
 import { IoIosMail } from "react-icons/io";
 import { getAgent } from "@/utils/graphFunctions";
-import { getAssitant } from "@/utils/openAIfunctions";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { getAgentID } from "@/utils/chainlinkFunctions";
@@ -33,6 +32,8 @@ import {
   usePublicClient,
   useWalletClient,
 } from "wagmi";
+import { createAgent } from "@/firebase/firebaseFunctions";
+import { CONTRACT_ABI, CONTRACT_ADDRESSES } from "@/constants/contracts";
 
 const AgentIdContribute = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -47,7 +48,7 @@ const AgentIdContribute = () => {
   const [openToContribution, setOpenToContribution] = useState<boolean>(false);
 
   const router = useRouter();
-  const _agentId = router.query.agentId;
+  const _agentId = router.query.agentIdContribute;
 
   const publicClient = usePublicClient();
   const [threadMessages, setThreadMessages] = useState<any>();
@@ -62,6 +63,7 @@ const AgentIdContribute = () => {
     agentCategory: string;
     agentImage: string | undefined;
     parentAgentId: string | undefined;
+    agentVersion: string | undefined;
   }>({
     agentName: "",
     agentDesc: "",
@@ -71,10 +73,11 @@ const AgentIdContribute = () => {
     agentCategory: "",
     agentImage: undefined,
     parentAgentId: undefined,
+    agentVersion: undefined,
   });
 
   useEffect(() => {
-    if (_agentId) {
+    if (_agentId && agentDetails.agentName == "") {
       if (typeof _agentId == "string") {
         getAgentData(_agentId);
       }
@@ -84,6 +87,38 @@ const AgentIdContribute = () => {
   const [threadID, setThreadID] = useState<string>();
   const [imageGeneration, setImageGeneration] = useState<boolean>(false);
   const { address: account } = useAccount();
+
+  const getAssistant = async (assistantID: string) => {
+    console.log("Fetching thread... Calling OpenAI");
+    if (!assistantID) {
+      console.log("Agent Details missing");
+      return;
+    }
+
+    if (!assistantID.startsWith("asst_")) {
+      return null;
+    }
+
+    const data = await fetch(
+      `/api/openai/getAssistant?assistantId=${assistantID}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then(async (res) => {
+        // console.log(res);
+        const data = await res.json();
+        console.log(data);
+        return data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return data;
+  };
 
   const getAgentData = async (agentId: string) => {
     if (!agentId) {
@@ -100,7 +135,7 @@ const AgentIdContribute = () => {
     // other partial from openAI
     // TODO : update the assistantID we get from graphQl
     // const assitantData = await getAssistant(agentGraphData?.assistantId);
-    const assitantData: any = await getAssitant(
+    const assitantData: any = await getAssistant(
       "asst_4YruN6LyHritMXIFQX0NGmht"
     );
 
@@ -174,7 +209,7 @@ const AgentIdContribute = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          assistantName: agentDetails.agentName,
+          assistantName: `${agentDetails.agentName} ${agentDetails.agentVersion}`,
           assistantDesc: agentDetails.agentDesc,
           assistantInstruc: agentDetails.agentInstruc,
           tools: tools,
@@ -189,9 +224,9 @@ const AgentIdContribute = () => {
 
           // peform the tx
           // do Agent V registeration
-          registerNewAgentID(data?.id);
+          await registerNewAgentID(data?.id);
 
-          // createAgent(agentId) // firebase for the new AgentID
+          createAgent(getAgentID(data?.id)); // firebase for the new AgentID
         })
         .catch((err) => {
           console.log(err);
@@ -201,14 +236,9 @@ const AgentIdContribute = () => {
     }
   };
 
-  const registerNewAgentID = async (_agentVersionID: any) => {
+  const registerNewAgentID = async (_assistantId: string) => {
     try {
-      if (
-        agentDetails.agentBP == "" &&
-        agentDetails.agentPrice == "" &&
-        agentDetails.agentName == "" &&
-        agentDetails.parentAgentId == ""
-      ) {
+      if (!agentDetails.parentAgentId) {
         console.log("Agent Details missing");
         return;
       }
@@ -216,18 +246,23 @@ const AgentIdContribute = () => {
       const data = await publicClient?.simulateContract({
         account,
         // @ts-ignore
-        address: CONTRACTS.AIMarket[chainID].contract,
+        address: CONTRACT_ADDRESSES,
         // @ts-ignore
-        abi: CONTRACTS.AIMarket[chainID].abi,
+        abi: CONTRACT_ABI,
         functionName: "registerAgentVersion",
-        args: [_agentId, _agentVersionID, agentDetails.agentName, ""],
+        args: [
+          Number(agentDetails.parentAgentId),
+          getAgentID(_assistantId),
+          _assistantId,
+          "",
+        ],
       });
       if (!walletClient) {
         console.log("wallletClient not found");
       }
       // @ts-ignore
       const hash = await walletClient.writeContract(data.request);
-      console.log(hash)
+      console.log(hash);
     } catch (error) {
       console.log(error);
     }
@@ -352,10 +387,10 @@ const AgentIdContribute = () => {
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
       <div className="flex justify-between mx-10 pt-3 pb-2">
         <p className="text-orange-600 text-2xl font-bold">
-          Contribute to ${"agentName"}
+          Contribute to {agentDetails && agentDetails.agentName}
         </p>
         <div>
-          <Button
+          {/* <Button
             // @ts-ignore
             ref={btnRef}
             className="mx-3 bg-orange-600 border border-b-4 border-black"
@@ -363,7 +398,7 @@ const AgentIdContribute = () => {
             onClick={onOpen}
           >
             Configure
-          </Button>
+          </Button> */}
           <Button
             onClick={() => createAssistant()}
             className="mx-3 border border-b-4 border-black"
@@ -398,18 +433,27 @@ const AgentIdContribute = () => {
           <div>
             <div className="mt-7">
               <p className="text-md text-black font-mono">Agent Name</p>
-              <p className="text-xl font-semibold">ElonAgent</p>
+              <p className="text-xl font-semibold">
+                {agentDetails && agentDetails.agentName}
+              </p>
             </div>
-            <div className="mt-7">
+            {/* <div className="mt-7">
               <p className="text-md text-black font-mono">Previous Version</p>
               <p className="text-xl font-semibold">1.1.0</p>
-            </div>
+            </div> */}
             <div className="mt-7">
               <p className="text-md text-black font-mono">New Version</p>
               <input
                 type="text"
                 placeholder=""
                 className="px-5 py-2 rounded-xl mt-2 w-full font-semibold border border-black"
+                onChange={(e) =>
+                  setAgentDetails({
+                    ...agentDetails,
+                    agentVersion: e.target.value,
+                  })
+                }
+                value={agentDetails.agentVersion}
               ></input>
             </div>
             <div className="mt-7">
@@ -419,6 +463,13 @@ const AgentIdContribute = () => {
               <textarea
                 placeholder="You are a helpful assistant"
                 className="px-5 py-2 rounded-xl mt-2 w-full font-semibold h-32 border border-black"
+                onChange={(e) =>
+                  setAgentDetails({
+                    ...agentDetails,
+                    agentInstruc: e.target.value,
+                  })
+                }
+                value={agentDetails.agentInstruc}
               ></textarea>
             </div>
             <div className="mt-5">
@@ -541,7 +592,7 @@ const AgentIdContribute = () => {
                 <TabPanel>
                   <div className="flex flex-col">
                     <div className="flex flex-col mx-auto w-full">
-                    <div className="mt-6 flex">
+                      <div className="mt-6 flex">
                         {
                           <div className="justify-start flex bg-orange-100 px-4 py-1 rounded-xl">
                             {threadMessages &&
