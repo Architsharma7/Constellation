@@ -21,6 +21,7 @@ import { IoIosSend } from "react-icons/io";
 import { FaTwitter } from "react-icons/fa6";
 import { MdOutlineAttachFile } from "react-icons/md";
 import { IoIosMail } from "react-icons/io";
+import { Code } from "@chakra-ui/react";
 import {
   useContractWrite,
   usePrepareContractWrite,
@@ -64,6 +65,7 @@ const Create = () => {
   const { address: account } = useAccount();
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
+  const [threadMessages, setThreadMessages] = useState<any>();
 
   // const { config, error } = usePrepareContractWrite({
   //   // @ts-ignore
@@ -103,6 +105,7 @@ const Create = () => {
 
   const hiddenFileInput = useRef(null);
   const handleClick = () => {
+    //@ts-ignore
     hiddenFileInput?.current?.click();
   };
   const handleChange = (event: any) => {
@@ -282,6 +285,7 @@ const Create = () => {
         console.log("Wallet client not found");
         return;
       }
+      // @ts-ignore
       const hash = await walletClient.writeContract(data.request);
     } catch (error) {
       console.log(error);
@@ -316,6 +320,7 @@ const Create = () => {
           const data = await res.json();
           console.log(data);
           setThreadID(data?.id);
+          await getThread(data?.id);
         })
         .catch((err) => {
           console.log(err);
@@ -325,21 +330,21 @@ const Create = () => {
     }
   };
 
-  const getThread = async () => {
+  const getThread = async (_threadID: string) => {
     console.log("Fetching thread... Calling OpenAI");
     if (!assistantID) {
       console.log("Agent Details missing");
       return;
     }
 
-    if (!threadID) {
+    if (!_threadID) {
       console.log("thread Details missing");
       return;
     }
     // body: JSON.stringify({
     //   threadId: threadID,
     // }),
-    const data = await fetch(`/api/openai/getChat?threadId=${threadID}`, {
+    const data = await fetch(`/api/openai/getChat?threadId=${_threadID}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -349,8 +354,9 @@ const Create = () => {
         console.log(res);
         const data = await res.json();
         console.log(data);
-        const messages = data.data;
+        const messages = await data.data;
         console.log(messages);
+        setThreadMessages(messages);
       })
       .catch((err) => {
         console.log(err);
@@ -457,8 +463,8 @@ const Create = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          threadId: threadID,
-          assistantId: assistantID,
+          threadId: threadId,
+          assistantId: assistID,
           instructions: "",
         }),
       })
@@ -481,6 +487,7 @@ const Create = () => {
         <p className="text-orange-600 text-2xl font-bold">Create an Agent</p>
         <div>
           <Button
+            // @ts-ignore
             ref={btnRef}
             className="mx-3 bg-orange-600 border border-b-4 border-black"
             colorScheme=""
@@ -595,6 +602,7 @@ const Create = () => {
                 <MdOutlineAttachFile className="text-2xl cursor-pointer text-green-500"></MdOutlineAttachFile>
                 <input type="file" style={{ display: "none" }} />
                 {file && (
+                  // @ts-ignore
                   <p className="text-xs w-20 h-5 overflow-clip">{file?.name}</p>
                 )}
               </div>
@@ -612,7 +620,7 @@ const Create = () => {
             <div>
               <button
                 onClick={() => {
-                  runThread();
+                  // getThread();
                 }}
                 className="px-6 py-1.5 bg-blue-100 rounded-lg font-semibold mx-3"
               >
@@ -620,7 +628,7 @@ const Create = () => {
               </button>
               <button
                 onClick={() => {
-                  getThread();
+                  // getThread();
                 }}
                 className="px-6 py-1.5 bg-green-100 rounded-lg font-semibold mx-3"
               >
@@ -644,7 +652,7 @@ const Create = () => {
                 <TabPanel>
                   <div className="flex flex-col">
                     {/* <div className="w-full h-[93%] border border-black"></div> */}
-                    <div className="flex mx-auto w-full">
+                    <div className="flex flex-col mx-auto w-full">
                       <div className="fixed bottom-0 mb-3 py-3 px-3 rounded-xl w-[60%]">
                         <InputGroup>
                           <Input
@@ -677,7 +685,7 @@ const Create = () => {
                               />
                               {file && (
                                 <p className="text-xs w-20 overflow-clip">
-                                  {file?.name}
+                                  { file?.name}
                                 </p>
                               )}
                             </>
@@ -689,7 +697,49 @@ const Create = () => {
                 </TabPanel>
                 <TabPanel>
                   <div className="flex flex-col">
-                    <div className="flex mx-auto w-full">
+                    <div className="flex flex-col mx-auto w-full">
+                      <div className="mt-6 flex">
+                        {
+                          <div className="justify-start flex bg-orange-100 px-4 py-1 rounded-xl">
+                            {threadMessages &&
+                              threadMessages
+                                .filter(
+                                  (message: any) => message.role === "user"
+                                )
+                                .map((userMessage: any) => {
+                                  const content = userMessage.content[0];
+                                  return (
+                                    <p className="text-md font-semibold">
+                                      {content &&
+                                        content.type === "text" &&
+                                        content.text.value}
+                                    </p>
+                                  );
+                                })}
+                          </div>
+                        }
+                      </div>
+                      <div className="mt-6 flex">
+                        {
+                          <div className="justify-start flex bg-pink-100 px-4 py-1 rounded-xl">
+                            {threadMessages &&
+                              threadMessages
+                                .filter(
+                                  (message: any) => message.role === "assistant"
+                                )
+                                .map((assistantMessage: any) => {
+                                  const content = assistantMessage.content[0];
+                                  return (
+                                    <p className="text-md font-semibold">
+                                      {content &&
+                                        content.type === "text" &&
+                                        content.text.value}
+                                    </p>
+                                  );
+                                })}
+                          </div>
+                        }
+                      </div>
                       <div className="fixed bottom-0 mb-3 py-3 px-3 rounded-xl w-[60%]">
                         <InputGroup>
                           <Input

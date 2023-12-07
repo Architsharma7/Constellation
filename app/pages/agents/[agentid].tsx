@@ -10,10 +10,15 @@ import {
   useDisclosure,
   Button,
   Select,
+  Tag,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { getAgentFirebase, getReviews } from "@/firebase/firebaseFunctions";
+import {
+  addReview,
+  getAgentFirebase,
+  getReviews,
+} from "@/firebase/firebaseFunctions";
 import { getAgent, getSubscription } from "@/utils/graphFunctions";
 import { useContractWrite, useChainId } from "wagmi";
 import { CONTRACTS } from "@/constants/contracts";
@@ -185,12 +190,8 @@ const AgentId = () => {
       // TODO: call contract to complete the contract flow
       // @ts-ignore
       write({
-        args: [
-          agentData?.agentId,
-          agentData?.agentPrice,
-          threadId?.id,
-        ]
-      })
+        args: [agentData?.agentId, agentData?.agentPrice, threadId?.id],
+      });
     } catch (error) {
       console.log(error);
     }
@@ -401,9 +402,46 @@ const AgentId = () => {
               ></textarea>
             </div>
             <div className="mt-2 mx-auto">
-              <button className="cursor-pointer mb-3 px-10 py-2 bg-green-100 border border-black border-b-4 rounded-xl text-x font-semibold text-black">
+              <button
+                onClick={() =>
+                  addReview(
+                    Number(_agentId),
+                    rating,
+                    feedback,
+                    `${userAccount}`
+                  )
+                }
+                className="cursor-pointer mb-3 px-10 py-2 bg-green-100 border border-black border-b-4 rounded-xl text-x font-semibold text-black"
+              >
                 Submit
               </button>
+            </div>
+          </div>
+
+          <div className="w-2/3 border flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-[420px] overflow-scroll">
+            <p className="text-xl font-mono font-thin text-gray-600">
+              User Feedbacks
+            </p>
+            <div className="mt-4">
+              <div className="w-5/6 flex flex-col px-6 py-1 rounded-xl bg-white border border-zinc-200">
+                <div className="flex justify-between">
+                  <p className="font-semibold text-black">
+                    0x9B855D0Edb3111891a6A0059273904232c74815D
+                  </p>
+                  <Tag size="sm" className="ml-2 mt-0.5" colorScheme="yellow">
+                    ★ 3.3
+                  </Tag>
+                </div>
+                <p className="mt-3 text-md text-black">
+                  ElonAgent impresses with its innovative approach to artificial
+                  intelligence. Seamlessly integrating Elon Musk's visionary
+                  ideas, it offers unparalleled problem-solving and creativity.
+                  Its adaptability and quick learning make it a standout AI,
+                  embodying Musk's forward-thinking mindset. ElonAgent is a
+                  remarkable leap towards intelligent systems aligned with the
+                  future.
+                </p>
+              </div>
             </div>
           </div>
         </div>

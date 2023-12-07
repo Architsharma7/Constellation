@@ -7,6 +7,7 @@ import { IoIosSend } from "react-icons/io";
 export default function Home() {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
+  const [threadMessages, setthreadMessages] = useState<any>();
 
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
@@ -48,49 +49,57 @@ export default function Home() {
                     >
                       <path
                         stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="m1 1 4 4 4-4"
                       />
                     </svg>
                   </button>
-                  <ul
-                    className={` ${
-                      open ? "flex flex-col" : "hidden"
-                    } py-2 space-y-2`}
-                  >
-                    <li>
-                      <a
-                        href="#"
-                        className="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-orange-200"
-                      >
-                        First Thread
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-orange-200 "
-                      >
-                        First Thread
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-orange-200"
-                      >
-                        First Thread
-                      </a>
-                    </li>
-                  </ul>
                 </li>
               </ul>
             </div>
           </aside>
         </div>
         <div className="w-2/3 h-full flex flex-col justify-center items-center relative">
+          <div className="mt-6 flex">
+            {
+              <div className="justify-start flex bg-orange-100 px-4 py-1 rounded-xl">
+                {threadMessages &&
+                  threadMessages
+                    .filter((message: any) => message.role === "user")
+                    .map((userMessage: any) => {
+                      const content = userMessage.content[0];
+                      return (
+                        <p className="text-md font-semibold">
+                          {content &&
+                            content.type === "text" &&
+                            content.text.value}
+                        </p>
+                      );
+                    })}
+              </div>
+            }
+          </div>
+          <div className="mt-6 flex">
+            {
+              <div className="justify-start flex bg-pink-100 px-4 py-1 rounded-xl">
+                {threadMessages &&
+                  threadMessages
+                    .filter((message: any) => message.role === "assistant")
+                    .map((assistantMessage: any) => {
+                      const content = assistantMessage.content[0];
+                      return (
+                        <p className="text-md font-semibold">
+                          {content &&
+                            content.type === "text" &&
+                            content.text.value}
+                        </p>
+                      );
+                    })}
+              </div>
+            }
+          </div>
           <div className="fixed mr-40 bottom-0 mb-3 py-3 px-3 w-[70%] rounded-xl">
             <InputGroup>
               <Input

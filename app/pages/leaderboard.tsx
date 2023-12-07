@@ -6,6 +6,8 @@ import {
   getLockData,
 } from "@/utils/graphFunctions";
 import { getRatingsRank } from "@/firebase/firebaseFunctions";
+import Navbar from "@/components/navbar";
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 
 const Leaderboard = () => {
   const [roundData, setRoundData] = useState<any[]>();
@@ -103,71 +105,91 @@ const Leaderboard = () => {
   };
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
-      <div className="w-5/6 flex flex-col justify-center mx-auto mb-2">
-        {/* <div className="flex"> */}
-        <div className="mt-10 mx-auto items-center">
-          <div className="flex justify-between w-full">
-            <p></p>
-            <p></p>
-            <p></p>
+    <div>
+      <Navbar />
+      <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
+        <div className="w-5/6 flex flex-col justify-center mx-auto mb-2">
+          {/* <div className="flex"> */}
+          <div className="mt-10 mx-auto items-center">
             <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-indigo-200 to bg-indigo-500 text-center">
               LEADERBOARD
             </p>
-            <div className="r-0 flex items-center">
+            {/* <div className="r-0 flex items-center">
+                <div>
+                  <p className="font-semibold text-md mx-1">Sort</p>
+                </div>
+                <div>
+                  <select className="px-3 py-1 rounded-lg mx-1 font-semibold">
+                    <option>Rating</option>
+                    <option>Revenue</option>
+                  </select>
+                </div>
+              </div> */}
+            <p className="text-center font-md font-mono text-gray-600 mt-2 items-center w-2/3 mx-auto">
+              Leaderboards are based on either revenue or ratings and feedbacks
+              of the agent
+            </p>
+          </div>
+          <div className="mt-10 mx-auto mb-10 flex justify-between w-full">
+            <div></div>
+            <div></div>
+            <Tabs variant="soft-rounded" colorScheme="purple">
+              <TabList>
+                <Tab>All</Tab>
+                {[1, 2, 3, 4, 5].map((value, key) => (
+                  <Tab>Round {value}</Tab>
+                ))}
+              </TabList>
+              <TabPanels>
+                <TabPanel>
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <div className="mt-6 flex flex-col mx-auto">
+                      <div className="w-full flex">
+                        <div className="px-6 py-3.5 w-16 rounded-lg items-center border-orange-200 border-4 mx-3">
+                          <p className="text-2xl font-semibold text-center my-auto">
+                            {value}
+                          </p>
+                        </div>
+                        <div className="px-4 cursor-pointer py-2 flex align-middle border border-white bg-gradient-to-r from-pink-100 to-orange-200  mx-3 rounded-lg w-96">
+                          <div className="flex items-center">
+                            <div>
+                              <Wrap>
+                                <WrapItem>
+                                  <Avatar
+                                    colorScheme="pink"
+                                    size="md"
+                                    color="black"
+                                  />
+                                </WrapItem>
+                              </Wrap>
+                            </div>
+                            <div>
+                              <p className="m-0 ml-3 font-semibold text-2xl">
+                                ElonAgent
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+            <div className="flex mt-1">
               <div>
-                <p className="font-semibold text-md mx-1">Sort</p>
+                <p className="font-semibold text-md mx-1 mt-1">Sort</p>
               </div>
               <div>
-                <select className="px-3 py-1 rounded-lg mx-1 font-semibold">
+                <select className="px-3 py-1 rounded-3xl mx-1 font-semibold  bg-violet-200">
                   <option>Rating</option>
                   <option>Revenue</option>
+                  <option>No. of rounds</option>
                 </select>
               </div>
             </div>
           </div>
-          <p className="text-center font-md font-mono text-gray-600 mt-2 items-center w-2/3 mx-auto">
-            Leaderboards are based on either revenue or ratings and feedbacks of
-            the agent
-          </p>
         </div>
-        {/* <div className="r-0 mt-10 flex items-center">
-          <div>
-            <p className="font-semibold text-md mx-1">Sort</p>
-          </div>
-          <div>
-            <select className="px-3 py-1 rounded-lg mx-1 font-semibold">
-              <option>Rating</option>
-              <option>Revenue</option>
-            </select>
-          </div>
-        </div> */}
-        {/* </div> */}
-        {[1, 2, 3, 4, 5].map((value) => (
-          <div className="mt-6 flex flex-col mx-auto">
-            <div className="w-full flex">
-              <div className="px-6 py-3.5 w-16 rounded-lg items-center border-orange-200 border-4 mx-3">
-                <p className="text-2xl font-semibold text-center my-auto">
-                  {value}
-                </p>
-              </div>
-              <div className="px-4 cursor-pointer py-2 flex align-middle border border-white bg-gradient-to-r from-pink-100 to-orange-200  mx-3 rounded-lg w-96">
-                <div className="flex items-center">
-                  <div>
-                    <Wrap>
-                      <WrapItem>
-                        <Avatar colorScheme="pink" size="md" color="black" />
-                      </WrapItem>
-                    </Wrap>
-                  </div>
-                  <div>
-                    <p className="m-0 ml-3 font-semibold text-2xl">ElonAgent</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
