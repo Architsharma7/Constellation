@@ -19,7 +19,7 @@ export default function Home() {
   const [inputPrompt, setInputPrompt] = useState<string>();
 
   useEffect(() => {
-    getRatingsRank();
+    // getRatingsRank();
   }, []);
 
   const handleChat = async () => {
