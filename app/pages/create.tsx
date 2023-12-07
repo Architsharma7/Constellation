@@ -264,8 +264,8 @@ const Create = () => {
         functionName: "registerAgent",
         args: [
           {
-            agentName: agentDetails.agentName,
-            agentID: getAgentID(assistantID as string),
+            agentName: _assistantID,
+            agentID: getAgentID(_assistantID as string),
             subscriptionExpirationDuration: BigInt(0),
             tokenAddress: "0x0000000000000000000000000000000000000000",
             keyPrice: parseEther(agentDetails.agentPrice),
