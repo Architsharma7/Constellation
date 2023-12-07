@@ -30,15 +30,17 @@ import {
   usePublicClient,
   useWalletClient,
 } from "wagmi";
-import { CONTRACTS } from "@/constants/contracts";
+import { CONTRACT_ABI, CONTRACT_ADDRESSES } from "@/constants/contracts";
 import {
   getAgentID,
   getSourceID,
   getRewardCategory,
 } from "@/utils/chainlinkFunctions";
 import { createAgent } from "@/firebase/firebaseFunctions";
+import { parseEther } from "ethers";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 const Create = () => {
-  const chainID = useChainId();
+  // const chainID = useChainId();
   const assistID = "asst_4YruN6LyHritMXIFQX0NGmht";
   const threadId = "thread_0xBV2sYKFkHvwbD6IQefwc9B";
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -232,13 +234,12 @@ const Create = () => {
           const data = await res.json();
           console.log(data);
           setAssistantID(data?.id);
-          let agentId = data?.agentId;
 
           // peform the tx
           // @ts-ignore
-          write();
+          await registerAgent(data?.id);
 
-          createAgent(getAgentID(agentId));
+          createAgent(getAgentID(data?.id));
         })
         .catch((err) => {
           console.log(err);
@@ -248,7 +249,7 @@ const Create = () => {
     }
   };
 
-  const registerAgent = async () => {
+  const registerAgent = async (_assistantID: string) => {
     try {
       if (
         agentDetails.agentBP == "" &&
@@ -258,35 +259,52 @@ const Create = () => {
         console.log("Agent Details missing");
         return;
       }
+
+      let rewardCategoryChoice;
+      if (tweet) {
+        rewardCategoryChoice = 1;
+      } else if (mail) {
+        rewardCategoryChoice = 0;
+      } else {
+        rewardCategoryChoice = 0;
+      }
+
       const data = await publicClient?.simulateContract({
         account,
-        // @ts-ignore
-        address: CONTRACTS.AIMarket[chainID].contract,
-        // @ts-ignore
-        abi: CONTRACTS.AIMarket[chainID].abi,
+        address: CONTRACT_ADDRESSES,
+        abi: CONTRACT_ABI,
         functionName: "registerAgent",
         args: [
-          assistantID,
-          getAgentID(assistantID as string),
-          0,
-          "0x0000000000000000000000000000000000000000",
-          agentDetails.agentPrice,
-          agentDetails.agentBP,
-          agentDetails.agentName,
-          agentDetails.agentName,
-          "tokenURL",
-          // Reward Category 0 rating based - 1 tweetAds based - 2 email based
-          getSourceID(getRewardCategory(agentDetails.agentCategory)),
-          getRewardCategory(agentDetails.agentCategory),
-          isOpen,
+          {
+            agentName: _assistantID,
+            agentID: getAgentID(_assistantID as string),
+            subscriptionExpirationDuration: BigInt(0),
+            tokenAddress: "0x0000000000000000000000000000000000000000",
+            keyPrice: parseEther(agentDetails.agentPrice),
+            basisPoint: BigInt(Number(agentDetails.agentBP) * 100),
+            lockName: `Subscription for ${agentDetails.agentName}`,
+            lockSymbol: "SOA",
+            baseTokenURI: "tokenURL",
+            rewardCategory: getSourceID(
+              getRewardCategory(rewardCategoryChoice)
+            ), // Reward Category 0 rating based - 1 tweetAds based - 2 email based
+            actualCategory: agentDetails.agentCategory,
+            isOpenForContributions: openToContribution,
+          },
         ],
       });
+      console.log(data);
       if (!walletClient) {
         console.log("Wallet client not found");
         return;
       }
       // @ts-ignore
       const hash = await walletClient.writeContract(data.request);
+      console.log("Transaction Sent");
+      const transaction = await publicClient.waitForTransactionReceipt({
+        hash: hash,
+      });
+      console.log(transaction);
     } catch (error) {
       console.log(error);
     }
@@ -501,6 +519,7 @@ const Create = () => {
           >
             Create
           </Button>
+          {/* <ConnectButton */}
         </div>
       </div>
       <hr className="h-0.5 bg-black" />
@@ -821,7 +840,7 @@ const Create = () => {
                 <input
                   type="number"
                   className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
-                  placeholder="in range of 100-10000"
+                  placeholder="in % like 10%"
                   onChange={(e) =>
                     setAgentDetails({
                       ...agentDetails,
@@ -834,7 +853,7 @@ const Create = () => {
               <div className="mt-6">
                 <p className="text-xl text-black font-semibold">Category</p>
                 <input
-                  type="number"
+                  type="text"
                   className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
                   placeholder="like coding , fitness"
                   onChange={(e) =>
@@ -912,7 +931,10 @@ const Create = () => {
             </div>
           </DrawerBody>
           <DrawerFooter className="bg-orange-100">
-            <button className="mx-auto px-10 py-2 bg-pink-200 border-b-4 text-black font-semibold text-xl border border-black rounded-xl">
+            <button
+              onClick={() => onClose()}
+              className="mx-auto px-10 py-2 bg-pink-200 border-b-4 text-black font-semibold text-xl border border-black rounded-xl"
+            >
               Save Configuration
             </button>
           </DrawerFooter>

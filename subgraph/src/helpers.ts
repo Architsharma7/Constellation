@@ -8,10 +8,10 @@ import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
 //   return hashedValue;
 // };
 
-export const convertIdtoBytes = (topkAgents: BigInt[]): Bytes[] => {
-  let topAgentIds: Bytes[] = [];
+export const convertIdtoBytes = (topkAgents: BigInt[]): string[] => {
+  let topAgentIds: string[] = [];
   for (let i = 0; i < topkAgents.length; i++) {
-    let agentId = Bytes.fromI32(topkAgents[i].toI32());
+    let agentId = topkAgents[i].toString();
     topAgentIds.push(agentId);
   }
   return topAgentIds;

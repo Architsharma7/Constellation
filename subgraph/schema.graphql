@@ -19,7 +19,7 @@ type User @entity {
 
 ## Agent
 type Agent @entity {
-  id: Bytes!
+  id: String!
   assistantId: String!
   agentID: BigInt! # uint16
   creator: Creator! # address

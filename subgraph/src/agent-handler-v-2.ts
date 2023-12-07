@@ -82,7 +82,7 @@ export function handleagentRegistered(event: agentRegisteredEvent): void {
     creator.totalRevenue = BigInt.zero();
     creator.save();
   }
-  let entity = new Agent(Bytes.fromI32(event.params.agentID.toI32()));
+  let entity = new Agent(event.params.agentID.toString());
   entity.assistantId = event.params.agentName;
   entity.agentID = event.params.agentID;
   entity.creator = creator.id;
@@ -117,7 +117,7 @@ export function handleagentSubscriptionPurchased(
   );
   // event.params.subscriber.concat(Bytes.fromI32(event.params.agentID.toI32()))
 
-  let agent = Agent.load(Bytes.fromI32(event.params.agentID.toI32()));
+  let agent = Agent.load(event.params.agentID.toString());
   if (agent == null) {
     return;
   }
@@ -132,6 +132,7 @@ export function handleagentSubscriptionPurchased(
   }
 
   entity.agentCreator = creator.id;
+
   if (agent.isImprovedVersion) {
     // only add the referred amount
     const referAmount = subscriptionAmount.times(
@@ -190,9 +191,9 @@ export function handleagentVersionRegistered(
     creator.save();
   }
 
-  let entity = new Agent(Bytes.fromI32(event.params.agentVersionID.toI32()));
+  let entity = new Agent(event.params.agentVersionID.toString());
 
-  let agent = Agent.load(Bytes.fromI32(event.params.agentID.toI32()));
+  let agent = Agent.load(event.params.agentID.toString());
   if (agent == null) {
     return;
   }
@@ -212,6 +213,7 @@ export function handleagentVersionRegistered(
   entity.agentCategory = agent.agentCategory;
   entity.rewardCategory = agent.rewardCategory;
   entity.isOpenForContributions = agent.isOpenForContributions;
+  entity.totalRevenue = BigInt.zero();
   entity.isImprovedVersion = true;
 
   entity.save();
