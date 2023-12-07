@@ -43,9 +43,9 @@ module.exports = async ({ deployments }) => {
 
   const agentPlaceInstance = agentPlace.attach(AgentPlace.address);
 
-  console.log(getSourceID("twitterAdsRewardMechanism"));
-  console.log(getSourceID("usersRewardMechanism"));
-  console.log(getSourceID("ratingsRewardMechanism"));
+  console.log(getSourceID("twitterIds"));
+  console.log(getSourceID("users"));
+  console.log(getSourceID("ratings"));
 
   console.log(getAgentID("Solidity Auditor"));
   console.log(getAgentID("Solidity Auditor V2"));
@@ -55,7 +55,7 @@ module.exports = async ({ deployments }) => {
 
   // Add the reward mechanism for users to the contract
   let tx = await agentPlaceInstance.addRewardMechanism(
-    "ratingsRewardMechanism",
+    "ratings",
     codeStringR,
     // This should be the chainlink forwarder address after creating
     // the time based upkeep job to call the function sendRequest with the
@@ -71,7 +71,7 @@ module.exports = async ({ deployments }) => {
   await tx.wait();
 
   tx = await agentPlaceInstance.addRewardMechanism(
-    "twitterAdsRewardMechanism",
+    "twitterIds",
     codeStringT,
     // This should be the chainlink forwarder address after creating
     // the time based upkeep job to call the function sendRequest with the
@@ -87,7 +87,7 @@ module.exports = async ({ deployments }) => {
   await tx.wait();
 
   tx = await agentPlaceInstance.addRewardMechanism(
-    "usersRewardMechanism",
+    "users",
     codeStringU,
     // This should be the chainlink forwarder address after creating
     // the time based upkeep job to call the function sendRequest with the
@@ -103,27 +103,12 @@ module.exports = async ({ deployments }) => {
   await tx.wait();
 
 
-  // Add the reward mechanism for agents and twitterAds to the contract
-  // let tx = await agentPlaceInstance.addRewardMechanism(
-  //   "twitterAds",
-  //   codeString,
-  //   // This should be the chainlink forwarder address after creating
-  //   // the time based upkeep job to call the function sendRequest with the
-  //   //  sourceID as parameter sourceID is a bytes32 to identify the source
-  //   // getSourceID("source1")
-  //   wallet.address,
-  //   // _forwarderAddress,
-  //   // An array of the amount of the reward "tokens" that each agent will receive
-  //   // 1st agent 1st index, 2nd agent 2nd index, etc ...
-  //   distributionRewards,
-  //   { gasLimit: 10000000 }
-  // );
-  // await tx.wait();
 
-  // console.log("Reward mechanism added");
 
-  // // Register the agent
-  // tx = await agentPlaceInstance.registerAgent([
+  // console.log("Reward mechanisms are added");
+
+  // Register the agent
+  // let tx = await agentPlaceInstance.registerAgent([
   //   // agentName
   //   "Solidity Auditor",
   //   // agentID
@@ -138,7 +123,7 @@ module.exports = async ({ deployments }) => {
   //   "lockSymbol",
   //   "baseTokenURI",
   //   // rewardCategory
-  //   getSourceID("twitterAds"),
+  //   getSourceID("twitterIds"),
   //   // actualCategory
   //   "Coding",
   //   true,
@@ -192,5 +177,5 @@ module.exports = async ({ deployments }) => {
   //   });
   //   await tx.wait();
 
-  console.log(AgentPlace.address);
+  // console.log(AgentPlace.address);
 };

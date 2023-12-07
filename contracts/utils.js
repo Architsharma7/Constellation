@@ -92,7 +92,7 @@ const codeStringU = `
   return Functions.encodeString(data.encodedIDs);
 `;
 
-const distributionRewards = [100, 50, 25, 10, 5];
+const distributionRewards = [100, 50];
 const sourceForwarder = "";
 const deployment_config = [_oracle, _unlockContract, _donID, _subscriptionId];
 
