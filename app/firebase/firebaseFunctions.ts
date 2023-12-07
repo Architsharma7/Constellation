@@ -90,7 +90,7 @@ export const getReviews = async (agentId: number) => {
 
 export const getRatingsRank = async () => {
   const colRef = collection(db, "Agents");
-  const q = query(colRef, orderBy("avgRating"), limit(20));
+  const q = query(colRef, orderBy("avgRating", "desc"), limit(10));
   const querySnapshot = await getDocs(q);
   console.log(querySnapshot);
 
@@ -100,6 +100,7 @@ export const getRatingsRank = async () => {
     // console.log(doc.id, " => ", doc.data());
     ratingsRankData.push(doc.data());
   });
+  console.log(ratingsRankData);
   return ratingsRankData;
 };
 

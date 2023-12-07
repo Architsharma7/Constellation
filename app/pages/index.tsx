@@ -5,6 +5,7 @@ import { IoIosSend } from "react-icons/io";
 import { getCreator, getUser } from "@/utils/graphFunctions";
 import React, { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
+import { getRatingsRank } from "@/firebase/firebaseFunctions";
 
 export default function Home() {
   const router = useRouter();
@@ -16,6 +17,10 @@ export default function Home() {
   const [threadID, setThreadID] = useState<string>();
   const [assistantID, setAssistantID] = useState<string>();
   const [inputPrompt, setInputPrompt] = useState<string>();
+
+  useEffect(() => {
+    getRatingsRank();
+  }, []);
 
   const handleChat = async () => {
     try {
