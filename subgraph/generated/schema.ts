@@ -59,12 +59,12 @@ export class Creator extends Entity {
     this.set("address", Value.fromBytes(value));
   }
 
-  get agentsCreated(): Array<Bytes> | null {
+  get agentsCreated(): Array<string> | null {
     let value = this.get("agentsCreated");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBytesArray();
+      return value.toStringArray();
     }
   }
 
@@ -159,9 +159,9 @@ export class User extends Entity {
 }
 
 export class Agent extends Entity {
-  constructor(id: Bytes) {
+  constructor(id: string) {
     super();
-    this.set("id", Value.fromBytes(id));
+    this.set("id", Value.fromString(id));
   }
 
   save(): void {
@@ -169,28 +169,28 @@ export class Agent extends Entity {
     assert(id != null, "Cannot save Agent entity without an ID");
     if (id) {
       assert(
-        id.kind == ValueKind.BYTES,
-        `Entities of type Agent must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        id.kind == ValueKind.STRING,
+        `Entities of type Agent must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("Agent", id.toBytes().toHexString(), this);
+      store.set("Agent", id.toString(), this);
     }
   }
 
-  static load(id: Bytes): Agent | null {
-    return changetype<Agent | null>(store.get("Agent", id.toHexString()));
+  static load(id: string): Agent | null {
+    return changetype<Agent | null>(store.get("Agent", id));
   }
 
-  get id(): Bytes {
+  get id(): string {
     let value = this.get("id");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
-      return value.toBytes();
+      return value.toString();
     }
   }
 
-  set id(value: Bytes) {
-    this.set("id", Value.fromBytes(value));
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
   }
 
   get assistantId(): string {
@@ -323,17 +323,17 @@ export class Agent extends Entity {
     this.set("isImprovedVersion", Value.fromBoolean(value));
   }
 
-  get AgentVersions(): Array<Bytes> | null {
+  get AgentVersions(): Array<string> | null {
     let value = this.get("AgentVersions");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBytesArray();
+      return value.toStringArray();
     }
   }
 
-  get roundWon(): Array<Bytes> | null {
-    let value = this.get("roundWon");
+  get roundsWon(): Array<Bytes> | null {
+    let value = this.get("roundsWon");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -341,20 +341,20 @@ export class Agent extends Entity {
     }
   }
 
-  get parentAgent(): Bytes | null {
+  get parentAgent(): string | null {
     let value = this.get("parentAgent");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBytes();
+      return value.toString();
     }
   }
 
-  set parentAgent(value: Bytes | null) {
+  set parentAgent(value: string | null) {
     if (!value) {
       this.unset("parentAgent");
     } else {
-      this.set("parentAgent", Value.fromBytes(<Bytes>value));
+      this.set("parentAgent", Value.fromString(<string>value));
     }
   }
 
@@ -426,17 +426,17 @@ export class SubscriptionEntity extends Entity {
     this.set("id", Value.fromBytes(value));
   }
 
-  get agent(): Bytes {
+  get agent(): string {
     let value = this.get("agent");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
-      return value.toBytes();
+      return value.toString();
     }
   }
 
-  set agent(value: Bytes) {
-    this.set("agent", Value.fromBytes(value));
+  set agent(value: string) {
+    this.set("agent", Value.fromString(value));
   }
 
   get agentCreator(): Bytes {
@@ -652,17 +652,17 @@ export class Round extends Entity {
     this.set("rewardMechanism", Value.fromBytes(value));
   }
 
-  get topkAgents(): Array<Bytes> {
+  get topkAgents(): Array<string> {
     let value = this.get("topkAgents");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
-      return value.toBytesArray();
+      return value.toStringArray();
     }
   }
 
-  set topkAgents(value: Array<Bytes>) {
-    this.set("topkAgents", Value.fromBytesArray(value));
+  set topkAgents(value: Array<string>) {
+    this.set("topkAgents", Value.fromStringArray(value));
   }
 
   get topkCreators(): Array<Bytes> | null {
