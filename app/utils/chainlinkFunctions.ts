@@ -57,10 +57,10 @@ export const getSourceID = (sourceName: string) => {
 
 export const getRewardCategory = (input: any) => {
   switch (input) {
-    case "0":
+    case 0:
       return "ratings";
-    case "1":
-      return "tweetAds";
+    case 1:
+      return "twitterAds";
     default:
       return "Unknown";
   }

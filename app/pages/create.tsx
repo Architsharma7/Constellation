@@ -257,6 +257,15 @@ const Create = () => {
         return;
       }
 
+      let rewardCategoryChoice;
+      if (tweet) {
+        rewardCategoryChoice = 1;
+      } else if (mail) {
+        rewardCategoryChoice = 0;
+      } else {
+        rewardCategoryChoice = 0;
+      }
+
       const data = await publicClient?.simulateContract({
         account,
         address: CONTRACT_ADDRESSES,
@@ -274,7 +283,7 @@ const Create = () => {
             lockSymbol: "SOA",
             baseTokenURI: "tokenURL",
             rewardCategory: getSourceID(
-              getRewardCategory(agentDetails.agentCategory)
+              getRewardCategory(rewardCategoryChoice)
             ), // Reward Category 0 rating based - 1 tweetAds based - 2 email based
             actualCategory: agentDetails.agentCategory,
             isOpenForContributions: openToContribution,
