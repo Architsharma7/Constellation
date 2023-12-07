@@ -24,33 +24,32 @@ import { getAgent } from "@/utils/graphFunctions";
 import { getAssitant } from "@/utils/openAIfunctions";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import { getAgentID } from "@/utils/chainlinkFunctions";
+import {
+  useContractWrite,
+  usePrepareContractWrite,
+  useChainId,
+  useAccount,
+  usePublicClient,
+  useWalletClient,
+} from "wagmi";
 
 const AgentIdContribute = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
   const [tweet, setTweet] = useState<boolean>(false);
+  const { data: walletClient } = useWalletClient();
   const [mail, setMail] = useState<boolean>(false);
   const [file, setFile] = useState("");
   const [codeInterpreter, setCodeInterpreter] = useState<boolean>(false);
   const [fileInterpreter, setFileInterpreter] = useState<boolean>(false);
   const [inputPrompt, setInputPrompt] = useState<string>();
   const [openToContribution, setOpenToContribution] = useState<boolean>(false);
-  // const [agentDetails, setAgentDetails] = useState<{
-  //   agentDesc: string;
-  //   agentInstruc: string;
-  //   agentPrice: string;
-  //   agentBP: string;
-  //   agentCategory: string;
-  // }>({
-  //   agentDesc: "",
-  //   agentPrice: "",
-  //   agentInstruc: "",
-  //   agentBP: "",
-  //   agentCategory: "",
-  // });
 
   const router = useRouter();
   const _agentId = router.query.agentId;
+
+  const publicClient = usePublicClient();
 
   const [assistantID, setAssistantID] = useState<string>();
   const [agentDetails, setAgentDetails] = useState<{
@@ -61,6 +60,7 @@ const AgentIdContribute = () => {
     agentBP: string;
     agentCategory: string;
     agentImage: string | undefined;
+    parentAgentId: string | undefined;
   }>({
     agentName: "",
     agentDesc: "",
@@ -69,6 +69,7 @@ const AgentIdContribute = () => {
     agentBP: "",
     agentCategory: "",
     agentImage: undefined,
+    parentAgentId: undefined,
   });
 
   useEffect(() => {
@@ -81,6 +82,7 @@ const AgentIdContribute = () => {
 
   const [threadID, setThreadID] = useState<string>();
   const [imageGeneration, setImageGeneration] = useState<boolean>(false);
+  const { address: account } = useAccount();
 
   const getAgentData = async (agentId: string) => {
     if (!agentId) {
@@ -109,6 +111,7 @@ const AgentIdContribute = () => {
       agentCategory: agentGraphData?.agentGraphData,
       agentPrice: agentGraphData?.keyPrice,
       agentBP: agentGraphData?.basisPoint,
+      parentAgentId: agentId,
     });
     console.log(assitantData);
   };
@@ -185,12 +188,45 @@ const AgentIdContribute = () => {
 
           // peform the tx
           // do Agent V registeration
+          registerNewAgentID(data?.id);
 
           // createAgent(agentId) // firebase for the new AgentID
         })
         .catch((err) => {
           console.log(err);
         });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const registerNewAgentID = async (_agentVersionID: any) => {
+    try {
+      if (
+        agentDetails.agentBP == "" &&
+        agentDetails.agentPrice == "" &&
+        agentDetails.agentName == "" &&
+        agentDetails.parentAgentId == ""
+      ) {
+        console.log("Agent Details missing");
+        return;
+      }
+
+      const data = await publicClient?.simulateContract({
+        account,
+        // @ts-ignore
+        address: CONTRACTS.AIMarket[chainID].contract,
+        // @ts-ignore
+        abi: CONTRACTS.AIMarket[chainID].abi,
+        functionName: "registerAgentVersion",
+        args: [_agentId, _agentVersionID, agentDetails.agentName, ""],
+      });
+      if (!walletClient) {
+        console.log("wallletClient not found");
+      }
+      // @ts-ignore
+      const hash = await walletClient.writeContract(data.request);
+      console.log(hash)
     } catch (error) {
       console.log(error);
     }
@@ -319,6 +355,7 @@ const AgentIdContribute = () => {
         </p>
         <div>
           <Button
+            // @ts-ignore
             ref={btnRef}
             className="mx-3 bg-orange-600 border border-b-4 border-black"
             colorScheme=""
@@ -326,7 +363,10 @@ const AgentIdContribute = () => {
           >
             Configure
           </Button>
-          <Button className="mx-3 border border-b-4 border-black">
+          <Button
+            onClick={() => createAssistant()}
+            className="mx-3 border border-b-4 border-black"
+          >
             Create
           </Button>
         </div>
@@ -418,6 +458,7 @@ const AgentIdContribute = () => {
                 <MdOutlineAttachFile className="text-2xl cursor-pointer text-green-500"></MdOutlineAttachFile>
                 <input type="file" style={{ display: "none" }} />
                 {file && (
+                  // @ts-ignore
                   <p className="text-xs w-20 h-5 overflow-clip">{file?.name}</p>
                 )}
               </div>
@@ -433,7 +474,10 @@ const AgentIdContribute = () => {
               </p>
             </div>
             <div>
-              <button className="px-6 py-1.5 bg-blue-100 rounded-lg font-semibold mx-3">
+              <button
+                onClick={() => createAndRunThread()}
+                className="px-6 py-1.5 bg-blue-100 rounded-lg font-semibold mx-3"
+              >
                 Run
               </button>
               <button className="px-6 py-1.5 bg-green-100 rounded-lg font-semibold mx-3">
@@ -481,6 +525,7 @@ const AgentIdContribute = () => {
                               <MdOutlineAttachFile className="text-xl cursor-pointer"></MdOutlineAttachFile>
                               <input type="file" style={{ display: "none" }} />
                               {file && (
+                                // @ts-ignore
                                 <p className="text-xs w-20 overflow-clip">
                                   {file?.name}
                                 </p>
@@ -514,7 +559,9 @@ const AgentIdContribute = () => {
                             borderColor="white"
                             height="inherit"
                           >
-                            <IoIosSend className="text-xl cursor-pointer"></IoIosSend>
+                            <div onClick={() => sendMessage()}>
+                              <IoIosSend className="text-xl cursor-pointer"></IoIosSend>
+                            </div>
                           </InputRightAddon>
                         </InputGroup>
                       </div>
@@ -647,7 +694,10 @@ const AgentIdContribute = () => {
             </div>
           </DrawerBody>
           <DrawerFooter className="bg-orange-100">
-            <button className="mx-auto px-10 py-2 bg-pink-200 border-b-4 text-black font-semibold text-xl border border-black rounded-xl">
+            <button
+              onClick={() => onClose()}
+              className="mx-auto px-10 py-2 bg-pink-200 border-b-4 text-black font-semibold text-xl border border-black rounded-xl"
+            >
               Save Configuration
             </button>
           </DrawerFooter>
