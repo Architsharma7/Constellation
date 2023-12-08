@@ -1,5 +1,4 @@
 import {
-  AgentHandlerV2,
   Approval as ApprovalEvent,
   OwnershipTransferred as OwnershipTransferredEvent,
   RequestFulfilled as RequestFulfilledEvent,
@@ -11,7 +10,7 @@ import {
   agentSubscriptionPurchased as agentSubscriptionPurchasedEvent,
   agentVersionRegistered as agentVersionRegisteredEvent,
   rewardMechanismRegistered as rewardMechanismRegisteredEvent,
-} from "../generated/AgentHandlerV2/AgentHandlerV2";
+} from "../generated/agentHandlerV3/agentHandlerV3";
 import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 
 import {
@@ -83,6 +82,7 @@ export function handleagentRegistered(event: agentRegisteredEvent): void {
     creator.save();
   }
   let entity = new Agent(event.params.agentID.toString());
+  entity.agentName = event.params.baseTokenURI;
   entity.assistantId = event.params.agentName;
   entity.agentID = event.params.agentID;
   entity.creator = creator.id;
@@ -205,7 +205,7 @@ export function handleagentVersionRegistered(
 
   entity.assistantId = event.params.agentVersionName;
   entity.agentID = event.params.agentVersionID;
-
+  entity.agentName = event.params.agentMetadataCID;
   entity.creator = creator.id;
   entity.metadataCID = event.params.agentMetadataCID;
   entity.unlockSubAddress = agent.unlockSubAddress;

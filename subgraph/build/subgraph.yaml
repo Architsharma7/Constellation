@@ -3,11 +3,11 @@ schema:
   file: schema.graphql
 dataSources:
   - kind: ethereum
-    name: AgentHandlerV2
+    name: agentHandlerV3
     network: mumbai
     source:
-      address: "0xBd1767206D13601f162cd18eA006B798775f798b"
-      abi: AgentHandlerV2
+      address: "0xDa007aFEFA362446DAe054D4301D9440205326aB"
+      abi: agentHandlerV3
       startBlock: 43095064
     mapping:
       kind: ethereum/events
@@ -22,12 +22,12 @@ dataSources:
         - RoundWinners
         - Round
       abis:
-        - name: AgentHandlerV2
-          file: AgentHandlerV2/abis/AgentHandlerV2.json
+        - name: agentHandlerV3
+          file: agentHandlerV3/abis/agentHandlerV3.json
       eventHandlers:
         - event: RoundRewardsDistributed(bytes32,bytes32,uint32[],address[])
           handler: handleRoundRewardsDistributed
-        - event: agentRegistered(string,uint32,address,address,uint256,uint256,string,string,bool)
+        - event: agentRegistered(string,string,uint32,address,address,uint256,uint256,string,string,bool)
           handler: handleagentRegistered
         - event: agentSubscriptionPurchased(uint32,uint256,string,address,address)
           handler: handleagentSubscriptionPurchased
@@ -35,4 +35,4 @@ dataSources:
           handler: handleagentVersionRegistered
         - event: rewardMechanismRegistered(string,string,bytes32,uint256[])
           handler: handlerewardMechanismRegistered
-      file: AgentHandlerV2/AgentHandlerV2.wasm
+      file: agentHandlerV3/agentHandlerV3.wasm

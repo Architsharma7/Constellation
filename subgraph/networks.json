@@ -6,6 +6,9 @@
     },
     "AgentHandlerV2": {
       "address": "0xBd1767206D13601f162cd18eA006B798775f798b"
+    },
+    "agentHandlerV3": {
+      "address": "0xDa007aFEFA362446DAe054D4301D9440205326aB"
     }
   }
 }
