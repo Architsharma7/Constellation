@@ -1,5 +1,7 @@
 import OpenAI from "openai";
 import fs from "fs";
+import { run } from "node:test";
+import { type } from "os";
 
 const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
 
@@ -138,7 +140,7 @@ export const checkRun = async (
   try {
     const run = await openai.beta.threads.runs.retrieve(thread.id, runObj.id);
     return run;
-    // run.required_action?.submit_tool_outputs.tool_calls
+    // run.status.required_action?.submit_tool_outputs.tool_calls
     // If needs run , call the function and submit
   } catch (error) {
     console.log(error);
@@ -204,5 +206,57 @@ export const uploadFile = async (
     return file;
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const pollRun = async (
+  thread: OpenAI.Beta.Threads.Thread,
+  runObj: OpenAI.Beta.Threads.Runs.Run
+): Promise<OpenAI.Beta.Threads.Messages.ThreadMessagesPage | undefined> => {
+  try {
+    const _run = await checkRun(thread, runObj);
+    if (_run?.status === "requires_action") {
+      // 4. If needed perform functions and return result
+      const toolCalls = _run.required_action?.submit_tool_outputs.tool_calls;
+      // 5. Submit tool output if there
+      // 6. Get the thread and return
+      const threadContent = await getThreadMessage(thread);
+      return threadContent;
+    } else if (_run?.status === "completed") {
+      // 6. Get the thread and return
+      const threadContent = await getThreadMessage(thread);
+      return threadContent;
+    } else if (_run?.status === "in_progress" || _run?.status === "queued") {
+      // call poll Run , until the status is not this and then return the run
+      setTimeout(() => {
+        pollRun(thread, runObj);
+      }, 1000);
+    } else {
+      console.log("thread Run invalid");
+      return;
+    }
+  } catch (error) {}
+};
+
+export const useThread = async (
+  thread: OpenAI.Beta.Threads.Thread,
+  messageContent: string,
+  assistant: OpenAI.Beta.Assistants.Assistant,
+  instructions: string,
+  fileIds: any[]
+): Promise<OpenAI.Beta.Threads.Messages.ThreadMessagesPage | undefined> => {
+  // 1. send Message
+  await createMessage(thread, messageContent, fileIds);
+
+  // 2. Run thread
+  const run = await runThread(thread, assistant, instructions);
+
+  // 3. Check run
+  if (run) {
+    const data = await pollRun(thread, run);
+    return data;
+  } else {
+    console.log("Error in running thread");
+    return;
   }
 };

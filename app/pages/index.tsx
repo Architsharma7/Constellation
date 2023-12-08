@@ -23,7 +23,7 @@ export default function Home() {
   const [subscriptionsData, setSubscriptionsData] = useState<any[]>();
 
   const getAssistant = async (assistantID: string) => {
-    console.log("Fetching thread... Calling OpenAI");
+    console.log("Fetching Assistant... Calling OpenAI");
     if (!assistantID) {
       console.log("Agent Details missing");
       return;
@@ -85,7 +85,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (userAccount && !threadMessages) {
+    if (userAccount && !subscriptionsData) {
       getUserData();
     }
     // getRatingsRank();
@@ -216,6 +216,49 @@ export default function Home() {
     return data;
   };
 
+  const useThread = async () => {
+    try {
+      console.log("Sending msg... Calling OpenAI");
+      if (!assistantID) {
+        console.log("Agent Details missing");
+        return;
+      }
+      if (!inputPrompt) {
+        console.log("Input prompt missing");
+        return;
+      }
+
+      if (!threadID) {
+        console.log("Thread id missing...");
+        return;
+      }
+      fetch("/api/openai/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          threadID: threadID,
+          messageContent: inputPrompt,
+          assistantId: assistantID,
+          instructions: "",
+          fileIds: [],
+        }),
+      })
+        .then(async (res) => {
+          console.log(res);
+          const data = await res.json();
+          console.log(data);
+          await runThread();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
       <div className="flex w-screen">
@@ -341,7 +384,7 @@ export default function Home() {
                 <IoIosSend
                   className="text-xl cursor-pointer"
                   onClick={() => {
-                    sendMessage();
+                    useThread();
                   }}
                 />
               </InputRightAddon>
