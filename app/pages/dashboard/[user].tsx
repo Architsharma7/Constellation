@@ -38,7 +38,7 @@ const User = () => {
       getCreatorData();
     }
     if (userAccount) {
-      getUserData();
+      console.log(getUserData());
     }
   }, [userAccount, creatorAccount]);
   return (
@@ -55,9 +55,7 @@ const User = () => {
               </Wrap>
             </div>
             <div className="text-center">
-              <p className="text-lg font-semibold mt-3">
-                0x9B855D0Edb3111891a6A0059273904232c74815D
-              </p>
+              <p className="text-lg font-semibold mt-3">{userAccount}</p>
             </div>
           </div>
           <div className="mt-10 mx-auto flex">
