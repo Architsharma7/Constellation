@@ -101,6 +101,7 @@ const Index = () => {
       const agentsData = await Promise.all(promises);
       console.log(agentsData);
       if (agentsData) {
+        // @ts-ignore
         setAgentsData(agentsData);
       }
       setIsLoading(false);

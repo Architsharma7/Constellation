@@ -26,6 +26,17 @@ import {
   usePublicClient,
   useWalletClient,
 } from "wagmi";
+import {
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+} from "@chakra-ui/react";
 
 import { useAccount } from "wagmi";
 import { CONTRACT_ADDRESSES, CONTRACT_ABI } from "@/constants/contracts";
@@ -58,6 +69,7 @@ const AgentId = () => {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [agentData, setAgentData] = useState<agentDataType>();
+  const [agentsRoundsWon, setAgentsRoundsWon] = useState<any>();
   const [agentReviews, setAgentReviews] = useState<any[]>();
   const [rating, setRating] = useState<number>(0);
   const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
@@ -143,6 +155,7 @@ const AgentId = () => {
     console.log(agentIdBytes);
     const agentGraphData = (await getAgent(agentIdBytes)).agent;
     console.log(agentGraphData);
+    await setAgentsRoundsWon(agentGraphData.roundsWon);
 
     // TODO , Convert the agent ID to the one given in params
     // get partial data from firebase
@@ -292,6 +305,11 @@ const AgentId = () => {
     }
   };
 
+  const getTime = (timestamp: number) => {
+    var d = new Date(1382086394000);
+    return d.toLocaleString();
+  }
+
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
       <div className="flex flex-col">
@@ -318,8 +336,8 @@ const AgentId = () => {
                 Agent Creator
               </p>
               <p className="text-xl text-black font-semibold mt-2">
-                {agentData && agentData.agentCreator.slice(0, 4)}...{" "}
-                {agentData && agentData.agentCreator.slice(-4)}
+                {agentData && agentData.agentCreator?.slice(0, 4)}...{" "}
+                {agentData && agentData.agentCreator?.slice(-4)}
               </p>
             </div>
             <div className="border-2 bg-violet-100 border-b-8 flex flex-col px-14 py-3 border-black shadow-2xl">
@@ -332,7 +350,7 @@ const AgentId = () => {
                   1.0.0
                 </option>
                 {agentData &&
-                  agentData.agentVersions.map((agentV) => {
+                  agentData.agentVersions?.map((agentV) => {
                     return (
                       <option className="text-xl text-black font-semibold">
                         {agentV?.agentID}
@@ -372,9 +390,9 @@ const AgentId = () => {
               Agent Details
             </p>
             <div className="mt-4 flex justify-between">
-              <div>
+              <div className="w-1/2">
                 <p className="text-sm">Agent Price</p>
-                <p className="mt-1 font-semibold text-lg">
+                <p className="mt-1 font-semibold text-md">
                   {agentData && formatEther(agentData.agentPrice)} Ethers
                 </p>
               </div>
@@ -493,18 +511,18 @@ const AgentId = () => {
             </div>
           </div>
 
-          <div className="w-2/3 border flex flex-col border-black mx-3 rounded-xl px-10 py-3 h-[350px] overflow-scroll">
+          <div className="w-2/3 border flex flex-col border-black mx-3 rounded-xl px-10 py-3 h-[420px] overflow-scroll">
             <p className="text-xl font-mono font-thin text-gray-600">
               User Feedbacks
             </p>
-            <div className="grid grid-cols-3 grid-rows-1 gap-x-1 grid-flow-row">
+            <div className="grid grid-cols-3 grid-rows-1 gap-x-1 grid-flow-row overflow-x-scroll">
               {agentReviews &&
                 agentReviews.map((review) => {
                   return (
                     <div className="mt-10">
-                      <div className="w-11/12 flex flex-col px-3 py-1 h-56 rounded-xl bg-white border border-zinc-200">
+                      <div className="w-11/12 flex flex-col px-3 py-1 h-72 rounded-xl bg-white border border-zinc-200">
                         <div className="flex justify-between">
-                          <p className="font-semibold text-black">
+                          <p className="font-semibold text-black mt-3">
                             {review?.user.slice(0, 6)}...{" "}
                             {review?.user.slice(-4)}
                           </p>
@@ -545,6 +563,36 @@ const AgentId = () => {
                 </p>
               </div>
             </div> */}
+          </div>
+        </div>
+        <div className="mt-10 w-5/6 mx-auto flex">
+          <div className="w-2/3 border bg-violet-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
+            <p className="text-xl font-mono font-thin text-gray-600">
+              Previous Rounds Won
+            </p>
+            <div className="mt-10">
+              <TableContainer>
+                <Table variant="simple">
+                  <Thead>
+                    <Tr>
+                      <Th>Round Id</Th>
+                      <Th>Round End Time</Th>
+                      <Th>Transaction hash</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {agentsRoundsWon &&
+                      agentsRoundsWon.map((round: any) => (
+                        <Tr key={round.id}>
+                          <Td>{round.id}</Td>
+                          <Td>{getTime(round.blockTimestamp)}</Td>
+                          <Td><a href={'https://mumbai.polygonscan.com/address/{round.transactionHash}'} target="_blank" className="text-blue-500">https://mumbai.polygonscan.com/address/{round.transactionHash}</a></Td>
+                        </Tr>
+                      ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            </div>
           </div>
         </div>
       </div>

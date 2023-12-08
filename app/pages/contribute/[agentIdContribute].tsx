@@ -579,6 +579,7 @@ const AgentIdContribute = () => {
                               {file && (
                                 // @ts-ignore
                                 <p className="text-xs w-20 overflow-clip">
+                                  {/* @ts-ignore */}
                                   {file?.name}
                                 </p>
                               )}

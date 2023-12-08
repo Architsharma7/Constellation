@@ -240,6 +240,7 @@ const Leaderboard = () => {
                                 </div>
                                 <div>
                                   <p className="m-0 ml-3 font-semibold text-2xl">
+                                    {/* @ts-ignore */}
                                     {winner.agentID}
                                     {/* TODO : Need to display the agent's name here ,
                                     not the Id , but need to fetch it from

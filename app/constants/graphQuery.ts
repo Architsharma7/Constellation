@@ -68,6 +68,11 @@ export const indivAgentQuery = gql`
         id
         sourceName
       }
+      roundsWon {
+        id
+        blockTimestamp
+        transactionHash
+      }
     }
   }
 `;
