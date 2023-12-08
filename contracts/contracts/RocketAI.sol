@@ -41,6 +41,7 @@ contract RocketAI is ChainlinkConsumer , ILogAutomation {
 
     event agentRegistered(
         string agentName,
+        string baseTokenURI,
         uint32 agentID,
         address creator,
         address unlockSubscriptionContract,
@@ -126,6 +127,7 @@ contract RocketAI is ChainlinkConsumer , ILogAutomation {
 
         emit agentRegistered(
             agentConfig.agentName,
+            agentConfig.baseTokenURI,
             agentConfig.agentID,
             msg.sender,
             newLockAddress,
