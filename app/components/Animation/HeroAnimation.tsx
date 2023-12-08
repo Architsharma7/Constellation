@@ -1,11 +1,21 @@
 import Lottie from "lottie-react";
 import blocks from "./animation.json";
-
+import ai from "./AI.json";
 export default function HeroAnimation() {
   return (
-    <div className="flex flex-col items-center w-50 h-50">
-      {" "}
-      <Lottie animationData={blocks} />
+    <div className="flex justify-center items-center ">
+      <div
+        style={{ height: "500px", width: "500px" }}
+        className="flex flex-col items-center justify-center "
+      >
+        <Lottie animationData={blocks} />
+      </div>
+      <div
+        style={{ height: "500px", width: "500px" }}
+        className="flex flex-col items-center justify-center "
+      >
+        <Lottie animationData={ai} />
+      </div>
     </div>
   );
 }
