@@ -286,7 +286,21 @@ export default function Home() {
                   <button
                     type="button"
                     className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
-                    onClick={() => setOpen(!open)}
+                    onClick={() => {
+                      // TODO
+
+                      // setAssistantID(subscription.assistantId);
+                      setAssistantID("asst_4YruN6LyHritMXIFQX0NGmht");
+
+                      // setThreadID(subscription.threadID);
+                      setThreadID("thread_0xBV2sYKFkHvwbD6IQefwc9B");
+
+                      // change this to the thread id  &  assistant Id of the agent
+                      getThread(
+                        "thread_0xBV2sYKFkHvwbD6IQefwc9B",
+                        "asst_4YruN6LyHritMXIFQX0NGmht"
+                      );
+                    }}
                   >
                     <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
                       ElonAgent
@@ -328,8 +342,8 @@ export default function Home() {
           </aside>
         </div>
         <div className="w-2/3 h-full flex flex-col justify-center items-center relative">
-          <div className="mt-6 flex flex-col">
-            {threadMessages &&
+          <div className="mt-6 mr-60 w-[70%] flex flex-col">
+            {/* {threadMessages &&
               threadMessages
                 .filter((message: any) => message.role === "user")
                 .map((userMessage: any) => {
@@ -343,9 +357,39 @@ export default function Home() {
                       </p>
                     </div>
                   );
+                })} */}
+
+            {threadMessages &&
+              threadMessages
+                .slice()
+                .reverse()
+                .map((message: any, index: number) => {
+                  const content = message.content[0];
+                  const isUser = message.role === "user";
+
+                  return (
+                    <div
+                      key={index}
+                      className={`${
+                        isUser ? "justify-start mb-3" : "justify-end mb-10"
+                      } flex flex-col`}
+                    >
+                      <div
+                        className={`${
+                          isUser ? "bg-orange-100" : "bg-blue-100"
+                        } px-4 py-1 rounded-xl`}
+                      >
+                        <p className="text-md font-semibold">
+                          {content &&
+                            content.type === "text" &&
+                            content.text.value}
+                        </p>
+                      </div>
+                    </div>
+                  );
                 })}
           </div>
-          <div className="mt-6 flex">
+          {/* <div className="mt-6 flex">
             {threadMessages &&
               threadMessages
                 .filter((message: any) => message.role === "assistant")
@@ -361,7 +405,7 @@ export default function Home() {
                     </div>
                   );
                 })}
-          </div>
+          </div> */}
           <div className="fixed mr-40 bottom-0 mb-3 py-3 px-3 w-[70%] rounded-xl">
             <InputGroup>
               <Input

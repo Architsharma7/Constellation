@@ -678,7 +678,7 @@ const Create = () => {
                               {file && (
                                 <p className="text-xs w-20 overflow-clip">
                                   {/* @ts-ignore */}
-                                  { file?.name}
+                                  {file?.name}
                                 </p>
                               )}
                             </>
@@ -691,43 +691,40 @@ const Create = () => {
                 <TabPanel>
                   <div className="flex flex-col">
                     <div className="flex flex-col mx-auto w-full">
-                      <div className="mt-6 flex">
+                      <div className="mt-6 flex flex-col">
                         {
                           <div className="justify-start flex bg-orange-100 px-4 py-1 rounded-xl">
                             {threadMessages &&
                               threadMessages
-                                .filter(
-                                  (message: any) => message.role === "user"
-                                )
-                                .map((userMessage: any) => {
-                                  const content = userMessage.content[0];
+                                .slice()
+                                .reverse()
+                                .map((message: any, index: number) => {
+                                  const content = message.content[0];
+                                  const isUser = message.role === "user";
+
                                   return (
-                                    <p className="text-md font-semibold">
-                                      {content &&
-                                        content.type === "text" &&
-                                        content.text.value}
-                                    </p>
-                                  );
-                                })}
-                          </div>
-                        }
-                      </div>
-                      <div className="mt-6 flex">
-                        {
-                          <div className="justify-start flex bg-pink-100 px-4 py-1 rounded-xl">
-                            {threadMessages &&
-                              threadMessages
-                                .filter(
-                                  (message: any) => message.role === "assistant"
-                                )
-                                .map((assistantMessage: any) => {
-                                  const content = assistantMessage.content[0];
-                                  return (
-                                    <p className="text-md font-semibold">
-                                      {content &&
-                                        content.type === "text" &&
-                                        content.text.value}
-                                    </p>
+                                    <div
+                                      key={index}
+                                      className={`${
+                                        isUser
+                                          ? "justify-start mb-3"
+                                          : "justify-end mb-10"
+                                      } flex flex-col`}
+                                    >
+                                      <div
+                                        className={`${
+                                          isUser
+                                            ? "bg-orange-100"
+                                            : "bg-blue-100"
+                                        } px-4 py-1 rounded-xl`}
+                                      >
+                                        <p className="text-md font-semibold">
+                                          {content &&
+                                            content.type === "text" &&
+                                            content.text.value}
+                                        </p>
+                                      </div>
+                                    </div>
                                   );
                                 })}
                           </div>
