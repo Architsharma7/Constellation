@@ -1,5 +1,9 @@
 # Welcome to RocketAI Platform 🚀🧑‍🚀⚛
 
+<div >
+  <img src="./app/public/logo.webp" alt="TAS Logo" style="border-radius: 5%; width: 400px;" />
+</div>
+
 ## Short Description Pitch🎤
 
 **RocketAI**, is a platform that revolutionizes the creation, fine-tuning, and utilization of AI agents. Our platform fosters collaboration among creators, fine-tuners, and users, enhancing and utilizing AI agents for varied tasks, thus creating a dynamic and rewarding experience for all involved.
@@ -16,7 +20,7 @@
 
 **RocketAI** is a comprehensive platform for creating, fine-tuning, and engaging with specialized AI agents. By integrating OpenAI's GPT models with blockchain technology, it offers a unique blend of AI intelligence and decentralized functionality. Creators can design agents with specific skills, users can subscribe to these agents, and fine-tuners can enhance them, creating a collaborative and evolving AI environment.
 
-## Architecture and Flow of the Application✨
+## Flow & Architecture of the Application✨
 
 ### Agent Creation Process
 
@@ -48,8 +52,8 @@ RocketAI leverages a hybrid system combining Chainlink Time-Based Automation, Ch
 ## Chainlink Integration
 
 - **Time-Based Automation:** Regularly initiates the reward process on a set schedule (e.g., monthly).
-- **Chainlink Functions:** Query the RocketAI server for top-performing agents and users.
-- **Log Trigger Automation:** Listens for contract events post-query fulfillment to trigger reward distribution.
+- **Chainlink Functions:** Query the RocketAI server for top-performing agents or users, and stores them on-chain
+- **Log Trigger Automation:** Listens for contract events post-query fulfillment to trigger the reward distribution.
 
 ### Rewards Distribution
 
@@ -94,38 +98,40 @@ The integration of Chainlink's diverse automation and function capabilities with
 
 ### OpenAI 🔮
 
-**OpenAI APIs**: The core AI engine of the platform. OpenAI's GPT models provide the foundational intelligence for the agents. Creators can parameterize these models for a wide range of tasks, from natural language processing to image generation and more.
-
-### Unlock Protocol 🔓
-
-**Unlock Protocol**: This protocol manages the subscription mechanics on the platform. It allows users to seamlessly subscribe to different AI agents, handling the access permissions and subscription durations. This integration ensures a smooth and secure transactional experience for users engaging with the agents.
+**OpenAI APIs**: The core AI engine of the platform. OpenAI's GPT models provide the foundational intelligence for the agents. Creators can parameterize these models for a wide range of tasks, like natural language processing, image generation  Creating Advertasments and more.
 
 ### Chainlink Protocol 💎
 
 **Chainlink Protocol**: A critical component for integrating external data into the platform. Chainlink's decentralized oracle network enables the platform to securely and reliably bring in outside data, which is essential for automating the reward distribution process based on agents' performance and user feedback and engagement.
 
 - TimeBased Automation keeper
-  - [Keeper url]()
+  - [Keeper Best agent Ads creations Rewarding](https://automation.chain.link/mumbai/86997237276821682881210219114699384568045110504626347985217584324485942472134)
+  - [Keeper Most Active users Rewarding](https://automation.chain.link/mumbai/20865975940877883507250379394801837877800838813677926648707710558950748534139)
+  - [Keeper Ratings-Based agent Rewarding](https://automation.chain.link/mumbai/74144283878379645637176867477229354984663197323006917592696664999426381820156)
 - Chainlink Functions
-  - [Subscription link]()
-  - [SmartContract Chainlink Consumer]()
+  - [Subscription link](https://functions.chain.link/mumbai/785)
+  - [SmartContract Chainlink Consumer](https://github.com/Architsharma7/Constellation/blob/main/contracts/contracts/ChainlinkConsumer.sol)
 - Log Triger Automation Keeper
-  - [Keeper url]()
+  - [Keeper url](https://automation.chain.link/mumbai/75326241586280970289773533163079124194315874650874194249875686483698062817946)
 
 ### TheGraph 🕸️
 
 **The Graph** is used to index user interactions and contract events on the blockchain. It ensures that the platform's interface remains informative and user-friendly by providing quick access to data about agent interactions, subscriptions, and overall platform activity.
 
-- [**_RocketAI(Subgraph)_**](./subgraph/src/)
+- [**_RocketAI(Subgraph)_**](https://github.com/Architsharma7/Constellation/tree/main/subgraph)
 - Usage of the Unlock Protocol Subgraph
+
+### Unlock Protocol 🔓
+
+**Unlock Protocol**: This protocol manages the subscription mechanics on the platform. It allows users to seamlessly subscribe to different AI agents, handling the access permissions and subscription durations. This integration ensures a smooth and secure transactional experience for users engaging with the agents.
 
 ### ENS
 
-## Blockchain Deployments
+## Smart Contracts
 
 The RocketAI platform is deployed on the following blockchains:
 
-- **Polygon Mumbai Testnet**: https://mumbai.polygonscan.com/address/0xBd1767206D13601f162cd18eA006B798775f798b
+- **Polygon Mumbai Testnet**: [Mumbai Scan Link](https://mumbai.polygonscan.com/address/0xBd1767206D13601f162cd18eA006B798775f798b)
 
 ### Conclusion and Future Plans 🚀🌐
 
