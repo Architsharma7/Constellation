@@ -308,7 +308,7 @@ const AgentId = () => {
   const getTime = (timestamp: number) => {
     var d = new Date(1382086394000);
     return d.toLocaleString();
-  }
+  };
 
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
@@ -420,7 +420,7 @@ const AgentId = () => {
                 }}
                 className="font-semibold text-xl bg-pink-100 px-10 py-2 border border-black border-b-4 rounded-xl cursor-pointer"
               >
-                Use Agent
+                {isSubscribed ? "Use Agent" : "Buy Subscription"}
               </button>
               <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
@@ -448,6 +448,7 @@ const AgentId = () => {
                           <p className="mt-1 font-semibold text-lg">1 Month</p>
                         </div>
                       </div>
+
                       <button
                         onClick={() => subscribeAgent()}
                         className="mt-5 cursor-pointer mb-3 px-10 py-2 bg-green-100 border border-black border-b-4 rounded-xl text-x font-semibold text-black"
@@ -458,7 +459,12 @@ const AgentId = () => {
                   </ModalBody>
                 </ModalContent>
               </Modal>
-              <button className="font-semibold cursor-pointer mt-4 text-xl bg-violet-200 px-10 py-2 border border-black border-b-4 rounded-xl">
+              <button
+                onClick={() => {
+                  router.push(`/contribute/${_agentId}`);
+                }}
+                className="font-semibold cursor-pointer mt-4 text-xl bg-violet-200 px-10 py-2 border border-black border-b-4 rounded-xl"
+              >
                 Contribute
               </button>
             </div>
@@ -586,7 +592,18 @@ const AgentId = () => {
                         <Tr key={round.id}>
                           <Td>{round.id}</Td>
                           <Td>{getTime(round.blockTimestamp)}</Td>
-                          <Td><a href={'https://mumbai.polygonscan.com/address/{round.transactionHash}'} target="_blank" className="text-blue-500">https://mumbai.polygonscan.com/address/{round.transactionHash}</a></Td>
+                          <Td>
+                            <a
+                              href={
+                                "https://mumbai.polygonscan.com/address/{round.transactionHash}"
+                              }
+                              target="_blank"
+                              className="text-blue-500"
+                            >
+                              https://mumbai.polygonscan.com/address/
+                              {round.transactionHash}
+                            </a>
+                          </Td>
                         </Tr>
                       ))}
                   </Tbody>

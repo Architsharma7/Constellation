@@ -232,7 +232,7 @@ export default function Home() {
         console.log("Thread id missing...");
         return;
       }
-      fetch("/api/openai/chat", {
+      fetch("/api/openai/useThread", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -249,7 +249,6 @@ export default function Home() {
           console.log(res);
           const data = await res.json();
           console.log(data);
-          await runThread();
         })
         .catch((err) => {
           console.log(err);

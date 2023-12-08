@@ -41,8 +41,10 @@ export default async function handler(
     console.log(result);
 
     if (result) {
+      console.log("Result Valid");
       res.status(200).json(result);
     } else {
+      console.log("Result Undefined");
       res.status(404).json({ message: "Result undefined" });
     }
   } catch (error) {
