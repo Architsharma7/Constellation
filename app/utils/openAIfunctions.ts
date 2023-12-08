@@ -28,7 +28,7 @@ export const createAssistant = async (
   }
 };
 
-// 4. Run the thread, to perform the message
+// Get Assitant Data from OPENAI
 export const getAssitant = async (
   assistantId: string
 ): Promise<OpenAI.Beta.Assistants.Assistant | undefined> => {
@@ -117,6 +117,7 @@ export const createAndRunThread = async (
     const run = await openai.beta.threads.createAndRun({
       assistant_id: assistant.id,
       instructions: instructions,
+
       thread: {
         messages: [
           { role: "user", content: messageContent, file_ids: fileIds },
