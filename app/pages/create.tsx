@@ -39,6 +39,7 @@ import {
 import { createAgent } from "@/firebase/firebaseFunctions";
 import { parseEther } from "ethers";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Navbar from "@/components/navbar";
 const Create = () => {
   // const chainID = useChainId();
   const assistID = "asst_4YruN6LyHritMXIFQX0NGmht";
@@ -474,6 +475,11 @@ const Create = () => {
 
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
+      <div className="fixed z-50 top-0 left-0 w-full ">
+        {" "}
+        <Navbar />
+      </div>
+      <div className="flex flex-col mt-16  border border-t-4 border-black"></div>
       <div className="flex justify-between mx-10 pt-3 pb-2">
         <p className="text-orange-600 text-2xl font-bold">Create an Agent</p>
         <div>
@@ -770,147 +776,151 @@ const Create = () => {
           </div>
         </div>
       </div>
-
-      <Drawer
-        isOpen={isOpen}
-        placement="right"
-        size="md"
-        closeOnEsc={false}
-        closeOnOverlayClick={false}
-        onClose={onClose}
-        colorScheme="orange"
-      >
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader className="bg-orange-100" fontSize="x-large">
-            Configure Your Agent
-          </DrawerHeader>
-          <DrawerBody className="bg-orange-100">
-            <div className="flex flex-col">
-              <div>
-                <p className="text-xl text-black font-semibold">
-                  Price of Agent
-                </p>
-                <input
-                  type="number"
-                  className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
-                  placeholder="in ethers"
-                  onChange={(e) =>
-                    setAgentDetails({
-                      ...agentDetails,
-                      agentPrice: e.target.value,
-                    })
-                  }
-                  value={agentDetails.agentPrice}
-                ></input>
-              </div>
-              <div className="mt-6">
-                <p className="text-xl text-black font-semibold">
-                  Basis point ( BP )
-                </p>
-                <input
-                  type="number"
-                  className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
-                  placeholder="in % like 10%"
-                  onChange={(e) =>
-                    setAgentDetails({
-                      ...agentDetails,
-                      agentBP: e.target.value,
-                    })
-                  }
-                  value={agentDetails.agentBP}
-                ></input>
-              </div>
-              <div className="mt-6">
-                <p className="text-xl text-black font-semibold">Category</p>
-                <input
-                  type="text"
-                  className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
-                  placeholder="like coding , fitness"
-                  onChange={(e) =>
-                    setAgentDetails({
-                      ...agentDetails,
-                      agentCategory: e.target.value,
-                    })
-                  }
-                ></input>
-              </div>
-              <div className="mt-6">
-                <p className="text-xl text-black font-semibold">
-                  Open to Contributions ( training )
-                </p>
-                <div className="mt-2">
-                  <Badge colorScheme="red" className="mx-3">
-                    no
-                  </Badge>
-                  <Switch
-                    size="lg"
-                    onChange={() => setOpenToContribution(!openToContribution)}
-                    colorScheme="orange"
-                  />
-                  <Badge colorScheme="green" className="mx-3">
-                    yes
-                  </Badge>
+      <div className="flex flex-col mt-16">
+        <Drawer
+          isOpen={isOpen}
+          placement="right"
+          size="md"
+          closeOnEsc={false}
+          closeOnOverlayClick={false}
+          onClose={onClose}
+          colorScheme="orange"
+        >
+          <div className="flex flex-col mt-16"></div>
+          <DrawerContent>
+            <DrawerCloseButton />
+            <DrawerHeader className="bg-orange-100" fontSize="x-large">
+              Configure Your Agent
+            </DrawerHeader>
+            <DrawerBody className="bg-orange-100">
+              <div className="flex flex-col">
+                <div>
+                  <p className="text-xl text-black font-semibold">
+                    Price of Agent
+                  </p>
+                  <input
+                    type="number"
+                    className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
+                    placeholder="in ethers"
+                    onChange={(e) =>
+                      setAgentDetails({
+                        ...agentDetails,
+                        agentPrice: e.target.value,
+                      })
+                    }
+                    value={agentDetails.agentPrice}
+                  ></input>
                 </div>
-              </div>
-              <div className="mt-6">
-                <p className="text-xl text-black font-semibold">Actions</p>
-                <div className="mt-2 flex">
-                  <div className="mx-3">
-                    <p className="text-sm font-mono">Post on </p>
-                    <div
-                      className={` ${
-                        tweet === true && "border-2 border-blue-500"
-                      } border-2 border-black rounded-full px-3 py-2.5 w-12 mt-3 cursor-pointer`}
-                      onClick={() => setTweet(!tweet)}
-                    >
-                      <FaTwitter
-                        className={`${
-                          tweet === true && "text-blue-500 text-2xl"
-                        } text-black text-2xl`}
-                      />
-                    </div>
-                  </div>
-                  <div className="mx-3">
-                    <p className="text-sm font-mono">Send</p>
-                    <div
-                      className={` ${
-                        mail === true && "border-2 border-red-500"
-                      } border-2 border-black rounded-full px-2.5 py-2.5 w-12 mt-3 cursor-pointer`}
-                      onClick={() => setMail(!mail)}
-                    >
-                      <IoIosMail
-                        className={`${
-                          mail === true && "text-red-500 text-2xl text-center"
-                        } text-black text-2xl text-center`}
-                      />
-                    </div>
-                  </div>
+                <div className="mt-6">
+                  <p className="text-xl text-black font-semibold">
+                    Basis point ( BP )
+                  </p>
+                  <input
+                    type="number"
+                    className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
+                    placeholder="in % like 10%"
+                    onChange={(e) =>
+                      setAgentDetails({
+                        ...agentDetails,
+                        agentBP: e.target.value,
+                      })
+                    }
+                    value={agentDetails.agentBP}
+                  ></input>
                 </div>
-                <div className="mt-5">
-                  <p className="text-sm font-mono">Tools</p>
-                  <div className="flex justify-between w-full mt-2">
-                    <p className="text-md font-semibold">Image Generation</p>
+                <div className="mt-6">
+                  <p className="text-xl text-black font-semibold">Category</p>
+                  <input
+                    type="text"
+                    className="mt-2 px-5 w-full rounded-xl py-2 border border-black"
+                    placeholder="like coding , fitness"
+                    onChange={(e) =>
+                      setAgentDetails({
+                        ...agentDetails,
+                        agentCategory: e.target.value,
+                      })
+                    }
+                  ></input>
+                </div>
+                <div className="mt-6">
+                  <p className="text-xl text-black font-semibold">
+                    Open to Contributions ( training )
+                  </p>
+                  <div className="mt-2">
+                    <Badge colorScheme="red" className="mx-3">
+                      no
+                    </Badge>
                     <Switch
                       size="lg"
-                      onChange={() => setImageGeneration(!imageGeneration)}
+                      onChange={() =>
+                        setOpenToContribution(!openToContribution)
+                      }
                       colorScheme="orange"
                     />
+                    <Badge colorScheme="green" className="mx-3">
+                      yes
+                    </Badge>
+                  </div>
+                </div>
+                <div className="mt-6">
+                  <p className="text-xl text-black font-semibold">Actions</p>
+                  <div className="mt-2 flex">
+                    <div className="mx-3">
+                      <p className="text-sm font-mono">Post on </p>
+                      <div
+                        className={` ${
+                          tweet === true && "border-2 border-blue-500"
+                        } border-2 border-black rounded-full px-3 py-2.5 w-12 mt-3 cursor-pointer`}
+                        onClick={() => setTweet(!tweet)}
+                      >
+                        <FaTwitter
+                          className={`${
+                            tweet === true && "text-blue-500 text-2xl"
+                          } text-black text-2xl`}
+                        />
+                      </div>
+                    </div>
+                    <div className="mx-3">
+                      <p className="text-sm font-mono">Send</p>
+                      <div
+                        className={` ${
+                          mail === true && "border-2 border-red-500"
+                        } border-2 border-black rounded-full px-2.5 py-2.5 w-12 mt-3 cursor-pointer`}
+                        onClick={() => setMail(!mail)}
+                      >
+                        <IoIosMail
+                          className={`${
+                            mail === true && "text-red-500 text-2xl text-center"
+                          } text-black text-2xl text-center`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-5">
+                    <p className="text-sm font-mono">Tools</p>
+                    <div className="flex justify-between w-full mt-2">
+                      <p className="text-md font-semibold">Image Generation</p>
+                      <Switch
+                        size="lg"
+                        onChange={() => setImageGeneration(!imageGeneration)}
+                        colorScheme="orange"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </DrawerBody>
-          <DrawerFooter className="bg-orange-100">
-            <button
-              onClick={() => onClose()}
-              className="mx-auto px-10 py-2 bg-pink-200 border-b-4 text-black font-semibold text-xl border border-black rounded-xl"
-            >
-              Save Configuration
-            </button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+            </DrawerBody>
+            <DrawerFooter className="bg-orange-100">
+              <button
+                onClick={() => onClose()}
+                className="mx-auto px-10 py-2 bg-pink-200 border-b-4 text-black font-semibold text-xl border border-black rounded-xl"
+              >
+                Save Configuration
+              </button>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </div>
     </div>
   );
 };

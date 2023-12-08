@@ -22,6 +22,7 @@
     "express": "^4.18.2",
     "firebase": "^10.7.0",
     "framer-motion": "^10.16.4",
+    "lottie-react": "^2.4.0",
     "next": "14.0.2",
     "openai": "^4.20.0",
     "react": "^18",

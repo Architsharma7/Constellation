@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { getAllAgents } from "@/utils/graphFunctions";
 import { getAgentFirebase } from "@/firebase/firebaseFunctions";
+import Navbar from "@/components/navbar";
 
 interface agentDataType {
   agentId: number;
@@ -119,7 +120,11 @@ const Index = () => {
   const router = useRouter();
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
-      <div className="flex flex-col">
+      <div className="fixed z-50 top-0 left-0 w-full ">
+        {" "}
+        <Navbar />
+      </div>
+      <div className="flex flex-col mt-14">
         <div className="mx-auto mt-10">
           <div
             onClick={() => router.push("/leaderboard")}
@@ -133,6 +138,7 @@ const Index = () => {
                 <IoIosArrowRoundForward className="text-2xl" />
               </div>
             </div>
+            
           </div>
         </div>
         <div className="mx-auto mt-6">
