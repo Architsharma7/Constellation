@@ -6,6 +6,7 @@ import { getCreator, getUser } from "@/utils/graphFunctions";
 import React, { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { getRatingsRank } from "@/firebase/firebaseFunctions";
+import { toBytes, toHex } from "viem";
 
 export default function Home() {
   const { address: userAccount } = useAccount();
@@ -133,6 +134,7 @@ export default function Home() {
           console.log(res);
           const data = await res.json();
           console.log(data);
+          await runThread();
         })
         .catch((err) => {
           console.log(err);
@@ -170,6 +172,7 @@ export default function Home() {
           console.log(res);
           const data = await res.json();
           console.log(data);
+          getThread(threadID, assistantID);
         })
         .catch((err) => {
           console.log(err);
@@ -255,11 +258,18 @@ export default function Home() {
                           type="button"
                           className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
                           onClick={() => {
-                            setAssistantID(subscription.assistantId);
-                            setThreadID(subscription.threadID);
+                            // TODO
+
+                            // setAssistantID(subscription.assistantId);
+                            setAssistantID("asst_4YruN6LyHritMXIFQX0NGmht");
+
+                            // setThreadID(subscription.threadID);
+                            setThreadID("thread_0xBV2sYKFkHvwbD6IQefwc9B");
+
+                            // change this to the thread id  &  assistant Id of the agent
                             getThread(
-                              subscription.threadID,
-                              subscription.assistantId
+                              "thread_0xBV2sYKFkHvwbD6IQefwc9B",
+                              "asst_4YruN6LyHritMXIFQX0NGmht"
                             );
                           }}
                         >
@@ -275,43 +285,39 @@ export default function Home() {
           </aside>
         </div>
         <div className="w-2/3 h-full flex flex-col justify-center items-center relative">
-          <div className="mt-6 flex">
-            {
-              <div className="justify-start flex bg-orange-100 px-4 py-1 rounded-xl">
-                {threadMessages &&
-                  threadMessages
-                    .filter((message: any) => message.role === "user")
-                    .map((userMessage: any) => {
-                      const content = userMessage.content[0];
-                      return (
-                        <p className="text-md font-semibold">
-                          {content &&
-                            content.type === "text" &&
-                            content.text.value}
-                        </p>
-                      );
-                    })}
-              </div>
-            }
+          <div className="mt-6 flex flex-col">
+            {threadMessages &&
+              threadMessages
+                .filter((message: any) => message.role === "user")
+                .map((userMessage: any) => {
+                  const content = userMessage.content[0];
+                  return (
+                    <div className="justify-start flex flex-col bg-orange-100 px-4 py-1 rounded-xl">
+                      <p className="text-md font-semibold">
+                        {content &&
+                          content.type === "text" &&
+                          content.text.value}
+                      </p>
+                    </div>
+                  );
+                })}
           </div>
           <div className="mt-6 flex">
-            {
-              <div className="justify-start flex bg-pink-100 px-4 py-1 rounded-xl">
-                {threadMessages &&
-                  threadMessages
-                    .filter((message: any) => message.role === "assistant")
-                    .map((assistantMessage: any) => {
-                      const content = assistantMessage.content[0];
-                      return (
-                        <p className="text-md font-semibold">
-                          {content &&
-                            content.type === "text" &&
-                            content.text.value}
-                        </p>
-                      );
-                    })}
-              </div>
-            }
+            {threadMessages &&
+              threadMessages
+                .filter((message: any) => message.role === "assistant")
+                .map((assistantMessage: any) => {
+                  const content = assistantMessage.content[0];
+                  return (
+                    <div className="justify-start flex flex-cols bg-pink-100 px-4 py-1 rounded-xl">
+                      <p className="text-md font-semibold">
+                        {content &&
+                          content.type === "text" &&
+                          content.text.value}
+                      </p>
+                    </div>
+                  );
+                })}
           </div>
           <div className="fixed mr-40 bottom-0 mb-3 py-3 px-3 w-[70%] rounded-xl">
             <InputGroup>
@@ -325,13 +331,19 @@ export default function Home() {
                 type="text"
                 className="font-semibold"
                 placeholder="enter prompt for agent"
+                onChange={(e) => setInputPrompt(e.target.value)}
               />
               <InputRightAddon
                 bgColor="white"
                 borderColor="white"
                 height="inherit"
               >
-                <IoIosSend className="text-xl cursor-pointer" />
+                <IoIosSend
+                  className="text-xl cursor-pointer"
+                  onClick={() => {
+                    sendMessage();
+                  }}
+                />
               </InputRightAddon>
             </InputGroup>
           </div>

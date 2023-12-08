@@ -205,9 +205,11 @@ const AgentId = () => {
       }
 
       // // TODO : Check the subID again after the new graph V
-      // const subId = userAccount.concat(agentId?.slice(2));
+
       // console.log(subId);
-      const subscriptionData = await getSubscription(userAccount);
+      const subscriptionData = await getSubscription(
+        `${userAccount}-${agentId}`
+      );
       console.log(subscriptionData);
       // or Unlock protocol graphQl
       // Or contract balance ERC721 method
