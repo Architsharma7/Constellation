@@ -367,7 +367,7 @@ const AgentId = () => {
           </div>
         </div>
         <div className="mt-16 w-5/6 mx-auto flex">
-          <div className="w-2/3 border bg-orange-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
+          <div className="w-2/3 border bg-indigo-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
             <p className="text-xl font-mono font-thin text-gray-600">
               Description
             </p>
@@ -382,7 +382,7 @@ const AgentId = () => {
               {agentData && agentData.agentInstructions}
             </p>
           </div>
-          {/* <div className="w-2/3 border bg-orange-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
+          {/* <div className="w-2/3 border bg-indigo-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
             <p className="text-xl font-mono font-thin text-gray-600">
               Instructions (Prompt)
             </p>

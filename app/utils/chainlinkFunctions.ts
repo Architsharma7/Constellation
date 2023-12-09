@@ -46,22 +46,22 @@ export const concatenateAddresses = (addressArray: any[]) => {
 };
 
 export const getSourceID = (sourceName: string) => {
+  if(!sourceName) return " ";
   const abi = new AbiCoder();
 
-  let sourceNameBytes = abi.encode(["string"], [sourceName || "_"]);
+  let sourceNameBytes = abi.encode(["string"], [sourceName]);
 
   const sourceID = keccak256(sourceNameBytes);
 
   return sourceID;
 };
 
-export const getRewardCategory = (input: any) => {
-  switch (input) {
-    case 0:
-      return "ratings";
-    case 1:
-      return "twitterIds";
-    default:
-      return "Unknown";
+export const getRewardCategory = (input: number) => {
+  if (input === 0) {
+    return "ratings";
+  } else if (input === 1) {
+    return "twitterIds";
+  } else {
+    return "ratings";
   }
 };

@@ -409,7 +409,7 @@ const AgentIdContribute = () => {
       </div>
       <hr className="h-0.5 bg-black" />
       <div className="flex h-full">
-        <div className="w-1/3 bg-orange-100 px-10 flex flex-col overflow-scroll border-r-8 border-t-2 border-black rounded-2xl">
+        <div className="w-1/3 bg-indigo-100 px-10 flex flex-col overflow-scroll border-r-8 border-t-2 border-black rounded-2xl">
           <div className="mt-5">
             <p className="text-black text-2xl font-semibold text-center">
               Agent Details
@@ -613,7 +613,7 @@ const AgentIdContribute = () => {
                                 >
                                   <div
                                     className={`${
-                                      isUser ? "bg-orange-100" : "bg-blue-100"
+                                      isUser ? "bg-indigo-100" : "bg-blue-100"
                                     } px-4 py-1 rounded-xl`}
                                   >
                                     <p className="text-md font-semibold">
@@ -671,10 +671,10 @@ const AgentIdContribute = () => {
       >
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader className="bg-orange-100" fontSize="x-large">
+          <DrawerHeader className="bg-indigo-100" fontSize="x-large">
             Configure Your Agent
           </DrawerHeader>
-          <DrawerBody className="bg-orange-100">
+          <DrawerBody className="bg-indigo-100">
             <div className="flex flex-col">
               <div>
                 <p className="text-xl text-black font-semibold">
@@ -779,7 +779,7 @@ const AgentIdContribute = () => {
               </div>
             </div>
           </DrawerBody>
-          <DrawerFooter className="bg-orange-100">
+          <DrawerFooter className="bg-indigo-100">
             <button
               onClick={() => onClose()}
               className="mx-auto px-10 py-2 bg-pink-200 border-b-4 text-black font-semibold text-xl border border-black rounded-xl"

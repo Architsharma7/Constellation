@@ -269,7 +269,7 @@ export default function UserAgents() {
         <div className="flex w-screen ">
           <div className="w-1/3 justify-start h-full mt-5">
             <aside className="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 mt-14">
-              <div className="h-full px-3 py-4 overflow-y-auto bg-orange-100 border-r-2  border-t-2 border-black">
+              <div className="h-full px-3 py-4 overflow-y-auto bg-indigo-100 border-r-2  border-t-2 border-black">
                 <ul className="space-y-2 font-medium">
                   <li>
                     <div
@@ -354,7 +354,7 @@ export default function UserAgents() {
                 .map((userMessage: any) => {
                   const content = userMessage.content[0];
                   return (
-                    <div className="justify-start flex flex-col bg-orange-100 px-4 py-1 rounded-xl">
+                    <div className="justify-start flex flex-col bg-indigo-100 px-4 py-1 rounded-xl">
                       <p className="text-md font-semibold">
                         {content &&
                           content.type === "text" &&

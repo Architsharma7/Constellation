@@ -164,10 +164,12 @@ const Index = () => {
           </form>
         </div>
         <div className="mt-10 w-5/6 mx-auto">
-          <div className= {!isLoading ? "grid grid-flow-row grid-cols-3 gap-x-10 gap-y-10":"flex flex-col items-center"}>
-            {agentsData ? (
-              agentsData.map((agent) => {
-                return (
+          {agentsData && agentsData?.length > 0 ? (
+            agentsData?.map((agent) => {
+              return (
+                <div
+                  className={"grid grid-flow-row grid-cols-3 gap-x-10 gap-y-10"}
+                >
                   <div className="px-6 py-3 bg-white border-b-8 shadow-xl border border-black">
                     <div className="flex mx-auto">
                       <p className="text-center text-xl font-semibold">
@@ -199,20 +201,24 @@ const Index = () => {
                       Try it out
                     </button>
                   </div>
-                );
-              })
-            ) : (
+                </div>
+              );
+            })
+          ) : (
+            <div className={"flex flex-col items-center"}>
               <div className="flex flex-col items-center ">
-                {isLoading ? (
+                {!agentsData || agentsData.length !=0 ? (
                   <div className="flex flex-col items-center ">
                     <Loading />
                   </div>
                 ) : (
-                  <p>No Agents Found</p>
+                  <div className="flex flex-col items-center text-black">
+                    <p>No Agents Found</p>
+                  </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
