@@ -91,6 +91,7 @@ export function handleagentRegistered(event: agentRegisteredEvent): void {
   entity.basisPoint = event.params.basisPoint;
   entity.agentCategory = event.params.actualCategory;
   entity.totalRevenue = BigInt.zero();
+  entity.versionNo = "1.0.0";
   // need to convert the rewardCategory name to rewardCategory Id
   // if this does not work ,convert this off chain and pass only the sourceID in the place of rewardCategory name
 
@@ -113,7 +114,7 @@ export function handleagentSubscriptionPurchased(
 ): void {
   //UserAddress-AgentId
   let entity = new SubscriptionEntity(
-    `${event.params.subscriber}-${event.params.agentID}`
+    `${event.params.subscriber.toHexString()}-${event.params.agentID}`
   );
   // event.transaction.hash.concatI32(event.logIndex.toI32())
   // event.params.subscriber.concat(Bytes.fromI32(event.params.agentID.toI32()))
@@ -205,7 +206,8 @@ export function handleagentVersionRegistered(
 
   entity.assistantId = event.params.agentVersionName;
   entity.agentID = event.params.agentVersionID;
-  entity.agentName = event.params.agentMetadataCID;
+  entity.versionNo = event.params.agentMetadataCID;
+  entity.agentName = agent.agentName;
   entity.creator = creator.id;
   entity.metadataCID = event.params.agentMetadataCID;
   entity.unlockSubAddress = agent.unlockSubAddress;
