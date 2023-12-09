@@ -7,13 +7,13 @@ export default function HeroAnimation() {
   return (
     <div className="flex justify-center items-center ">
       <div
-        style={{ height: "500px", width: "500px" }}
+        style={{ height: "300px", width: "300px" }}
         className="flex flex-col items-center justify-center "
       >
         <Lottie animationData={rocket} />
       </div>
       <div
-        style={{ height: "500px", width: "500px" }}
+        style={{ height: "190px", width: "190px" }}
         className="flex flex-col items-center justify-center "
       >
         <Lottie animationData={ai} />
