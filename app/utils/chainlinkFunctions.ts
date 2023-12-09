@@ -46,7 +46,7 @@ export const concatenateAddresses = (addressArray: any[]) => {
 };
 
 export const getSourceID = (sourceName: string) => {
-  if(!sourceName) return " ";
+  if (!sourceName) return " ";
   const abi = new AbiCoder();
 
   let sourceNameBytes = abi.encode(["string"], [sourceName]);
