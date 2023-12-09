@@ -11,6 +11,8 @@ export const allAgentsQuery = gql`
   query ($first: Int) {
     agents(first: 10) {
       agentCategory
+      agentName
+      versionNo
       agentID
       assistantId
       basisPoint
@@ -38,6 +40,8 @@ export const indivAgentQuery = gql`
   query ($id: String) {
     agent(id: $id) {
       agentCategory
+      agentName
+      versionNo
       AgentVersions {
         assistantId
         agentID
