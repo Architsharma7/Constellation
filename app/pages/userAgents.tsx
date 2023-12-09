@@ -8,7 +8,7 @@ import { useAccount } from "wagmi";
 import { getRatingsRank } from "@/firebase/firebaseFunctions";
 import { toBytes, toHex } from "viem";
 import Navbar from "@/components/navbar";
-import {ThreadMessagesMarkdown} from "@/components/ThreadMessagesMarkdown";
+import { ThreadMessagesMarkdown } from "@/components/ThreadMessagesMarkdown";
 export default function UserAgents() {
   const { address: userAccount } = useAccount();
 
@@ -90,6 +90,11 @@ export default function UserAgents() {
     }
     // getRatingsRank();
   }, [userAccount]);
+
+  useEffect(() => {
+    console.log("done")
+    // getRatingsRank();
+  }, [threadMessages]);
 
   const handleChat = async () => {
     try {
@@ -250,6 +255,13 @@ export default function UserAgents() {
           const data = await res.json();
           console.log(data);
           await runThread();
+          // setTimeout(() => {
+          //   // Code to execute after 2 seconds
+          // }, 2000); // 2000 milliseconds = 2 seconds
+          // let tm = await getThread(threadID, assistantID);
+          // if (tm !== undefined) {
+          //   setthreadMessages(tm);
+          // }
         })
         .catch((err) => {
           console.log(err);
@@ -287,7 +299,7 @@ export default function UserAgents() {
                     </div>
                   </li>
 
-                  {/* <li>
+                  <li>
                     <button
                       type="button"
                       className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
@@ -311,7 +323,7 @@ export default function UserAgents() {
                         ElonAgent
                       </span>
                     </button>
-                  </li> */}
+                  </li>
                   {subscriptionsData &&
                     subscriptionsData.map((subscription: any) => {
                       return (
@@ -320,19 +332,16 @@ export default function UserAgents() {
                             type="button"
                             className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
                             onClick={() => {
-                              // TODO
-
+                          
                               setAssistantID(subscription.assistantId);
-                              // setAssistantID("asst_4YruN6LyHritMXIFQX0NGmht");
 
                               setThreadID(subscription.threadID);
-                              // setThreadID("thread_0xBV2sYKFkHvwbD6IQefwc9B");
 
-                              // change this to the thread id  &  assistant Id of the agent
                               getThread(
                                 subscription.threadID,
                                 subscription.assistantId
                               );
+
                             }}
                           >
                             <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
@@ -364,9 +373,11 @@ export default function UserAgents() {
                   );
                 })} */}
 
-              {threadMessages &&
-                <ThreadMessagesMarkdown threadMessages={threadMessages}/>
-                  }
+              {threadMessages && (
+                <div className="mb-10">
+                <ThreadMessagesMarkdown threadMessages={threadMessages} />
+                </div>
+              )}
             </div>
             {/* <div className="mt-6 flex">
             {threadMessages &&
@@ -385,9 +396,8 @@ export default function UserAgents() {
                   );
                 })}
           </div> */}
-          <div className="fixed mr-40 bottom-0  py-3 px-3 mx-10 w-[calc(70%-2.5rem)] rounded-xl bg-white">
-
-            {/* <div className="fixed mr-40 bottom-0 mb-3 py-3 my-10 px-3 w-[70%] rounded-xl"> */}
+            <div className="fixed mr-40 bottom-0  py-3 px-3 mx-10 w-[calc(70%-2.5rem)] rounded-xl bg-white">
+              {/* <div className="fixed mr-40 bottom-0 mb-3 py-3 my-10 px-3 w-[70%] rounded-xl"> */}
               <InputGroup>
                 <Input
                   variant="outline"
