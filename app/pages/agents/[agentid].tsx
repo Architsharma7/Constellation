@@ -421,7 +421,7 @@ const AgentId = () => {
             <div className="mt-4 flex flex-col">
               <button
                 onClick={() => {
-                  !isSubscribed ? onOpen() : router.push(`/`);
+                  (isSubscribed || !(agentData?.agentCreator.toLowerCase() == userAccount?.toLowerCase())) ?  router.push(`/userAgents`)  : onOpen();
                 }}
                 className="font-semibold text-xl bg-pink-100 px-10 py-2 border border-black border-b-4 rounded-xl cursor-pointer"
               >

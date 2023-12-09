@@ -8,7 +8,7 @@ import { useAccount } from "wagmi";
 import { getRatingsRank } from "@/firebase/firebaseFunctions";
 import { toBytes, toHex } from "viem";
 import Navbar from "@/components/navbar";
-
+import {ThreadMessagesMarkdown} from "@/components/ThreadMessagesMarkdown";
 export default function UserAgents() {
   const { address: userAccount } = useAccount();
 
@@ -62,15 +62,14 @@ export default function UserAgents() {
     }
 
     const data = await getUser(userAccount);
-    console.log(data.user.agentsSubscribedTo);
-    const agentsSubscribedTo = data.user.agentsSubscribedTo;
+    console.log(data);
+    const agentsSubscribedTo = data.user?.agentsSubscribedTo;
     let agentSubscriptionData = [];
-    for (let i = 0; i < agentsSubscribedTo.length; i++) {
+    for (let i = 0; i < agentsSubscribedTo?.length; i++) {
       const assistantId = agentsSubscribedTo[i].agent.assistantId;
 
       // TODO : Remove this hardcoded assistant ID
-      const assistantData = await getAssistant("asst_4YruN6LyHritMXIFQX0NGmht");
-      // const assistantData = await getAssistant(assistantId);
+      const assistantData = await getAssistant(assistantId);
 
       console.log(assistantData);
       const agentSubscription = {
@@ -288,7 +287,7 @@ export default function UserAgents() {
                     </div>
                   </li>
 
-                  <li>
+                  {/* <li>
                     <button
                       type="button"
                       className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
@@ -312,7 +311,7 @@ export default function UserAgents() {
                         ElonAgent
                       </span>
                     </button>
-                  </li>
+                  </li> */}
                   {subscriptionsData &&
                     subscriptionsData.map((subscription: any) => {
                       return (
@@ -323,16 +322,16 @@ export default function UserAgents() {
                             onClick={() => {
                               // TODO
 
-                              // setAssistantID(subscription.assistantId);
-                              setAssistantID("asst_4YruN6LyHritMXIFQX0NGmht");
+                              setAssistantID(subscription.assistantId);
+                              // setAssistantID("asst_4YruN6LyHritMXIFQX0NGmht");
 
-                              // setThreadID(subscription.threadID);
-                              setThreadID("thread_0xBV2sYKFkHvwbD6IQefwc9B");
+                              setThreadID(subscription.threadID);
+                              // setThreadID("thread_0xBV2sYKFkHvwbD6IQefwc9B");
 
                               // change this to the thread id  &  assistant Id of the agent
                               getThread(
-                                "thread_0xBV2sYKFkHvwbD6IQefwc9B",
-                                "asst_4YruN6LyHritMXIFQX0NGmht"
+                                subscription.threadID,
+                                subscription.assistantId
                               );
                             }}
                           >
@@ -366,34 +365,8 @@ export default function UserAgents() {
                 })} */}
 
               {threadMessages &&
-                threadMessages
-                  .slice()
-                  .reverse()
-                  .map((message: any, index: number) => {
-                    const content = message.content[0];
-                    const isUser = message.role === "user";
-
-                    return (
-                      <div
-                        key={index}
-                        className={`${
-                          isUser ? "justify-start mb-3" : "justify-end mb-10"
-                        } flex flex-col`}
-                      >
-                        <div
-                          className={`${
-                            isUser ? "bg-orange-100" : "bg-blue-100"
-                          } px-4 py-1 rounded-xl`}
-                        >
-                          <p className="text-md font-semibold">
-                            {content &&
-                              content.type === "text" &&
-                              content.text.value}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <ThreadMessagesMarkdown threadMessages={threadMessages}/>
+                  }
             </div>
             {/* <div className="mt-6 flex">
             {threadMessages &&
