@@ -60,7 +60,7 @@ export const getRewardCategory = (input: any) => {
     case 0:
       return "ratings";
     case 1:
-      return "twitterAds";
+      return "twitterIds";
     default:
       return "Unknown";
   }

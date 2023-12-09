@@ -258,7 +258,7 @@ const Create = () => {
             basisPoint: BigInt(Number(agentDetails.agentBP) * 100),
             lockName: `Subscription for ${agentDetails.agentName}`,
             lockSymbol: "SOA",
-            baseTokenURI: "tokenURL",
+            baseTokenURI: agentDetails.agentName,
             rewardCategory: getSourceID(
               getRewardCategory(rewardCategoryChoice)
             ), // Reward Category 0 rating based - 1 tweetAds based - 2 email based
