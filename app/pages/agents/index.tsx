@@ -165,58 +165,46 @@ const Index = () => {
         </div>
         <div className="mt-10 w-5/6 mx-auto">
           {agentsData && agentsData?.length > 0 ? (
-            agentsData?.map((agent) => {
-              return (
-                <div
-                  className={"grid grid-flow-row grid-cols-3 gap-x-10 gap-y-10"}
-                >
-                  <div className="px-6 py-3 bg-white border-b-8 shadow-xl border border-black">
-                    <div className="flex mx-auto">
-                      <p className="text-center text-xl font-semibold">
-                        {agent.agentName}
-                      </p>
-                      <Tag
-                        size="sm"
-                        className="ml-2 mt-0.5"
-                        colorScheme="yellow"
-                      >
-                        ★{agent.agentRating}
-                      </Tag>
-                    </div>
-                    <p className="text-sm font-mono h-40 mt-3 overflow-clip overflow-ellipsis">
-                      {agent.agentDesciption}
+            <div className="grid grid-flow-col grid-cols-3 gap-x-10 gap-y-10">
+              {agentsData.map((agent) => (
+                <div className="px-6 py-3 bg-white border-b-8 shadow-xl border border-black">
+                  <div className="flex mx-auto">
+                    <p className="text-center text-xl font-semibold">
+                      {agent.agentName}
                     </p>
-                    <div className="flex mt-3">
-                      <p className="font-sm font-semibold">Categories : </p>
-                      <Tag size="sm" className="ml-3 mt-1">
-                        {agent.agentCategory}
-                      </Tag>
-                    </div>
-                    <button
-                      onClick={() => {
-                        router.push(`/agents/${agent.agentId}`);
-                      }}
-                      className="px-12 mt-4 flex mx-auto border border-black font-semibold text-lg py-1.5 rounded-lg bg-green-100"
-                    >
-                      Try it out
-                    </button>
+                    <Tag size="sm" className="ml-2 mt-0.5" colorScheme="yellow">
+                      ★{agent.agentRating}
+                    </Tag>
                   </div>
+                  <p className="text-sm font-mono h-40 mt-3 overflow-clip overflow-ellipsis">
+                    {agent.agentDesciption}
+                  </p>
+                  <div className="flex mt-3">
+                    <p className="font-sm font-semibold">Categories : </p>
+                    <Tag size="sm" className="ml-3 mt-1">
+                      {agent.agentCategory}
+                    </Tag>
+                  </div>
+                  <button
+                    onClick={() => {
+                      router.push(`/agents/${agent.agentId}`);
+                    }}
+                    className="px-12 mt-4 flex mx-auto border border-black font-semibold text-lg py-1.5 rounded-lg bg-green-100"
+                  >
+                    Try it out
+                  </button>
                 </div>
-              );
-            })
+              ))}
+            </div>
           ) : (
-            <div className={"flex flex-col items-center"}>
-              <div className="flex flex-col items-center ">
-                {!agentsData || agentsData.length !=0 ? (
-                  <div className="flex flex-col items-center ">
-                    <Loading />
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center text-black">
-                    <p>No Agents Found</p>
-                  </div>
-                )}
-              </div>
+            <div className="flex flex-col items-center ">
+              {!agentsData || agentsData?.length != 0 ? (
+                <Loading />
+              ) : (
+                <div className="flex flex-col items-center text-black">
+                  <p>No Agents Found</p>
+                </div>
+              )}
             </div>
           )}
         </div>

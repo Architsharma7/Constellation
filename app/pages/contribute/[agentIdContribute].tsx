@@ -134,10 +134,10 @@ const AgentIdContribute = () => {
 
     // other partial from openAI
     // TODO : update the assistantID we get from graphQl
-    // const assitantData = await getAssistant(agentGraphData?.assistantId);
-    const assitantData: any = await getAssistant(
-      "asst_4YruN6LyHritMXIFQX0NGmht"
-    );
+    const assitantData = await getAssistant(agentGraphData?.assistantId);
+    // const assitantData: any = await getAssistant(
+    //   "asst_4YruN6LyHritMXIFQX0NGmht"
+    // );
 
     setAgentDetails({
       ...agentDetails,
@@ -386,7 +386,7 @@ const AgentIdContribute = () => {
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
       <div className="flex justify-between mx-10 pt-3 pb-2">
-        <p className="text-orange-600 text-2xl font-bold">
+        <p className="text-black text-2xl font-bold">
           Contribute to {agentDetails && agentDetails.agentName}
         </p>
         <div>
@@ -416,11 +416,11 @@ const AgentIdContribute = () => {
             </p>
           </div>
           <div className="mx-auto mt-6">
-            <Wrap>
+            {/* <Wrap>
               <WrapItem>
                 <Avatar name="A I" colorScheme="pink" size="lg" color="black" />
               </WrapItem>
-            </Wrap>
+            </Wrap> */}
             {/* <input
             type="image"
             className="rounded-xl border mx-auto items-center border-white px-2 py-1 mt-4"
@@ -542,7 +542,7 @@ const AgentIdContribute = () => {
               className="mt-7"
               align="center"
               isFitted
-              colorScheme="orange"
+              colorScheme="pink"
               variant="soft-rounded"
             >
               <TabList>
@@ -667,7 +667,7 @@ const AgentIdContribute = () => {
         closeOnEsc={false}
         closeOnOverlayClick={false}
         onClose={onClose}
-        colorScheme="orange"
+        colorScheme="pink"
       >
         <DrawerContent>
           <DrawerCloseButton />

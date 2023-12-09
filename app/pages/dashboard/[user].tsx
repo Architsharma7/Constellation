@@ -1,46 +1,44 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, Wrap, WrapItem } from "@chakra-ui/react";
 import Navbar from "@/components/navbar";
-import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { getCreator, getUser } from "@/utils/graphFunctions";
+import { useRouter } from "next/router";
 
 const User = () => {
+  const router = useRouter();
   const { address: creatorAccount } = useAccount();
+  const [creatorData, setCreatorData] = useState(null);
+  const [userData, setUserData] = useState(null);
 
-  // display the Creator Data like rounds they have won , and the agents they have created
-  // NOTE : Could also add more start for the agents , but perhaps not need as of now
-  const getCreatorData = async () => {
+  const fetchCreatorData = async () => {
+    if (!creatorAccount) {
+      console.log("Creator Account not found");
+      return;
+    }
+    const data = await getCreator(creatorAccount);
+    setCreatorData(data);
+  };
+
+  const fetchUserData = async () => {
     if (!creatorAccount) {
       console.log("User Account not found");
       return;
     }
-
-    const data = await getCreator(creatorAccount);
-    console.log(data);
-  };
-  const { address: userAccount } = useAccount();
-
-  // display the User Data like the agents they have subscribed too
-  // NOTE : Could also add more start for the agents , but perhaps not need as of now
-  const getUserData = async () => {
-    if (!userAccount) {
-      console.log("User Account not found");
-      return;
-    }
-
-    const data = await getUser(userAccount);
-    console.log(data);
+    const data = await getUser(creatorAccount);
+    setUserData(data);
   };
 
   useEffect(() => {
-    if (userAccount) {
-      getCreatorData();
-    }
-    if (userAccount) {
-      console.log(getUserData());
-    }
-  }, [userAccount, creatorAccount]);
+    fetchCreatorData();
+    fetchUserData();
+  }, [creatorAccount]);
+
+  const handleAgentClick = (agentID: any) => (event: any) => {
+    event.preventDefault();
+    // your redirect logic here
+    router.push(`/agents/${agentID}`);
+  };
   return (
     <div>
       <Navbar />
@@ -55,7 +53,7 @@ const User = () => {
               </Wrap>
             </div>
             <div className="text-center">
-              <p className="text-lg font-semibold mt-3">{userAccount}</p>
+              <p className="text-lg font-semibold mt-3">{creatorAccount}</p>
             </div>
           </div>
           <div className="mt-10 mx-auto flex">
@@ -64,31 +62,55 @@ const User = () => {
               <p className="text-2xl font-semibold mx-3">$104</p>
             </div>
           </div>
-          <div className="mt-10 mx-auto flex">
-            <div className="border flex flex-col mx-3 border-b-8 border-black px-10 py-3 bg-indigo-100 shadow-2xl">
-              <div className="">
-                <p className="text-xl font-mono text-black">
-                  Subscriptions Purchased
-                </p>
-              </div>
+          <div className="mt-10 mx-auto flex flex-row">
+            {/* Subscriptions Column */}
+            <div className="flex-1 border border-b-8 border-black mx-10 px-10 py-3 bg-indigo-100 shadow-2xl">
+              <p className="text-xl font-mono text-black mx-10">
+                Subscriptions Purchased
+              </p>
               <div className="mt-4">
-                <div className="flex border border-indigo-200 bg-indigo-300 px-4 py-1 rounded-lg">
-                  <p className="text-lg font-semibold">ElonAgent</p>
-                </div>
+                {userData &&
+                  // @ts-ignore
+                  userData?.user?.agentsSubscribedTo.map(
+                    (subscription: any, index: any) => (
+                      <div
+                        key={index}
+                        className="flex border border-indigo-200 bg-indigo-300 px-4 py-1  rounded-lg mb-2 cursor-pointer"
+                        onClick={handleAgentClick(subscription.agent.agentID)}
+                      >
+                        <p className="text-lg font-semibold">
+                          {subscription.agent.agentName}
+                        </p>
+                      </div>
+                    )
+                  )}
               </div>
             </div>
-            <div className="border flex mx-3 flex-col border-b-8 border-black px-10 py-3 bg-green-100 shadow-2xl">
-              <div className="">
-                <p className="text-xl font-mono text-black">Agents Created</p>
-              </div>
-              <div className="mt-4">
-                <div className="flex border border-green-200 bg-green-300 px-4 py-1 rounded-lg">
-                  <p className="text-lg font-semibold">ElonAgent</p>
-                </div>
+
+            {/* Agents Created Column */}
+            <div className="flex-1 mx-5 border border-b-8 border-black px-10 py-3 bg-green-100 shadow-2xl">
+              <p className="text-xl font-mono text-black">Agents Created</p>
+              <div className="mt-12">
+                {creatorData &&
+                  // @ts-ignore
+                  creatorData.creator?.agentsCreated.map(
+                    (agent: any, index: any) => (
+                      <div
+                        key={index}
+                        className="flex border border-green-200 bg-green-300 px-4 py-1 rounded-lg mb-2 cursor-pointer"
+                      >
+                        <div onClick={handleAgentClick(agent.agentID)}>
+                          <p className="text-lg font-semibold">
+                            {agent.agentName}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  )}
               </div>
             </div>
           </div>
-        </div>
+        </div>{" "}
       </div>
     </div>
   );

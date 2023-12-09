@@ -91,6 +91,7 @@ export const allCreatorsQuery = gql`
         id
         assistantId
         agentID
+        agentName
         agentCategory
         keyPrice
         unlockSubAddress
@@ -127,6 +128,8 @@ export const indivCreatorQuery = gql`
       agentsCreated {
         agentCategory
         agentID
+        agentName
+        versionNo
         assistantId
         basisPoint
         isOpenForContributions
@@ -161,6 +164,8 @@ export const indivUserQuery = gql`
         agent {
           agentID
           assistantId
+          agentName
+          versionNo
           id
           unlockSubAddress
           isOpenForContributions
@@ -212,6 +217,7 @@ export const indivSubscriptionQuery = gql`
       tokenId
       agent {
         agentID
+        versionNo
         assistantId
         id
       }

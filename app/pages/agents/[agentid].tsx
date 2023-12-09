@@ -19,7 +19,7 @@ import {
   getAgentFirebase,
   getReviews,
 } from "@/firebase/firebaseFunctions";
-import { getAgent, getSubscription } from "@/utils/graphFunctions";
+import { getAgent, getSubscription, getUser } from "@/utils/graphFunctions";
 import {
   useContractWrite,
   useChainId,
@@ -97,13 +97,34 @@ const AgentId = () => {
     functionName: "purchaseSubscription",
   });
 
+  const isUserSubscribed = async (agentID: number) => {
+    if (!userAccount) {
+      console.log("User Account not found");
+      return;
+    }
+
+    const data = await getUser(userAccount);
+    console.log(data);
+    const agentsSubscribedTo = data.user?.agentsSubscribedTo;
+    let subscribed = false;
+    for (let i = 0; i < agentsSubscribedTo?.length; i++) {
+      const assistantId = agentsSubscribedTo[i].agent.agentID;
+      if (assistantId == agentID) {
+        subscribed = true;
+        break;
+      }
+    }
+    setIsSubscribed(subscribed);
+  };
+
   useEffect(() => {
     console.log(_agentId, typeof _agentId);
     if (_agentId && !agentData) {
       if (typeof _agentId == "string") {
         getAgentData(_agentId);
-        if (userAccount && !isSubscribed) {
-          checkSubscription(_agentId);
+        if (userAccount) {
+          // checkSubscription(_agentId);
+          isUserSubscribed(Number(_agentId));
         }
       }
     }
@@ -181,15 +202,13 @@ const AgentId = () => {
 
     // TODO : update the assistantID we get from graphQl
     // const assitantData = await getAssistant(agentGraphData?.assistantId);
-    const assitantData: any = await getAssistant(
-      "asst_4YruN6LyHritMXIFQX0NGmht"
-    );
+    const assitantData: any = await getAssistant(agentGraphData?.assistantId);
 
     console.log(assitantData);
     const agentData: agentDataType = {
       agentId: agentGraphData?.agentID,
       assistantId: agentGraphData?.assistantId,
-      agentName: assitantData?.name,
+      agentName: agentGraphData?.agentName,
       agentDesciption: assitantData?.description,
       agentInstructions: assitantData?.instructions,
       agentRating: firebaseData?.avgRating,
@@ -224,7 +243,7 @@ const AgentId = () => {
       const subscriptionData = await getSubscription(
         `${userAccount}-${agentId}`
       );
-      console.log(subscriptionData);
+      console.log("here: ", subscriptionData);
       // or Unlock protocol graphQl
       // Or contract balance ERC721 method
       setIsSubscribed(subscriptionData?.subscriptionEntity);
@@ -421,7 +440,13 @@ const AgentId = () => {
             <div className="mt-4 flex flex-col">
               <button
                 onClick={() => {
-                  (isSubscribed || !(agentData?.agentCreator.toLowerCase() == userAccount?.toLowerCase())) ?  router.push(`/userAgents`)  : onOpen();
+                  isSubscribed ||
+                  !(
+                    agentData?.agentCreator.toLowerCase() ==
+                    userAccount?.toLowerCase()
+                  )
+                    ? router.push(`/userAgents`)
+                    : onOpen();
                 }}
                 className="font-semibold text-xl bg-pink-100 px-10 py-2 border border-black border-b-4 rounded-xl cursor-pointer"
               >

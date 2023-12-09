@@ -299,7 +299,7 @@ export default function UserAgents() {
                     </div>
                   </li>
 
-                  <li>
+                  {/* <li>
                     <button
                       type="button"
                       className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
@@ -323,7 +323,7 @@ export default function UserAgents() {
                         ElonAgent
                       </span>
                     </button>
-                  </li>
+                  </li> */}
                   {subscriptionsData &&
                     subscriptionsData.map((subscription: any) => {
                       return (
