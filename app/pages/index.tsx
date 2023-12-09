@@ -1,446 +1,214 @@
-import { useRouter } from "next/router";
-import { IoIosArrowRoundForward } from "react-icons/io";
-import { Input, InputGroup, InputRightAddon } from "@chakra-ui/react";
-import { IoIosSend } from "react-icons/io";
-import { getCreator, getUser } from "@/utils/graphFunctions";
 import React, { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { Avatar, Wrap, WrapItem, calc } from "@chakra-ui/react";
+import {
+  getAllAgents,
+  getAllRounds,
+  getLockData,
+} from "@/utils/graphFunctions";
 import { getRatingsRank } from "@/firebase/firebaseFunctions";
-import { toBytes, toHex } from "viem";
+import Navbar from "@/components/navbar";
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
+import HeroAnimation from "@/components/Animation/HeroAnimation";
 
 export default function Home() {
-  const { address: userAccount } = useAccount();
-
-  const router = useRouter();
-  const [open, setOpen] = useState<boolean>(false);
-  const [threadMessages, setthreadMessages] = useState<any[]>();
-
-  // NOTE : Set the thread ID and assistantID according to whatever agent user selects from the usage section
-
-  const [threadID, setThreadID] = useState<string>();
-  const [assistantID, setAssistantID] = useState<string>();
-  const [inputPrompt, setInputPrompt] = useState<string>();
-  const [subscriptionsData, setSubscriptionsData] = useState<any[]>();
-
-  const getAssistant = async (assistantID: string) => {
-    console.log("Fetching Assistant... Calling OpenAI");
-    if (!assistantID) {
-      console.log("Agent Details missing");
-      return;
-    }
-
-    if (!assistantID.startsWith("asst_")) {
-      return null;
-    }
-
-    const data = await fetch(
-      `/api/openai/getAssistant?assistantId=${assistantID}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
-      .then(async (res) => {
-        // console.log(res);
-        const data = await res.json();
-        console.log(data);
-        return data;
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    return data;
-  };
-
-  const getUserData = async () => {
-    if (!userAccount) {
-      console.log("User Account not found");
-      return;
-    }
-
-    const data = await getUser(userAccount);
-    console.log(data.user.agentsSubscribedTo);
-    const agentsSubscribedTo = data.user.agentsSubscribedTo;
-    let agentSubscriptionData = [];
-    for (let i = 0; i < agentsSubscribedTo.length; i++) {
-      const assistantId = agentsSubscribedTo[i].agent.assistantId;
-
-      // TODO : Remove this hardcoded assistant ID
-      const assistantData = await getAssistant("asst_4YruN6LyHritMXIFQX0NGmht");
-      // const assistantData = await getAssistant(assistantId);
-
-      console.log(assistantData);
-      const agentSubscription = {
-        agentName: assistantData?.name,
-        agentId: agentsSubscribedTo[i].agent.agentID,
-        assistantId: agentsSubscribedTo[i].agent.assistantId,
-        threadID: agentsSubscribedTo[i].threadID,
-      };
-      agentSubscriptionData.push(agentSubscription);
-    }
-
-    setSubscriptionsData(agentSubscriptionData);
-  };
+  const [roundData, setRoundData] = useState<any[]>();
+  const [agentsData, setAgentsData] = useState<any[]>();
+  // fetch the data
+  // 1. Overall filter based on different filters , Ratings , Revenue ,  no of Rounds Won
+  // 2. Round based
 
   useEffect(() => {
-    if (userAccount && !subscriptionsData) {
-      getUserData();
+    if (!roundData) {
+      getRounds();
     }
-    // getRatingsRank();
-  }, [userAccount]);
+    if (!agentsData) {
+      getLeaderboardRatings();
+    }
+  }, []);
 
-  const handleChat = async () => {
+  const getLeaderboardRatings = async () => {
     try {
-      // send Message
-      // run thread
-      // pooling run
-      // perform the required internal functions
+      const data = await getRatingsRank();
+      console.log(data);
+      setAgentsData(data);
+      // we'll get the orderedData , just display it when user's select on the basis of Ratings
     } catch (error) {
       console.log(error);
     }
   };
 
-  // code to chat with a party using a threadID
-  const sendMessage = async () => {
+  const getLeadeboardData = async () => {
     try {
-      console.log("Sending msg... Calling OpenAI");
-      if (!assistantID) {
-        console.log("Agent Details missing");
-        return;
-      }
-      if (!inputPrompt) {
-        console.log("Input prompt missing");
-        return;
-      }
+      // get EachAgent's record
+      const data = await getAllAgents(25);
+      console.log(data);
+      console.log(data.agents);
 
-      if (!threadID) {
-        console.log("Thread id missing...");
-        return;
-      }
-      fetch("/api/openai/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          threadID: threadID,
-          messageContent: inputPrompt,
-          fileIds: [],
-        }),
-      })
-        .then(async (res) => {
-          console.log(res);
-          const data = await res.json();
-          console.log(data);
-          await runThread();
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      // getLeaderboardRevenue(data.agents);
+      // getLeaderboardTotalRounds(data.agents);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const runThread = async () => {
+  const getLeaderboardRevenue = async () => {
     try {
-      console.log("running thread... Calling OpenAI");
-      if (!assistantID) {
-        console.log("Agent Details missing");
-        return;
+      const data = await getAllAgents(25);
+      console.log(data);
+      console.log(data.agents);
+      let agents = data.agents;
+      let promises: any[] = [];
+      for (let i = 0; i < agents.length; i++) {
+        const totalRevenue = calculateRevenue(agents[i].unlockSubAddress);
+        const newAgent = {
+          ...agents[i],
+          totalRevenue: totalRevenue,
+        };
+        promises.push(newAgent);
       }
-
-      if (!threadID) {
-        console.log("thread Details missing");
-        return;
-      }
-
-      await fetch("/api/openai/run", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          threadId: threadID,
-          assistantId: assistantID,
-          instructions: "",
-        }),
-      })
-        .then(async (res) => {
-          console.log(res);
-          const data = await res.json();
-          console.log(data);
-          getThread(threadID, assistantID);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getThread = async (_threadID: string, _assistantID: string) => {
-    console.log("Fetching thread... Calling OpenAI");
-    if (!_assistantID) {
-      console.log("Agent Details missing");
-      return;
-    }
-
-    if (!_threadID) {
-      console.log("thread Details missing");
-      return;
-    }
-    // body: JSON.stringify({
-    //   threadId: threadID,
-    // }),
-    const data = await fetch(`/api/openai/getChat?threadId=${_threadID}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then(async (res) => {
-        console.log(res);
-        const data = await res.json();
-        console.log(data);
-        const messages = data.data;
-        console.log(messages);
-        setthreadMessages(messages);
-      })
-      .catch((err) => {
-        console.log(err);
+      const agentsData = await Promise.all(promises);
+      //sort the agentsData on the basis of totalRevenue
+      agentsData.sort((a, b) => {
+        return b.totalRevenue - a.totalRevenue;
       });
-    return data;
-  };
 
-  const useThread = async () => {
-    try {
-      console.log("Sending msg... Calling OpenAI");
-      if (!assistantID) {
-        console.log("Agent Details missing");
-        return;
-      }
-      if (!inputPrompt) {
-        console.log("Input prompt missing");
-        return;
-      }
+      console.log(agentsData);
+      setAgentsData(agentsData);
 
-      if (!threadID) {
-        console.log("Thread id missing...");
-        return;
-      }
-      fetch("/api/openai/useThread", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          threadID: threadID,
-          messageContent: inputPrompt,
-          assistantId: assistantID,
-          instructions: "",
-          fileIds: [],
-        }),
-      })
-        .then(async (res) => {
-          console.log(res);
-          const data = await res.json();
-          console.log(data);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      // TODO : Need to display the agent's name here , so find a way to fetch it from OpenAi for each agent
+      // return agentsData;
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const calculateRevenue = async (
+    lockAddress: string
+  ): Promise<number | undefined> => {
+    try {
+      const data = await getLockData(lockAddress);
+      const totalRevenue =
+        Number(data?.lock.price) * Number(data?.lock.totalKeys);
+      console.log(totalRevenue);
+      return totalRevenue;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getLeaderboardTotalRounds = async () => {
+    try {
+      const data = await getAllAgents(25);
+      console.log(data);
+      console.log(data.agents);
+      let agents = data.agents;
+      let agentsData: any[] = [];
+      for (let i = 0; i < agents.length; i++) {
+        const newAgent = {
+          ...agents[i],
+          totalRoundsWon: agents[i].roundsWon.length,
+        };
+        agentsData.push(newAgent);
+      }
+      console.log(agentsData);
+      // sort the agentsData on the basis of totalRoundsWon
+      agentsData.sort((a, b) => {
+        return b.totalRoundsWon - a.totalRoundsWon;
+      });
+      console.log(agentsData);
+
+      setAgentsData(agentsData);
+
+      // return agentsData;
+      // calculate the totalRounds they have won
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getRounds = async () => {
+    const data = await getAllRounds(5);
+    console.log(data);
+    setRoundData(data.rounds);
+    // an array of Round data is returend here
+  };
+
+  const handleFilter = (choice: string) => {
+    if (choice == "rating") {
+      getLeaderboardRatings();
+    } else if (choice == "revenue") {
+      getLeaderboardRevenue();
+    } else if (choice == "rounds") {
+      getLeaderboardTotalRounds();
+    } else {
+      getLeadeboardData();
     }
   };
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
-      <div className="flex w-screen">
-        <div className="w-1/3 justify-start h-full">
-          <aside className="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0">
-            <div className="h-full px-3 py-4 overflow-y-auto bg-orange-100 border-r-2 border-black">
-              <ul className="space-y-2 font-medium">
-                <li>
-                  <div
-                    onClick={() => router.push("/agents")}
-                    className="border cursor-pointer align-middle flex border-gray-300 bg-blue-100 px-6 py-1 rounded-3xl"
-                  >
-                    <div className="flex items-center">
-                      <p className="font-semibold text-xs">
-                        Checkout the Agents
-                      </p>
-                      <div className="ml-5 m-0">
-                        <IoIosArrowRoundForward className="text-2xl" />
-                      </div>
-                    </div>
-                  </div>
-                </li>
+    <div>
+      <Navbar />
+      <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
+        <div className="w-5/6 flex flex-col justify-center mx-auto mb-2">
+          <div className="mt-20 mx-auto items-center">
+            <p className="text-4xl font-bold bg-clip-text bg-gradient-to-b from-indigo-200 to bg-indigo-500 text-center">
+              RocketAI🚀
+            </p>
 
-                <li>
-                  <button
-                    type="button"
-                    className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
-                    onClick={() => {
-                      // TODO
-
-                      // setAssistantID(subscription.assistantId);
-                      setAssistantID("asst_4YruN6LyHritMXIFQX0NGmht");
-
-                      // setThreadID(subscription.threadID);
-                      setThreadID("thread_0xBV2sYKFkHvwbD6IQefwc9B");
-
-                      // change this to the thread id  &  assistant Id of the agent
-                      getThread(
-                        "thread_0xBV2sYKFkHvwbD6IQefwc9B",
-                        "asst_4YruN6LyHritMXIFQX0NGmht"
-                      );
-                    }}
-                  >
-                    <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
-                      ElonAgent
-                    </span>
-                  </button>
-                </li>
-                {subscriptionsData &&
-                  subscriptionsData.map((subscription: any) => {
-                    return (
-                      <li>
-                        <button
-                          type="button"
-                          className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
-                          onClick={() => {
-                            // TODO
-
-                            // setAssistantID(subscription.assistantId);
-                            setAssistantID("asst_4YruN6LyHritMXIFQX0NGmht");
-
-                            // setThreadID(subscription.threadID);
-                            setThreadID("thread_0xBV2sYKFkHvwbD6IQefwc9B");
-
-                            // change this to the thread id  &  assistant Id of the agent
-                            getThread(
-                              "thread_0xBV2sYKFkHvwbD6IQefwc9B",
-                              "asst_4YruN6LyHritMXIFQX0NGmht"
-                            );
-                          }}
-                        >
-                          <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
-                            {subscription.agentName}
-                          </span>
-                        </button>
-                      </li>
-                    );
-                  })}
-              </ul>
-            </div>
-          </aside>
-        </div>
-        <div className="w-2/3 h-full flex flex-col justify-center items-center relative">
-          <div className="mt-6 mr-60 w-[70%] flex flex-col">
-            {/* {threadMessages &&
-              threadMessages
-                .filter((message: any) => message.role === "user")
-                .map((userMessage: any) => {
-                  const content = userMessage.content[0];
-                  return (
-                    <div className="justify-start flex flex-col bg-orange-100 px-4 py-1 rounded-xl">
-                      <p className="text-md font-semibold">
-                        {content &&
-                          content.type === "text" &&
-                          content.text.value}
-                      </p>
-                    </div>
-                  );
-                })} */}
-
-            {threadMessages &&
-              threadMessages
-                .slice()
-                .reverse()
-                .map((message: any, index: number) => {
-                  const content = message.content[0];
-                  const isUser = message.role === "user";
-
-                  return (
-                    <div
-                      key={index}
-                      className={`${
-                        isUser ? "justify-start mb-3" : "justify-end mb-10"
-                      } flex flex-col`}
-                    >
-                      <div
-                        className={`${
-                          isUser ? "bg-orange-100" : "bg-blue-100"
-                        } px-4 py-1 rounded-xl`}
-                      >
-                        <p className="text-md font-semibold">
-                          {content &&
-                            content.type === "text" &&
-                            content.text.value}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+            <p className="text-center font-md font-mono text-gray-600 mt-2 items-center w-2/3 mx-auto">
+              RocketAI, is a platform that revolutionizes the creation,
+              fine-tuning, and utilization of AI agents. Our platform fosters
+              collaboration among creators, fine-tuners, and users, enhancing
+              and utilizing AI agents for varied tasks, thus creating a dynamic
+              and rewarding experience for all involved.
+            </p>
           </div>
-          {/* <div className="mt-6 flex">
-            {threadMessages &&
-              threadMessages
-                .filter((message: any) => message.role === "assistant")
-                .map((assistantMessage: any) => {
-                  const content = assistantMessage.content[0];
-                  return (
-                    <div className="justify-start flex flex-cols bg-pink-100 px-4 py-1 rounded-xl">
-                      <p className="text-md font-semibold">
-                        {content &&
-                          content.type === "text" &&
-                          content.text.value}
-                      </p>
-                    </div>
-                  );
-                })}
-          </div> */}
-          <div className="fixed mr-40 bottom-0 mb-3 py-3 px-3 w-[70%] rounded-xl">
-            <InputGroup>
-              <Input
-                variant="outline"
-                borderColor="black"
-                borderWidth="initial"
-                focusBorderColor="black"
-                size="lg"
-                bgColor="white"
-                type="text"
-                className="font-semibold"
-                placeholder="enter prompt for agent"
-                onChange={(e) => setInputPrompt(e.target.value)}
-              />
-              <InputRightAddon
-                bgColor="white"
-                borderColor="white"
-                height="inherit"
-              >
-                <IoIosSend
-                  className="text-xl cursor-pointer"
-                  onClick={() => {
-                    useThread();
-                  }}
-                />
-              </InputRightAddon>
-            </InputGroup>
+
+          <HeroAnimation></HeroAnimation>
+
+          {/* Use Cases Section */}
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            {/* Box 1 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm">
+              <h3 className="text-lg font-semibold mb-2">Agent Creation</h3>
+              <p className="text-sm text-gray-600">
+                Utilize GPT-4 and other advanced models to create diverse and
+                capable AI agents.
+              </p>
+            </div>
+
+            {/* Box 2 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm">
+              <h3 className="text-lg font-semibold mb-2">
+                Collaborative Ecosystem
+              </h3>
+              <p className="text-sm text-gray-600">
+                Encourage collaboration between creators and users for
+                continuous improvement of agents.
+              </p>
+            </div>
+
+            {/* Box 3 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm">
+              <h3 className="text-lg font-semibold mb-2">Subscription Model</h3>
+              <p className="text-sm text-gray-600">
+                Generate sustainable income via subscriptions with the Unlock
+                Protocol.
+              </p>
+            </div>
+
+            {/* Box 4 */}
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm">
+              <h3 className="text-lg font-semibold mb-2">
+                Rewarding Excellence
+              </h3>
+              <p className="text-sm text-gray-600">
+                Reward top agents and contributors using Chainlink automation.
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-{
-  /* <button onClick={() => router.push("/api/twitter/authenticate")}>
-        post
-      </button> */
 }

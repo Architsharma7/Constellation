@@ -41,6 +41,7 @@ import {
 import { useAccount } from "wagmi";
 import { CONTRACT_ADDRESSES, CONTRACT_ABI } from "@/constants/contracts";
 import { formatEther } from "ethers";
+import Navbar from "@/components/navbar";
 // import { Bytes } from "firebase/firestore";
 // import { Bytes } from "@graphprotocol/graph-ts";
 interface agentReviewType {}
@@ -312,7 +313,11 @@ const AgentId = () => {
 
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
-      <div className="flex flex-col">
+      <div className="fixed z-50 top-0 left-0 w-full ">
+        {" "}
+        <Navbar />
+      </div>
+      <div className="flex flex-col mt-14">
         <div className="mx-auto">
           <div className="grid grid-flow-col grid-cols-4 grid-rows-1 gap-x-10 w-full mt-10">
             <div className="border-2 bg-pink-100 border-b-8 flex flex-col px-14 py-3 border-black shadow-2xl">
@@ -362,7 +367,7 @@ const AgentId = () => {
           </div>
         </div>
         <div className="mt-16 w-5/6 mx-auto flex">
-          <div className="w-2/3 border bg-orange-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
+          <div className="w-2/3 border bg-indigo-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
             <p className="text-xl font-mono font-thin text-gray-600">
               Description
             </p>
@@ -377,7 +382,7 @@ const AgentId = () => {
               {agentData && agentData.agentInstructions}
             </p>
           </div>
-          {/* <div className="w-2/3 border bg-orange-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
+          {/* <div className="w-2/3 border bg-indigo-100 flex flex-col border-black mx-6 rounded-xl px-10 py-3 h-96 overflow-scroll">
             <p className="text-xl font-mono font-thin text-gray-600">
               Instructions (Prompt)
             </p>
@@ -416,7 +421,7 @@ const AgentId = () => {
             <div className="mt-4 flex flex-col">
               <button
                 onClick={() => {
-                  !isSubscribed ? onOpen() : router.push(`/`);
+                  (isSubscribed || !(agentData?.agentCreator.toLowerCase() == userAccount?.toLowerCase())) ?  router.push(`/userAgents`)  : onOpen();
                 }}
                 className="font-semibold text-xl bg-pink-100 px-10 py-2 border border-black border-b-4 rounded-xl cursor-pointer"
               >

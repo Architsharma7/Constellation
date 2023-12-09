@@ -10,7 +10,8 @@ import {
 } from "@chakra-ui/react";
 import { getAllAgents } from "@/utils/graphFunctions";
 import { getAgentFirebase } from "@/firebase/firebaseFunctions";
-
+import Navbar from "@/components/navbar";
+import Loading from "@/components/Animation/Loading";
 interface agentDataType {
   agentId: number;
   assistantId: number;
@@ -119,7 +120,11 @@ const Index = () => {
   const router = useRouter();
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">
-      <div className="flex flex-col">
+      <div className="fixed z-50 top-0 left-0 w-full ">
+        {" "}
+        <Navbar />
+      </div>
+      <div className="flex flex-col mt-14">
         <div className="mx-auto mt-10">
           <div
             onClick={() => router.push("/leaderboard")}
@@ -159,44 +164,12 @@ const Index = () => {
           </form>
         </div>
         <div className="mt-10 w-5/6 mx-auto">
-          <div className="grid grid-flow-row grid-cols-3 gap-x-10 gap-y-10">
-            {/* TODO : Comment the default Component */}
-            <div className="px-6 py-3 bg-white border-b-8 shadow-xl border border-black">
-              <div className="flex mx-auto">
-                <p className="text-center text-xl font-semibold">ElonAgent</p>
-                <Tag size="sm" className="ml-2 mt-0.5" colorScheme="yellow">
-                  ★ 3.3
-                </Tag>
-              </div>
-              <p className="text-sm font-mono h-40 mt-3 overflow-clip overflow-ellipsis">
-                ElonAgent is an innovative AI companion designed to enhance
-                productivity and streamline decision-making. Embodying the
-                visionary spirit of Elon Musk, this intelligent virtual
-                assistant integrates cutting-edge natural language processing
-                and machine learning algorithms to provide personalized
-                assistance. From automating tasks and answering queries to
-                offering insightful recommendations, ElonAgent adapts to user
-                preferences, fostering efficiency in both personal and
-                professional spheres. With a user-friendly interface and
-                continuous learning capabilities, ElonAgent mirrors the
-                forward-thinking approach of its namesake, empowering users to
-                navigate complexities effortlessly. Elevate your digital
-                experience with ElonAgent, a smart and intuitive AI partner for
-                the modern era.
-              </p>
-              <div className="flex mt-3">
-                <p className="font-sm font-semibold">Categories : </p>
-                <Tag size="sm" className="ml-3 mt-1">
-                  Problem solving
-                </Tag>
-              </div>
-              <button className="px-12 mt-4 flex mx-auto border border-black font-semibold text-lg py-1.5 rounded-lg bg-green-100">
-                Try it out
-              </button>
-            </div>
-            {agentsData ? (
-              agentsData.map((agent) => {
-                return (
+          {agentsData && agentsData?.length > 0 ? (
+            agentsData?.map((agent) => {
+              return (
+                <div
+                  className={"grid grid-flow-row grid-cols-3 gap-x-10 gap-y-10"}
+                >
                   <div className="px-6 py-3 bg-white border-b-8 shadow-xl border border-black">
                     <div className="flex mx-auto">
                       <p className="text-center text-xl font-semibold">
@@ -228,12 +201,24 @@ const Index = () => {
                       Try it out
                     </button>
                   </div>
-                );
-              })
-            ) : (
-              <a>{isLoading ? <p> Loading .. </p> : <p>No Agents Found</p>}</a>
-            )}
-          </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className={"flex flex-col items-center"}>
+              <div className="flex flex-col items-center ">
+                {!agentsData || agentsData.length !=0 ? (
+                  <div className="flex flex-col items-center ">
+                    <Loading />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center text-black">
+                    <p>No Agents Found</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

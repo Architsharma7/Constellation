@@ -8,8 +8,10 @@ import {
 import { getRatingsRank } from "@/firebase/firebaseFunctions";
 import Navbar from "@/components/navbar";
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 
 const Leaderboard = () => {
+  const router = useRouter();
   const [roundData, setRoundData] = useState<any[]>();
   const [agentsData, setAgentsData] = useState<any[]>();
   // fetch the data
@@ -144,6 +146,10 @@ const Leaderboard = () => {
     }
   };
 
+  const handleAgentClick = (agentID: number) => {
+    router.push(`/agents/${agentID}`);
+  };
+
   return (
     <div>
       <Navbar />
@@ -216,16 +222,20 @@ const Leaderboard = () => {
                 </TabPanel>
                 {roundData &&
                   roundData.map((round, key) => (
-                    <TabPanel>
-                      {round.topkAgents.map((winner: {}, key: number) => (
-                        <div className="mt-6 flex flex-col mx-auto">
+                    <TabPanel key={key}>
+                      {round.topkAgents.map((winner: any, index: number) => (
+                        <div
+                          className="mt-6 flex flex-col mx-auto"
+                          key={index}
+                          onClick={() => handleAgentClick(winner.agentID)}
+                        >
                           <div className="w-full flex">
                             <div className="px-6 py-3.5 w-16 rounded-lg items-center border-orange-200 border-4 mx-3">
                               <p className="text-2xl font-semibold text-center my-auto">
-                                {key}
+                                {index + 1}
                               </p>
                             </div>
-                            <div className="px-4 cursor-pointer py-2 flex align-middle border border-white bg-gradient-to-r from-pink-100 to-orange-200  mx-3 rounded-lg w-96">
+                            <div className="px-4 cursor-pointer py-2 flex align-middle border border-white bg-gradient-to-r from-pink-100 to-orange-200 mx-3 rounded-lg w-96">
                               <div className="flex items-center">
                                 <div>
                                   <Wrap>
@@ -240,11 +250,7 @@ const Leaderboard = () => {
                                 </div>
                                 <div>
                                   <p className="m-0 ml-3 font-semibold text-2xl">
-                                    {/* @ts-ignore */}
                                     {winner.agentID}
-                                    {/* TODO : Need to display the agent's name here ,
-                                    not the Id , but need to fetch it from
-                                    OpenAI */}
                                   </p>
                                 </div>
                               </div>
