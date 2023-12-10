@@ -186,8 +186,8 @@ export const createImage = async (
       model: "dall-e-3",
       prompt: prompt,
     });
-    return image;
     console.log(image.data);
+    return image;
   } catch (error) {
     console.log(error);
   }

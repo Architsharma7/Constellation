@@ -130,7 +130,7 @@ export default function UserAgents() {
         console.log("Thread id missing...");
         return;
       }
-      setthreadMessages(threadMessages?.push(inputPrompt));
+      // setthreadMessages(threadMessages?.push(inputPrompt));
 
       fetch("/api/openai/chat", {
         method: "POST",
@@ -287,6 +287,7 @@ export default function UserAgents() {
     output: string;
   }
   [];
+
   const submitToolOutput = async (
     _threadID: string,
     _runID: string,
@@ -313,7 +314,7 @@ export default function UserAgents() {
         body: JSON.stringify({
           threadID: _threadID,
           runID: _runID,
-          toolOutpus: toolOutputs,
+          toolOutputs: toolOutputs,
         }),
       })
         .then(async (res) => {
@@ -598,6 +599,7 @@ export default function UserAgents() {
                     className="text-xl cursor-pointer"
                     onClick={() => {
                       sendMessage();
+                      // generateImage(inputPrompt);
                       // getRun(
                       //   "thread_SZ9JRy28i9QQS2o8yu0wXJ5R",
                       //   "run_wMAAyvAia73ugun5W0noNrGW"

@@ -211,7 +211,9 @@ const Leaderboard = () => {
                               </div>
                               <div>
                                 <p className="m-0 ml-3 font-semibold text-2xl">
-                                  {agent.agentName}
+                                  {agent.agentName != undefined
+                                    ? agent.agentName
+                                    : agent.id}
                                 </p>
                               </div>
                             </div>
@@ -257,7 +259,11 @@ const Leaderboard = () => {
                                       {`Revenue : `}
                                     </p>
                                     <p className="ml-3 mt-1.5 font-mono font-semibold text-lg">
-                                    {round.rewardMechanism.rewardDistributions[index]} RAI
+                                      {
+                                        round.rewardMechanism
+                                          .rewardDistributions[index]
+                                      }{" "}
+                                      RAI
                                     </p>
                                   </div>
                                   {/* <p className="m-0 ml-3 font-semibold text-2xl">
@@ -284,9 +290,11 @@ const Leaderboard = () => {
                   }}
                   className="px-3 py-1 rounded-3xl mx-1 font-semibold  bg-violet-200"
                 >
-                  <option value="rating">Rating</option>
-                  <option value="revenue">Revenue</option>
+                  <option selected value="revenue">
+                    Revenue
+                  </option>
                   <option value="rounds">No. of rounds</option>
+                  <option value="rating">Rating</option>
                 </select>
               </div>
             </div>
