@@ -84,7 +84,7 @@ type Round @entity {
 #   transactionHash: Bytes!
 # }
 
-# type RoundWinners @entity(immutable: true) {
+# type agentHandlerV3RoundWinners @entity(immutable: true) {
 #   id: Bytes!
 #   requestId: Bytes! # bytes32
 #   sourceID: Bytes! # bytes32
@@ -97,6 +97,7 @@ type Round @entity {
 # type agentRegistered @entity(immutable: true) {
 #   id: Bytes!
 #   agentName: String! # string
+#   baseTokenURI: String! # string
 #   agentID: BigInt! # uint32
 #   creator: Bytes! # address
 #   unlockSubscriptionContract: Bytes! # address
@@ -133,120 +134,14 @@ type Round @entity {
 #   blockTimestamp: BigInt!
 #   transactionHash: Bytes!
 # }
-type Approval @entity(immutable: true) {
-  id: Bytes!
-  owner: Bytes! # address
-  spender: Bytes! # address
-  value: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
 
-type OwnershipTransferred @entity(immutable: true) {
-  id: Bytes!
-  previousOwner: Bytes! # address
-  newOwner: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type RequestFulfilled @entity(immutable: true) {
-  id: Bytes!
-  agentHandlerV3_id: Bytes! # bytes32
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type RequestSent @entity(immutable: true) {
-  id: Bytes!
-  agentHandlerV3_id: Bytes! # bytes32
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type RoundRewardsDistributed @entity(immutable: true) {
-  id: Bytes!
-  requestId: Bytes! # bytes32
-  sourceID: Bytes! # bytes32
-  topkAgents: [BigInt!]! # uint32[]
-  topkUsers: [Bytes!]! # address[]
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type agentHandlerV3RoundWinners @entity(immutable: true) {
-  id: Bytes!
-  requestId: Bytes! # bytes32
-  sourceID: Bytes! # bytes32
-  response: Bytes! # bytes
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type Transfer @entity(immutable: true) {
-  id: Bytes!
-  from: Bytes! # address
-  to: Bytes! # address
-  value: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type agentRegistered @entity(immutable: true) {
-  id: Bytes!
-  agentName: String! # string
-  baseTokenURI: String! # string
-  agentID: BigInt! # uint32
-  creator: Bytes! # address
-  unlockSubscriptionContract: Bytes! # address
-  keyPrice: BigInt! # uint256
-  basisPoint: BigInt! # uint256
-  rewardCategory: String! # string
-  actualCategory: String! # string
-  isOpenForContributions: Boolean! # bool
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type agentSubscriptionPurchased @entity(immutable: true) {
-  id: Bytes!
-  agentID: BigInt! # uint32
-  tokenId: BigInt! # uint256
-  threadID: String! # string
-  agentCreator: Bytes! # address
-  subscriber: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type agentVersionRegistered @entity(immutable: true) {
-  id: Bytes!
-  agentID: BigInt! # uint32
-  agentVersionName: String! # string
-  agentVersionID: BigInt! # uint32
-  creator: Bytes! # address
-  agentMetadataCID: String! # string
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type rewardMechanismRegistered @entity(immutable: true) {
-  id: Bytes!
-  sourceName: String! # string
-  sourceCode: String! # string
-  sourceID: Bytes! # bytes32
-  rewardDistributions: [BigInt!]! # uint256[]
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
+# type rewardMechanismRegistered @entity(immutable: true) {
+#   id: Bytes!
+#   sourceName: String! # string
+#   sourceCode: String! # string
+#   sourceID: Bytes! # bytes32
+#   rewardDistributions: [BigInt!]! # uint256[]
+#   blockNumber: BigInt!
+#   blockTimestamp: BigInt!
+#   transactionHash: Bytes!
+# }

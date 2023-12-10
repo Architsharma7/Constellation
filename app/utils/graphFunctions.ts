@@ -10,13 +10,28 @@ import {
   indivUserQuery,
 } from "@/constants/graphQuery";
 import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
+// import {} from "wagmi";
+import { getPublicClient } from "wagmi/actions";
 // import { Bytes } from "@graphprotocol/graph-ts";
 
-const APIURL =
+const publicClient = getPublicClient();
+const chainId = publicClient.chain.id;
+
+const AVALANCHE_APIURL =
+  "https://api.studio.thegraph.com/query/59864/rocketai-avalanche-graph/version/latest";
+const MUMBAI_APIURL =
   "https://api.studio.thegraph.com/query/59864/c-demo/version/latest";
 
-const UNLOCK_APIURL =
+const APIURL = chainId === 43114 ? AVALANCHE_APIURL : MUMBAI_APIURL;
+
+const UNLOCK_APIURL_MUMBAI =
   "https://api.thegraph.com/subgraphs/name/unlock-protocol/mumbai-v2";
+
+const UNLOCK_APIURL_AVLANCHE =
+  "https://api.thegraph.com/subgraphs/name/unlock-protocol/avalanche-v2";
+
+const UNLOCK_APIURL =
+  chainId === 43114 ? UNLOCK_APIURL_AVLANCHE : UNLOCK_APIURL_MUMBAI;
 
 const client = new ApolloClient({
   uri: APIURL,
