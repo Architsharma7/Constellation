@@ -12,6 +12,9 @@ import { getAllAgents } from "@/utils/graphFunctions";
 import { getAgentFirebase, getAvgRating } from "@/firebase/firebaseFunctions";
 import Navbar from "@/components/navbar";
 import Loading from "@/components/Animation/Loading";
+import { useChainId } from "wagmi";
+
+
 interface agentDataType {
   agentId: number;
   assistantId: number;
@@ -24,7 +27,7 @@ interface agentDataType {
 const Index = () => {
   const [agentsData, setAgentsData] = useState<agentDataType[] | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const chainID = useChainId();
   const getAssistant = async (assistantID: string) => {
     console.log("Fetching thread... Calling OpenAI");
     if (!assistantID) {
@@ -116,7 +119,7 @@ const Index = () => {
     if (!agentsData) {
       getAgents();
     }
-  }, []);
+  }, [chainID]);
   const router = useRouter();
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-white via-white to-rose-100">

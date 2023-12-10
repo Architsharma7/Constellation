@@ -30,6 +30,7 @@ export const encodeUint32ArrayToBytes = (uint32Array: any[]) => {
   return bytes;
 };
 
+
 export const concatenateAddresses = (addressArray: any[]) => {
   if (!Array.isArray(addressArray)) {
     throw new Error("Input must be an array of addresses");
@@ -46,7 +47,7 @@ export const concatenateAddresses = (addressArray: any[]) => {
 };
 
 export const getSourceID = (sourceName: string) => {
-  if (!sourceName) return " ";
+  if(!sourceName) return " ";
   const abi = new AbiCoder();
 
   let sourceNameBytes = abi.encode(["string"], [sourceName]);
