@@ -614,11 +614,12 @@ export default function UserAgents() {
                   <IoIosSend
                     className="text-xl cursor-pointer"
                     onClick={() => {
-                      pollRun(
-                        "thread_nf2kCoESw6fyC9jvGlgKl6Fv",
-                        "run_uhHtsA6BWnu47j888RCX4ICJ",
-                        "asst_ieJL0i6m3WHNmjLcZnDSvAAV"
-                      );
+                      sendMessage();
+                      // pollRun(
+                      //   "thread_nf2kCoESw6fyC9jvGlgKl6Fv",
+                      //   "run_uhHtsA6BWnu47j888RCX4ICJ",
+                      //   "asst_ieJL0i6m3WHNmjLcZnDSvAAV"
+                      // );
                       // ("thread_nf2kCoESw6fyC9jvGlgKl6Fv");
                       // ("run_uhHtsA6BWnu47j888RCX4ICJ");
                       // ("asst_ieJL0i6m3WHNmjLcZnDSvAAV");

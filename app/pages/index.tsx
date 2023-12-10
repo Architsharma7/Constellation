@@ -41,7 +41,7 @@ export default function Home() {
             </div>
           </div>
 
-          <HeroAnimation></HeroAnimation>
+          {/* <HeroAnimation></HeroAnimation> */}
 
           {/* Use Cases Section */}
           <div className="mt-10 grid grid-cols-2 mx-[20%] gap-6">
