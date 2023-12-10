@@ -13,7 +13,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {ILogAutomation} from "./interfaces/ILogAutomation.sol";
 
-import { Base64 } from "./library/Base64.sol";
+// import { Base64 } from "./library/Base64.sol";
 
 /**
  * @title RocketAI (Decentralized Artificial Intelligence Marketplace)
@@ -113,7 +113,8 @@ contract RocketAI is ChainlinkConsumer , ILogAutomation {
             address(0),
             address(0),
             // tokenURI hook
-            address(this),
+            // address(this),
+            address(0),
             address(0),
             address(0),
             address(0)
@@ -358,13 +359,13 @@ contract RocketAI is ChainlinkConsumer , ILogAutomation {
         return IPublicLockV12(msg.sender).keyPrice();
     }
 
-    function tokenURI(
-        address lockAddress, 
-        address operator, 
-        address owner, 
-        uint256 keyId, 
-        uint256 expirationTimestamp
-    ) external pure returns (string memory){
-        return Base64.tokenURI(lockAddress, operator, owner, keyId, expirationTimestamp);
-    }
+    // function tokenURI(
+    //     address lockAddress, 
+    //     address operator, 
+    //     address owner, 
+    //     uint256 keyId, 
+    //     uint256 expirationTimestamp
+    // ) external pure returns (string memory){
+    //     return Base64.tokenURI(lockAddress, operator, owner, keyId, expirationTimestamp);
+    // }
 }

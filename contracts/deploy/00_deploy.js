@@ -7,6 +7,7 @@ const { getContractFactory } = require("hardhat-deploy-ethers/types");
 const {
   getAgentID,
   deployment_config,
+  deployment_config_avax,
   codeStringT,
   codeStringU,
   codeStringR,
@@ -29,14 +30,14 @@ module.exports = async ({ deployments }) => {
   // Deploy the contract
   const AgentPlace = await deploy("RocketAI", {
     from: wallet.address,
-    args: deployment_config,
+    args: deployment_config_avax,
     log: false,
   });
 
   // Verify the contract
   await hre.run("verify:verify", {
     address: AgentPlace.address,
-    constructorArguments: deployment_config,
+    constructorArguments: deployment_config_avax,
   });
 
   const agentPlace = await ethers.getContractFactory("RocketAI");
@@ -56,54 +57,51 @@ module.exports = async ({ deployments }) => {
   // Add the reward mechanism for users to the contract
   let tx = await agentPlaceInstance.addRewardMechanism(
     "ratings",
-    codeStringR,
+    " ",
     // This should be the chainlink forwarder address after creating
     // the time based upkeep job to call the function sendRequest with the
     //  sourceID as parameter sourceID is a bytes32 to identify the source
     // getSourceID("source1")
-    // wallet.address,
-    _forwRatings,
+    wallet.address,
+    // _forwRatings,
     // An array of the amount of the reward "tokens" that each agent will receive
     // 1st agent 1st index, 2nd agent 2nd index, etc ...
     distributionRewards,
-    { gasLimit: 10000000 }
+    // { gasLimit: 10000000 }
   );
   await tx.wait();
 
-  tx = await agentPlaceInstance.addRewardMechanism(
-    "twitterIds",
-    codeStringT,
-    // This should be the chainlink forwarder address after creating
-    // the time based upkeep job to call the function sendRequest with the
-    //  sourceID as parameter sourceID is a bytes32 to identify the source
-    // getSourceID("source1")
-    // wallet.address,
-    _forwTwitter,
-    // An array of the amount of the reward "tokens" that each agent will receive
-    // 1st agent 1st index, 2nd agent 2nd index, etc ...
-    distributionRewards,
-    { gasLimit: 10000000 }
-  );
-  await tx.wait();
+  // tx = await agentPlaceInstance.addRewardMechanism(
+  //   "twitterIds",
+  //   codeStringT,
+  //   // This should be the chainlink forwarder address after creating
+  //   // the time based upkeep job to call the function sendRequest with the
+  //   //  sourceID as parameter sourceID is a bytes32 to identify the source
+  //   // getSourceID("source1")
+  //   // wallet.address,
+  //   _forwTwitter,
+  //   // An array of the amount of the reward "tokens" that each agent will receive
+  //   // 1st agent 1st index, 2nd agent 2nd index, etc ...
+  //   distributionRewards,
+  //   { gasLimit: 10000000 }
+  // );
+  // await tx.wait();
 
-  tx = await agentPlaceInstance.addRewardMechanism(
-    "users",
-    codeStringU,
-    // This should be the chainlink forwarder address after creating
-    // the time based upkeep job to call the function sendRequest with the
-    //  sourceID as parameter sourceID is a bytes32 to identify the source
-    // getSourceID("source1")
-    // wallet.address,
-    _forwUsers,
-    // An array of the amount of the reward "tokens" that each agent will receive
-    // 1st agent 1st index, 2nd agent 2nd index, etc ...
-    distributionRewards,
-    { gasLimit: 10000000 }
-  );
-  await tx.wait();
-
-
-
+  // tx = await agentPlaceInstance.addRewardMechanism(
+  //   "users",
+  //   codeStringU,
+  //   // This should be the chainlink forwarder address after creating
+  //   // the time based upkeep job to call the function sendRequest with the
+  //   //  sourceID as parameter sourceID is a bytes32 to identify the source
+  //   // getSourceID("source1")
+  //   // wallet.address,
+  //   _forwUsers,
+  //   // An array of the amount of the reward "tokens" that each agent will receive
+  //   // 1st agent 1st index, 2nd agent 2nd index, etc ...
+  //   distributionRewards,
+  //   { gasLimit: 10000000 }
+  // );
+  // await tx.wait();
 
   // console.log("Reward mechanisms are added");
 
@@ -165,12 +163,10 @@ module.exports = async ({ deployments }) => {
   // // Call this allone after the first step to test the functionality
   // // If chainlink automation is registered then this function will be called automaticly
 
-
-    // tx = await agentPlaceInstance.sendRequest(getSourceID("twitterAds"), {
-    //   gasLimit: 10000000,
-    // });
-    // await tx.wait();
-
+  // tx = await agentPlaceInstance.sendRequest(getSourceID("twitterAds"), {
+  //   gasLimit: 10000000,
+  // });
+  // await tx.wait();
 
   //  tx = await agentPlaceInstance.sendRequest(getSourceID("usersRewardMechanism"), {
   //     gasLimit: 10000000,

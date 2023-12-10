@@ -12,17 +12,16 @@ module.exports = {
       optimizer: {
         enabled: true,
         runs: 200,
-        
       },
       viaIR: true,
     },
   },
-  
-  // defaultNetwork: "avax",
-  defaultNetwork: "mumbai",
+
+  defaultNetwork: "snowtrace",
+  // defaultNetwork: "mumbai",
 
   networks: {
-    avax: {
+    snowtrace: {
       chainId: 43114,
       url: "https://api.avax.network/ext/bc/C/rpc",
       accounts: [PRIVATE_KEY],
@@ -34,8 +33,19 @@ module.exports = {
     },
   },
   etherscan: {
-    apiKey: "JYMKRTHHFUSX4X11I1NQRNW6X7K2FJFJUU",
-    customChains: [],
+    // apiKey: "JYMKRTHHFUSX4X11I1NQRNW6X7K2FJFJUU",
+    apiKey: "snowtrace", // apiKey is not required, just set a placeholder
+    customChains: [
+      {
+        network: "snowtrace",
+        chainId: 43114,
+        urls: {
+          apiURL:
+            "https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan",
+          browserURL: "https://avalanche.routescan.io",
+        },
+      },
+    ],
   },
   paths: {
     sources: "./contracts",
