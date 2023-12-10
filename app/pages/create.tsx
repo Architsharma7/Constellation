@@ -12,7 +12,10 @@ import {
   InputGroup,
   InputRightAddon,
 } from "@chakra-ui/react";
+import { FaEthereum } from "react-icons/fa";
+import { useToast } from '@chakra-ui/react'
 import { Avatar, Wrap, WrapItem } from "@chakra-ui/react";
+import { RiNftLine } from "react-icons/ri";
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 import { Switch } from "@chakra-ui/react";
 import { useRef } from "react";
@@ -42,6 +45,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Navbar from "@/components/navbar";
 const Create = () => {
   // const chainID = useChainId();
+  const toast = useToast()
   const assistID = "asst_4YruN6LyHritMXIFQX0NGmht";
   const threadId = "thread_0xBV2sYKFkHvwbD6IQefwc9B";
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -214,6 +218,13 @@ const Create = () => {
           await registerAgent(data?.id);
 
           createAgent(getAgentID(data?.id));
+          await toast({
+            title: 'Agent Created',
+            description: "Your agent has been created successfully",
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+          })
         })
         .catch((err) => {
           console.log(err);
@@ -884,6 +895,16 @@ const Create = () => {
                       </div>
                     </div>
                     <div className="mx-3">
+                      <p className="text-sm font-mono">Mint NFT</p>
+                      <div
+                        className={` border-2 border-black rounded-full px-3 py-2.5 w-12 mt-3 cursor-pointer`}
+                      >
+                        <RiNftLine
+                          className={`text-black text-2xl`}
+                        />
+                      </div>
+                    </div>
+                    <div className="mx-3">
                       <p className="text-sm font-mono">Send</p>
                       <div
                         className={` ${
@@ -895,6 +916,17 @@ const Create = () => {
                           className={`${
                             mail === true && "text-red-500 text-2xl text-center"
                           } text-black text-2xl text-center`}
+                        />
+                      </div>
+                    </div>
+                    <div className="mx-3">
+                      <p className="text-sm font-mono text-center">Send Tx</p>
+                      <div
+                        className={` border-2 border-black rounded-full px-2.5 py-2.5 w-12 mt-3 cursor-pointer`}
+                        onClick={() => setMail(!mail)}
+                      >
+                        <FaEthereum
+                          className={`text-black text-2xl text-center`}
                         />
                       </div>
                     </div>
