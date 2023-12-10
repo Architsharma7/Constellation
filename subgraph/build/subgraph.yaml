@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: agentHandlerV3
-    network: mumbai
+    network: avalanche
     source:
-      address: "0xDa007aFEFA362446DAe054D4301D9440205326aB"
       abi: agentHandlerV3
-      startBlock: 43095064
+      address: "0x3fDfb0F7b1f17d39DD5e326A929541Cd2C0Cbc36"
+      startBlock: 38859413
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
