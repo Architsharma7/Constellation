@@ -109,7 +109,8 @@ The integration of Chainlink's diverse automation and function capabilities with
   - [Keeper Most Active users Rewarding](https://automation.chain.link/mumbai/20865975940877883507250379394801837877800838813677926648707710558950748534139)
   - [Keeper Ratings-Based agent Rewarding](https://automation.chain.link/mumbai/74144283878379645637176867477229354984663197323006917592696664999426381820156)
 - Chainlink Functions
-  - [Subscription link](https://functions.chain.link/mumbai/785)
+  - [Subscription link Avalance](https://functions.chain.link/avalanche/14)
+  - [Subscription link Mumbai](https://functions.chain.link/mumbai/785)
   - [SmartContract Chainlink Consumer](https://github.com/Architsharma7/Constellation/blob/main/contracts/contracts/ChainlinkConsumer.sol)
 - Log Triger Automation Keeper
   - [Keeper url](https://automation.chain.link/mumbai/75326241586280970289773533163079124194315874650874194249875686483698062817946)
@@ -131,7 +132,8 @@ The integration of Chainlink's diverse automation and function capabilities with
 
 The RocketAI platform is deployed on the following blockchains:
 
-- **Polygon Mumbai Testnet**: [Mumbai Scan Link](https://mumbai.polygonscan.com/address/0xBd1767206D13601f162cd18eA006B798775f798b)
+- **Avalance Mainet**: [Snowtrace Contract Link](https://avalanche.routescan.io/address/0x3fDfb0F7b1f17d39DD5e326A929541Cd2C0Cbc36#code)
+- **Polygon Mumbai Testnet**: [Mumbaiscan Contract Link](https://mumbai.polygonscan.com/address/0xBd1767206D13601f162cd18eA006B798775f798b)
 
 ### Conclusion and Future Plans 🚀🌐
 
