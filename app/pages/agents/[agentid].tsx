@@ -338,7 +338,7 @@ const AgentId = () => {
       </div>
       <div className="flex flex-col mt-14">
         <div className="mx-auto">
-          <div className="grid grid-flow-col grid-cols-4 grid-rows-1 gap-x-10 w-full mt-10">
+          <div className="grid grid-flow-col grid-cols-4 grid-rows-1 gap-x-10 w-11/12 justify-center mx-auto mt-10">
             <div className="border-2 bg-pink-100 border-b-8 flex flex-col px-14 py-3 border-black shadow-2xl">
               <p className="text-sm font-mono font-thin text-gray-500">
                 Agent Name
