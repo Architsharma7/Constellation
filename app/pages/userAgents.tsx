@@ -3,7 +3,7 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { Input, InputGroup, InputRightAddon } from "@chakra-ui/react";
 import { IoIosSend } from "react-icons/io";
 import { getCreator, getUser } from "@/utils/graphFunctions";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { getRatingsRank } from "@/firebase/firebaseFunctions";
 import { toBytes, toHex } from "viem";
@@ -15,6 +15,7 @@ import {
   generateImage,
   handleSendEmail,
 } from "@/utils/tools";
+import { Spinner } from "@chakra-ui/react";
 export default function UserAgents() {
   const { address: userAccount } = useAccount();
 
@@ -28,6 +29,7 @@ export default function UserAgents() {
   const [assistantID, setAssistantID] = useState<string>();
   const [inputPrompt, setInputPrompt] = useState<string>();
   const [subscriptionsData, setSubscriptionsData] = useState<any[]>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const getAssistant = async (assistantID: string) => {
     console.log("Fetching Assistant... Calling OpenAI");
@@ -130,7 +132,9 @@ export default function UserAgents() {
         console.log("Thread id missing...");
         return;
       }
-      setthreadMessages(threadMessages?.push(inputPrompt));
+      // setthreadMessages(threadMessages?.push(inputPrompt));
+
+      setLoading(true);
 
       fetch("/api/openai/chat", {
         method: "POST",
@@ -394,6 +398,7 @@ export default function UserAgents() {
         const messages = data.data;
         console.log(messages);
         setthreadMessages(messages);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
@@ -553,7 +558,11 @@ export default function UserAgents() {
 
               {threadMessages && (
                 <div className="mb-10">
-                  <ThreadMessagesMarkdown threadMessages={threadMessages} />
+                  {loading ? (
+                    <Spinner size="xl" />
+                  ) : (
+                    <ThreadMessagesMarkdown threadMessages={threadMessages} />
+                  )}
                 </div>
               )}
             </div>
