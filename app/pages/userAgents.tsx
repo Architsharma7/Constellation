@@ -9,6 +9,12 @@ import { getRatingsRank } from "@/firebase/firebaseFunctions";
 import { toBytes, toHex } from "viem";
 import Navbar from "@/components/navbar";
 import { ThreadMessagesMarkdown } from "@/components/ThreadMessagesMarkdown";
+import {
+  availableFunctions,
+  createTweet,
+  generateImage,
+  handleSendEmail,
+} from "@/utils/tools";
 export default function UserAgents() {
   const { address: userAccount } = useAccount();
 
@@ -92,7 +98,7 @@ export default function UserAgents() {
   }, [userAccount]);
 
   useEffect(() => {
-    console.log("done")
+    console.log("done");
     // getRatingsRank();
   }, [threadMessages]);
 
@@ -124,6 +130,8 @@ export default function UserAgents() {
         console.log("Thread id missing...");
         return;
       }
+      setthreadMessages(threadMessages?.push(inputPrompt));
+
       fetch("/api/openai/chat", {
         method: "POST",
         headers: {
@@ -177,7 +185,8 @@ export default function UserAgents() {
           console.log(res);
           const data = await res.json();
           console.log(data);
-          getThread(threadID, assistantID);
+          // getThread(threadID, assistantID);
+          await pollRun(threadID, data.id, assistantID);
         })
         .catch((err) => {
           console.log(err);
@@ -185,6 +194,177 @@ export default function UserAgents() {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const pollRun = async (
+    _threadID: string,
+    _runId: string,
+    _assistantID: string
+  ) => {
+    if (!_runId) {
+      console.log("Run Details missing");
+      return;
+    }
+    if (!_threadID) {
+      console.log("thread Details missing");
+      return;
+    }
+    const _run = await getRun(_threadID, _runId);
+    if (_run) {
+      if (_run?.status === "requires_action") {
+        console.log("thread Run requires action");
+        // 4. If needed perform functions and return result
+        const toolCalls = _run.required_action?.submit_tool_outputs.tool_calls;
+        toolCalls.forEach(async (toolCall: any) => {
+          const toolOutput = await performToolCall(toolCall);
+          if (toolOutput) {
+            const toolOutputs = {
+              tool_call_id: toolCall.id,
+              output: toolOutput,
+            };
+            // 5. Submit tool output if there via the API
+            await submitToolOutput(_threadID, _runId, toolOutputs);
+          }
+        });
+
+        return;
+      } else if (_run?.status === "completed") {
+        console.log("thread Run completed");
+
+        // 6. Get the thread and return
+        const threadContent = await getThread(_threadID, _assistantID);
+        return;
+      } else if (_run?.status === "in_progress" || _run?.status === "queued") {
+        // Re call Poll run and wait for it until the status is completed
+        console.log("thread Run in progress");
+        setTimeout(async () => {
+          await pollRun(_threadID, _runId, _assistantID);
+        }, 2000);
+      } else {
+        console.log("thread Run invalid");
+        return;
+      }
+    }
+  };
+
+  const availableFunctions = {
+    create_email: handleSendEmail,
+    tweet_ads: createTweet,
+    generate_image: generateImage,
+  };
+
+  const performToolCall = async (toolCall: any): Promise<any | undefined> => {
+    try {
+      const functionToCall = availableFunctions[toolCall.function.name];
+      const functionArgs = JSON.parse(toolCall.function.arguments);
+      // functionArgs is an object
+      if (functionToCall == "create_email") {
+        const functionResponse = await functionToCall(
+          functionArgs.subject,
+          functionArgs.body,
+          functionArgs.to
+        );
+        return functionResponse;
+      } else if (functionToCall == "tweet_ads") {
+        const functionResponse = functionToCall(
+          functionArgs.tweetContent,
+          functionArgs.tweetImage
+        );
+        return functionResponse;
+      } else if (functionToCall == "generate_image") {
+        const functionResponse = await functionToCall(functionArgs.imagePrompt);
+        return functionResponse;
+      } else {
+        return;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  interface toolOutputsType {
+    tool_call_id: string;
+    output: string;
+  }
+  [];
+  const submitToolOutput = async (
+    _threadID: string,
+    _runID: string,
+    toolOutputs: toolOutputsType
+  ) => {
+    try {
+      console.log("Submitting too Output... Calling OpenAI");
+
+      if (!_threadID) {
+        console.log("thread Details missing");
+        return;
+      }
+
+      if (!_runID) {
+        console.log("thread Details missing");
+        return;
+      }
+
+      return await fetch("/api/openai/submitToolOutput", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          threadID: _threadID,
+          runID: _runID,
+          toolOutpus: toolOutputs,
+        }),
+      })
+        .then(async (res) => {
+          console.log(res);
+          const data = await res.json();
+          console.log(data);
+          return data;
+          // getThread(threadID, assistantID);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getRun = async (
+    _threadID: string,
+    _runId: string
+  ): Promise<any | undefined> => {
+    console.log("Fetching Run... Calling OpenAI");
+    if (!_runId) {
+      console.log("Run Details missing");
+      return;
+    }
+
+    if (!_threadID) {
+      console.log("thread Details missing");
+      return;
+    }
+    console.log(_threadID, _runId);
+    const data = await fetch(
+      `/api/openai/checkRun?threadID=${_threadID}&runID=${_runId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then(async (res) => {
+        console.log(res);
+        const data = await res.json();
+        console.log(data);
+        return data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return data;
   };
 
   const getThread = async (_threadID: string, _assistantID: string) => {
@@ -332,7 +512,6 @@ export default function UserAgents() {
                             type="button"
                             className="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-orange-200"
                             onClick={() => {
-                          
                               setAssistantID(subscription.assistantId);
 
                               setThreadID(subscription.threadID);
@@ -341,7 +520,6 @@ export default function UserAgents() {
                                 subscription.threadID,
                                 subscription.assistantId
                               );
-
                             }}
                           >
                             <span className="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">
@@ -375,7 +553,7 @@ export default function UserAgents() {
 
               {threadMessages && (
                 <div className="mb-10">
-                <ThreadMessagesMarkdown threadMessages={threadMessages} />
+                  <ThreadMessagesMarkdown threadMessages={threadMessages} />
                 </div>
               )}
             </div>
@@ -419,7 +597,11 @@ export default function UserAgents() {
                   <IoIosSend
                     className="text-xl cursor-pointer"
                     onClick={() => {
-                      useThread();
+                      sendMessage();
+                      // getRun(
+                      //   "thread_SZ9JRy28i9QQS2o8yu0wXJ5R",
+                      //   "run_wMAAyvAia73ugun5W0noNrGW"
+                      // );
                     }}
                   />
                 </InputRightAddon>

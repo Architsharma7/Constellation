@@ -1,13 +1,9 @@
 import { handleSendEmail } from "./email";
 
 // via twitter API
-const createTweet = () => {};
+const createTweet = (tweetContent: string, tweetImage: string) => {};
 
 // via DALL e
-const generateImage = () => {};
+const generateImage = (imagePrompt: string) => {};
 
-const availableFunctions = {
-  create_email: handleSendEmail,
-  tweet_ads: createTweet,
-  generate_image: generateImage,
-};
+export { createTweet, generateImage, handleSendEmail };

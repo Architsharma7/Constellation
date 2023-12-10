@@ -135,10 +135,10 @@ export const createAndRunThread = async (
 // 5. Check the Run status , if actions needed , take the JSON response , and call the function from your side
 export const checkRun = async (
   thread: OpenAI.Beta.Threads.Thread,
-  runObj: OpenAI.Beta.Threads.Runs.Run
+  runObjID: string
 ): Promise<OpenAI.Beta.Threads.Runs.Run | undefined> => {
   try {
-    const run = await openai.beta.threads.runs.retrieve(thread.id, runObj.id);
+    const run = await openai.beta.threads.runs.retrieve(thread.id, runObjID);
     return run;
     // run.status.required_action?.submit_tool_outputs.tool_calls
     // If needs run , call the function and submit
@@ -150,13 +150,13 @@ export const checkRun = async (
 // 6. Return the functions output to run
 export const submitToolOuput = async (
   thread: OpenAI.Beta.Threads.Thread,
-  runObj: OpenAI.Beta.Threads.Runs.Run,
+  runObjID: string,
   toolOutputs: { tool_call_id: string; output: string }[]
 ): Promise<OpenAI.Beta.Threads.Runs.Run | undefined> => {
   try {
     const run = await openai.beta.threads.runs.submitToolOutputs(
       thread.id,
-      runObj.id,
+      runObjID,
       {
         tool_outputs: toolOutputs,
       }
@@ -214,11 +214,13 @@ export const pollRun = async (
   runObj: OpenAI.Beta.Threads.Runs.Run
 ): Promise<OpenAI.Beta.Threads.Messages.ThreadMessagesPage | undefined> => {
   try {
-    const _run = await checkRun(thread, runObj);
+    const _run = await checkRun(thread, runObj.id);
     if (_run?.status === "requires_action") {
       console.log("thread Run requires action");
       // 4. If needed perform functions and return result
       const toolCalls = _run.required_action?.submit_tool_outputs.tool_calls;
+
+      // toolCalls[0].id
       // 5. Submit tool output if there
       // 6. Get the thread and return
       const threadContent = await getThreadMessage(thread);
