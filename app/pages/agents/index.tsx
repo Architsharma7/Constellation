@@ -167,7 +167,7 @@ const Index = () => {
         </div>
         <div className="mt-10 w-5/6 mx-auto">
           {agentsData && agentsData?.length > 0 ? (
-            <div className="grid grid-flow-col grid-cols-3 gap-x-10 gap-y-10">
+            <div className="grid grid-flow-row grid-cols-3 gap-x-10 gap-y-10">
               {agentsData.map((agent) => (
                 <div className="px-6 py-3 bg-white border-b-8 shadow-xl border border-black">
                   <div className="flex mx-auto">
