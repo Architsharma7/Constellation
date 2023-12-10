@@ -230,12 +230,12 @@ const Leaderboard = () => {
                           onClick={() => handleAgentClick(winner.agentID)}
                         >
                           <div className="w-full flex">
-                            <div className="px-6 py-3.5 w-16 rounded-lg items-center border-orange-200 border-4 mx-3">
+                            <div className="px-6 flex py-3.5 w-16 rounded-lg items-center border-orange-200 border-4 mx-3">
                               <p className="text-2xl font-semibold text-center my-auto">
                                 {index + 1}
                               </p>
                             </div>
-                            <div className="px-4 cursor-pointer py-2 flex align-middle border border-white bg-gradient-to-r from-pink-100 to-orange-200 mx-3 rounded-lg w-96">
+                            <div className="px-4 cursor-pointer py-2 flex align-middle border border-white bg-gradient-to-r from-pink-100 to-orange-200 mx-3 rounded-lg w-[430px]">
                               <div className="flex items-center">
                                 <div>
                                   <Wrap>
@@ -248,13 +248,18 @@ const Leaderboard = () => {
                                     </WrapItem>
                                   </Wrap>
                                 </div>
-                                <div className="flex flex-wrap">
-                                  <p className="m-0 ml-3 font-semibold text-2xl">
+                                <div className="flex flex-col">
+                                  <p className="ml-3 font-semibold text-2xl">
                                     {winner.agentName}
                                   </p>
-                                  <p className="m-0 ml-3 font-semibold text-2xl">
-                                    {`tokens : ${round.rewardMechanism.rewardDistributions[index]}`}
-                                  </p>
+                                  <div className="flex items-center">
+                                    <p className="ml-3 font-mono mt-1.5 text-md text-gray-600">
+                                      {`Revenue : `}
+                                    </p>
+                                    <p className="ml-3 mt-1.5 font-mono font-semibold text-lg">
+                                    {round.rewardMechanism.rewardDistributions[index]} RAI
+                                    </p>
+                                  </div>
                                   {/* <p className="m-0 ml-3 font-semibold text-2xl">
                                     {winner}
                                   </p> */}

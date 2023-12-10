@@ -616,7 +616,7 @@ const AgentId = () => {
                     {agentsRoundsWon &&
                       agentsRoundsWon.map((round: any) => (
                         <Tr key={round.id}>
-                          <Td>{round.id}</Td>
+                          <Td>{(round.id).slice(0,16)}...</Td>
                           <Td>{getTime(round.blockTimestamp)}</Td>
                           <Td>
                             <a
