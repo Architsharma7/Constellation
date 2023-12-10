@@ -6,7 +6,7 @@ const Navbar = () => {
   const router = useRouter();
   return (
     <div className="w-screen bg-gradient-to-r from-white via-white to-rose-100">
-      <div className="flex justify-between mx-6">
+      <div className="flex justify-between mx-6 ml-10">
         <div onClick={() => router.push("/")} className="mt-4 cursor-pointer">
           <p className="font-semibold text-2xl">RocketAI🚀</p>
         </div>
@@ -33,7 +33,7 @@ const Navbar = () => {
               className="bg-white rounded-3xl px-2 py-1 mx-1 cursor-pointer"
             >
               <p className="text-center text-md font-semibold my-auto text-black">
-                Create
+                CreateAgent
               </p>
             </div>
             <div
@@ -50,7 +50,7 @@ const Navbar = () => {
           <ConnectButton
             accountStatus="address"
             showBalance={false}
-            chainStatus="none"
+            chainStatus="icon"
           />
         </div>
       </div>

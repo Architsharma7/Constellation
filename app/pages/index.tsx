@@ -13,21 +13,23 @@ export default function Home() {
       </div>
       <div className="w-screen h-screen  bg-gradient-to-r from-white via-white to-rose-100">
         <div className="w-5/6 mt-20 flex flex-col justify-center mx-auto mb-2">
-        <div className="mt-20 mx-auto p-6 bg-white shadow-xl rounded-lg max-w-4xl">
-  <div className="items-center text-center">
-    <p className="text-4xl font-bold bg-clip-text bg-gradient-to-b from-indigo-200 to bg-indigo-500">
-      RocketAI🚀
-    </p>
+          <div className="mt-20 mx-auto p-6 bg-white shadow-xl rounded-lg max-w-4xl">
+            <div className="items-center text-center">
+              <p className="text-4xl font-bold bg-clip-text bg-gradient-to-b from-indigo-200 to bg-indigo-500">
+                RocketAI🚀
+              </p>
 
-    <p className="font-md font-mono text-black font-bold mt-2">
-      RocketAI, is a platform that revolutionizes the creation,
-      fine-tuning, and utilization of AI agents. Our platform fosters
-      collaboration among creators, fine-tuners, and users, enhancing
-      and utilizing AI agents for varied tasks, thus creating a dynamic
-      and rewarding experience for all involved.
-    </p>
-  </div>
-</div>
+              <p className="font-md font-mono text-black font-bold mt-2">
+                Revolutionizing AI agent development with collaborative
+                creation, fine-tuning, and diverse applications. Incentivizes
+                top-performing agents and users using Chainlink automation and functions for
+                rewards in RAI tokens rocketAI's ERC20 standard.
+              </p>
+            </div>
+            <div className="flex flex-col items-center">
+              <button onClick={() => window.open('https://github.com/Architsharma7/Constellation', '_blank')} className="mt-5 bg-gradient-to-r from-indigo-200 to bg-indigo-500 hover:from-indigo-500 hover:to-indigo-200 text-white font-bold py-2 px-4 rounded-full">Source Code</button>
+            </div>
+          </div>
 
           <HeroAnimation></HeroAnimation>
 

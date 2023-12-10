@@ -211,7 +211,7 @@ const Leaderboard = () => {
                               </div>
                               <div>
                                 <p className="m-0 ml-3 font-semibold text-2xl">
-                                  {agent.agentID}
+                                  {agent.agentName}
                                 </p>
                               </div>
                             </div>

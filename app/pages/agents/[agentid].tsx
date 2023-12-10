@@ -625,12 +625,12 @@ const AgentId = () => {
                           <Td>
                             <a
                               href={
-                                "https://mumbai.polygonscan.com/address/{round.transactionHash}"
+                                `https://mumbai.polygonscan.com/tx/${round.transactionHash}`
                               }
                               target="_blank"
                               className="text-blue-500"
                             >
-                              https://mumbai.polygonscan.com/address/
+                              https://mumbai.polygonscan.com/tx/
                               {round.transactionHash}
                             </a>
                           </Td>

@@ -9,13 +9,12 @@ import {
   lightTheme,
 } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { polygonMumbai } from "wagmi/chains";
-import { alchemyProvider } from "wagmi/providers/alchemy";
+import { polygonMumbai, avalanche } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 import { useRouter } from "next/router";
 
 const { chains, publicClient } = configureChains(
-  [polygonMumbai],
+  [polygonMumbai,avalanche],
   [publicProvider()]
 );
 
