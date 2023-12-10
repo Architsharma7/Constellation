@@ -9,7 +9,7 @@ import {
   TagCloseButton,
 } from "@chakra-ui/react";
 import { getAllAgents } from "@/utils/graphFunctions";
-import { getAgentFirebase } from "@/firebase/firebaseFunctions";
+import { getAgentFirebase, getAvgRating } from "@/firebase/firebaseFunctions";
 import Navbar from "@/components/navbar";
 import Loading from "@/components/Animation/Loading";
 interface agentDataType {
@@ -66,7 +66,7 @@ const Index = () => {
       return;
     }
     // get partial data from firebase
-    const firebaseData = await getAgentFirebase(agentGraphData?.agentID);
+    const firebaseData = await getAvgRating(agentGraphData?.agentID);
     console.log(firebaseData);
     // other partial from openAI
     // TODO : update the assistantID we get from graphQl
@@ -78,7 +78,7 @@ const Index = () => {
       assistantId: agentGraphData?.assistantId,
       agentName: assitantData?.name,
       agentDesciption: assitantData?.description,
-      agentRating: firebaseData?.avgRating,
+      agentRating: firebaseData?.toString()||"0",
       agentCategory: agentGraphData?.agentCategory,
     };
     return agentData;
