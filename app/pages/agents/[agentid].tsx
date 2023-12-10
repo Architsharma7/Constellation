@@ -128,7 +128,7 @@ const AgentId = () => {
         }
       }
     }
-  }, [router]);
+  }, [router,userAccount]);
 
   const getAssistant = async (assistantID: string) => {
     console.log("Fetching thread... Calling OpenAI");
@@ -440,11 +440,7 @@ const AgentId = () => {
             <div className="mt-4 flex flex-col">
               <button
                 onClick={() => {
-                  isSubscribed ||
-                  !(
-                    agentData?.agentCreator.toLowerCase() ==
-                    userAccount?.toLowerCase()
-                  )
+                  isSubscribed 
                     ? router.push(`/userAgents`)
                     : onOpen();
                 }}
