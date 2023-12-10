@@ -3,18 +3,14 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 import { Input, InputGroup, InputRightAddon } from "@chakra-ui/react";
 import { IoIosSend } from "react-icons/io";
 import { getCreator, getUser } from "@/utils/graphFunctions";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { getRatingsRank } from "@/firebase/firebaseFunctions";
 import { toBytes, toHex } from "viem";
 import Navbar from "@/components/navbar";
 import { ThreadMessagesMarkdown } from "@/components/ThreadMessagesMarkdown";
-import {
-  availableFunctions,
-  createTweet,
-  generateImage,
-  handleSendEmail,
-} from "@/utils/tools";
+import { createTweet, generateImage, handleSendEmail } from "@/utils/tools";
+import { Spinner } from "@chakra-ui/react";
 export default function UserAgents() {
   const { address: userAccount } = useAccount();
 
@@ -28,6 +24,7 @@ export default function UserAgents() {
   const [assistantID, setAssistantID] = useState<string>();
   const [inputPrompt, setInputPrompt] = useState<string>();
   const [subscriptionsData, setSubscriptionsData] = useState<any[]>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const getAssistant = async (assistantID: string) => {
     console.log("Fetching Assistant... Calling OpenAI");
@@ -132,6 +129,8 @@ export default function UserAgents() {
       }
       // setthreadMessages(threadMessages?.push(inputPrompt));
 
+      setLoading(true);
+
       fetch("/api/openai/chat", {
         method: "POST",
         headers: {
@@ -216,6 +215,7 @@ export default function UserAgents() {
         // 4. If needed perform functions and return result
         const toolCalls = _run.required_action?.submit_tool_outputs.tool_calls;
         toolCalls.forEach(async (toolCall: any) => {
+          console.log(toolCall);
           const toolOutput = await performToolCall(toolCall);
           if (toolOutput) {
             const toolOutputs = {
@@ -256,23 +256,31 @@ export default function UserAgents() {
   const performToolCall = async (toolCall: any): Promise<any | undefined> => {
     try {
       const functionToCall = availableFunctions[toolCall.function.name];
+      console.log(functionToCall);
       const functionArgs = JSON.parse(toolCall.function.arguments);
+      console.log(functionArgs);
       // functionArgs is an object
       if (functionToCall == "create_email") {
+        console.log("Sending Email");
         const functionResponse = await functionToCall(
-          functionArgs.subject,
-          functionArgs.body,
-          functionArgs.to
+          functionArgs.emailContent,
+          functionArgs.emailSubject,
+          "hello@gmail.com"
         );
+        console.log(functionResponse);
         return functionResponse;
       } else if (functionToCall == "tweet_ads") {
+        console.log("Tweeting");
         const functionResponse = functionToCall(
           functionArgs.tweetContent,
           functionArgs.tweetImage
         );
+        console.log(functionResponse);
         return functionResponse;
       } else if (functionToCall == "generate_image") {
+        console.log("Generating Image");
         const functionResponse = await functionToCall(functionArgs.imagePrompt);
+        console.log(functionResponse);
         return functionResponse;
       } else {
         return;
@@ -395,6 +403,7 @@ export default function UserAgents() {
         const messages = data.data;
         console.log(messages);
         setthreadMessages(messages);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
@@ -402,6 +411,9 @@ export default function UserAgents() {
     return data;
   };
 
+  // "thread_nf2kCoESw6fyC9jvGlgKl6Fv";
+  // "run_uhHtsA6BWnu47j888RCX4ICJ"
+  // "asst_ieJL0i6m3WHNmjLcZnDSvAAV"
   const useThread = async () => {
     try {
       console.log("Sending msg... Calling OpenAI");
@@ -554,7 +566,11 @@ export default function UserAgents() {
 
               {threadMessages && (
                 <div className="mb-10">
-                  <ThreadMessagesMarkdown threadMessages={threadMessages} />
+                  {loading ? (
+                    <Spinner size="xl" />
+                  ) : (
+                    <ThreadMessagesMarkdown threadMessages={threadMessages} />
+                  )}
                 </div>
               )}
             </div>
@@ -598,7 +614,14 @@ export default function UserAgents() {
                   <IoIosSend
                     className="text-xl cursor-pointer"
                     onClick={() => {
-                      sendMessage();
+                      pollRun(
+                        "thread_nf2kCoESw6fyC9jvGlgKl6Fv",
+                        "run_uhHtsA6BWnu47j888RCX4ICJ",
+                        "asst_ieJL0i6m3WHNmjLcZnDSvAAV"
+                      );
+                      // ("thread_nf2kCoESw6fyC9jvGlgKl6Fv");
+                      // ("run_uhHtsA6BWnu47j888RCX4ICJ");
+                      // ("asst_ieJL0i6m3WHNmjLcZnDSvAAV");
                       // generateImage(inputPrompt);
                       // getRun(
                       //   "thread_SZ9JRy28i9QQS2o8yu0wXJ5R",

@@ -13,7 +13,7 @@ const generateImage = async (imagePrompt: string) => {
       return;
     }
 
-    return await fetch("/api/openai/createImage", {
+    const data = await fetch("/api/openai/createImage", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -32,6 +32,8 @@ const generateImage = async (imagePrompt: string) => {
       .catch((err) => {
         console.log(err);
       });
+
+    return data;
   } catch (error) {
     console.log(error);
   }
