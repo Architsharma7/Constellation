@@ -129,7 +129,7 @@ const Leaderboard = () => {
 
   const getRounds = async () => {
     const data = await getAllRounds(5);
-    console.log(data);
+    console.log("HERE:  ", data);
     setRoundData(data.rounds);
     // an array of Round data is returend here
   };
@@ -248,10 +248,16 @@ const Leaderboard = () => {
                                     </WrapItem>
                                   </Wrap>
                                 </div>
-                                <div>
+                                <div className="flex flex-wrap">
                                   <p className="m-0 ml-3 font-semibold text-2xl">
-                                    {winner.agentID}
+                                    {winner.agentName}
                                   </p>
+                                  <p className="m-0 ml-3 font-semibold text-2xl">
+                                    {`tokens : ${round.rewardMechanism.rewardDistributions[index]}`}
+                                  </p>
+                                  {/* <p className="m-0 ml-3 font-semibold text-2xl">
+                                    {winner}
+                                  </p> */}
                                 </div>
                               </div>
                             </div>

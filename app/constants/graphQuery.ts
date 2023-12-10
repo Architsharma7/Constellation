@@ -245,10 +245,12 @@ export const allRoundsQuery = gql`
       }
       rewardMechanism {
         sourceName
+        rewardDistributions
         id
       }
       topkAgents {
         agentID
+        agentName
         assistantId
         agentCategory
       }
