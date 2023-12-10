@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Avatar, Wrap, WrapItem } from "@chakra-ui/react";
 import Navbar from "@/components/navbar";
-import { useAccount } from "wagmi";
+import {
+  useAccount,
+  useEnsName,
+  usePublicClient,
+  useWalletClient,
+} from "wagmi";
 import { getCreator, getUser } from "@/utils/graphFunctions";
 import { useRouter } from "next/router";
 
@@ -10,13 +15,32 @@ const User = () => {
   const { address: creatorAccount } = useAccount();
   const [creatorData, setCreatorData] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [ens, setEns] = useState(null);
+  const publicClient = usePublicClient({ chainId: 1 });
+  const { data: walletClient } = useWalletClient();
 
   const fetchCreatorData = async () => {
     if (!creatorAccount) {
       console.log("Creator Account not found");
       return;
     }
+    let ensName;
+    try{
+      ensName = await publicClient.getEnsName({
+        address: creatorAccount,
+      });
+    }catch(err){
+      console.log(err)
+    }
+
+
+    if (ensName) {
+      // @ts-ignore 
+      setEns(ensName);
+      console.log(ensName);
+    }
     const data = await getCreator(creatorAccount);
+
     setCreatorData(data);
   };
 
@@ -53,7 +77,7 @@ const User = () => {
               </Wrap>
             </div>
             <div className="text-center">
-              <p className="text-lg font-semibold mt-3">{creatorAccount}</p>
+              <p className="text-lg font-semibold mt-3">{ens?ens:creatorAccount}</p>
             </div>
           </div>
           <div className="mt-10 mx-auto flex">
@@ -76,10 +100,10 @@ const User = () => {
                       <div
                         key={index}
                         className="flex border border-indigo-200 bg-indigo-300 px-4 py-1  rounded-lg mb-2 cursor-pointer"
-                        onClick={handleAgentClick(subscription.agent.agentID)}
+                        onClick={handleAgentClick(subscription?.agent?.agentID)}
                       >
                         <p className="text-lg font-semibold">
-                          {subscription.agent.agentName}
+                          {subscription?.agent?.agentName}
                         </p>
                       </div>
                     )
@@ -93,15 +117,15 @@ const User = () => {
               <div className="mt-12">
                 {creatorData &&
                   // @ts-ignore
-                  creatorData.creator?.agentsCreated.map(
+                  creatorData?.creator?.agentsCreated.map(
                     (agent: any, index: any) => (
                       <div
                         key={index}
                         className="flex border border-green-200 bg-green-300 px-4 py-1 rounded-lg mb-2 cursor-pointer"
                       >
-                        <div onClick={handleAgentClick(agent.agentID)}>
+                        <div onClick={handleAgentClick(agent?.agentID)}>
                           <p className="text-lg font-semibold">
-                            {agent.agentName}
+                            {agent?.agentName}
                           </p>
                         </div>
                       </div>
