@@ -6,7 +6,11 @@
 
 ## Short Description Pitch🎤
 
-**RocketAI**, is a platform that revolutionizes the creation, fine-tuning, and utilization of AI agents. Our platform fosters collaboration among creators, fine-tuners, and users, enhancing and utilizing AI agents for varied tasks, thus creating a dynamic and rewarding experience for all involved.
+***RocketAI*** blends web3 with OpenAI innovations for a new era in AI agent creation featuring a decentralized incentive system that rewards excellence with RAI tokens via Chainlink Automation & Functions.
+
+## Description📜
+
+**RocketAI** is a comprehensive platform for creating, fine-tuning, and engaging with specialized AI agents. By integrating OpenAI's GPT models with blockchain technology, it offers a unique blend of AI intelligence and decentralized functionality. Creators can design agents with specific skills, users can subscribe to these agents, and fine-tuners can enhance them, creating a collaborative and evolving AI environment.
 
 ## A Submission for the Chainlink Constellation Hackathon 2023.
 
@@ -16,9 +20,6 @@
 - [Architsharma7](https://github.com/Architsharma7)
 - [nijoe1](https://github.com/nijoe1)
 
-## Description📜
-
-**RocketAI** is a comprehensive platform for creating, fine-tuning, and engaging with specialized AI agents. By integrating OpenAI's GPT models with blockchain technology, it offers a unique blend of AI intelligence and decentralized functionality. Creators can design agents with specific skills, users can subscribe to these agents, and fine-tuners can enhance them, creating a collaborative and evolving AI environment.
 
 ## Flow & Architecture of the Application✨
 
@@ -109,7 +110,7 @@ The integration of Chainlink's diverse automation and function capabilities with
   - [Keeper Most Active users Rewarding](https://automation.chain.link/mumbai/20865975940877883507250379394801837877800838813677926648707710558950748534139)
   - [Keeper Ratings-Based agent Rewarding](https://automation.chain.link/mumbai/74144283878379645637176867477229354984663197323006917592696664999426381820156)
 - Chainlink Functions
-  - [Subscription link Avalance](https://functions.chain.link/avalanche/14)
+  - [Subscription link Avalanche](https://functions.chain.link/avalanche/14)
   - [Subscription link Mumbai](https://functions.chain.link/mumbai/785)
   - [SmartContract Chainlink Consumer](https://github.com/Architsharma7/Constellation/blob/main/contracts/contracts/ChainlinkConsumer.sol)
 - Log Triger Automation Keeper
@@ -119,20 +120,22 @@ The integration of Chainlink's diverse automation and function capabilities with
 
 **The Graph** is used to index user interactions and contract events on the blockchain. It ensures that the platform's interface remains informative and user-friendly by providing quick access to data about agent interactions, subscriptions, and overall platform activity.
 
-- [**_RocketAI(Subgraph)_**](https://github.com/Architsharma7/Constellation/tree/main/subgraph)
-- Usage of the Unlock Protocol Subgraph
+- [**_RocketAI(Subgraph Code)_**](https://github.com/Architsharma7/Constellation/tree/main/subgraph)
+- [**_RocketAI(Subgraph Avalanche)_**](https://testnet.thegraph.com/explorer/subgraphs/F7X9FvGzzzucrVbArY8yJhK7VZTEXCTzgogWnmsMznko?view=Overview&chain=sepolia)
+- [**_RocketAI(Subgraph Mumbai)_**](https://testnet.thegraph.com/explorer/subgraphs/E6ErCGzMQiiuNfJhwqriihGxhoc4YRBEQjEFx4c8fof6?view=Overview&chain=sepolia)
+
+- Usage of the existing Unlock Protocol Subgraph to index information about user subscriptions
 
 ### Unlock Protocol 🔓
 
 **Unlock Protocol**: This protocol manages the subscription mechanics on the platform. It allows users to seamlessly subscribe to different AI agents, handling the access permissions and subscription durations. This integration ensures a smooth and secure transactional experience for users engaging with the agents.
 
-### ENS
 
 ## Smart Contracts
 
 The RocketAI platform is deployed on the following blockchains:
 
-- **Avalance Mainet**: [Snowtrace Contract Link](https://avalanche.routescan.io/address/0x3fDfb0F7b1f17d39DD5e326A929541Cd2C0Cbc36#code)
+- **Avalanche Mainnet**: [Snowtrace Contract Link](https://avalanche.routescan.io/address/0x3fDfb0F7b1f17d39DD5e326A929541Cd2C0Cbc36#code)
 - **Polygon Mumbai Testnet**: [Mumbaiscan Contract Link](https://mumbai.polygonscan.com/address/0xBd1767206D13601f162cd18eA006B798775f798b)
 
 ### Conclusion and Future Plans 🚀🌐
