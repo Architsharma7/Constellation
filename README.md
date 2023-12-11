@@ -120,16 +120,15 @@ The integration of Chainlink's diverse automation and function capabilities with
 
 **The Graph** is used to index user interactions and contract events on the blockchain. It ensures that the platform's interface remains informative and user-friendly by providing quick access to data about agent interactions, subscriptions, and overall platform activity.
 
-- [**_RocketAI(Subgraph Code)_**](https://github.com/Architsharma7/Constellation/tree/main/subgraph)
-- [**_RocketAI(Subgraph Avalanche)_**](https://testnet.thegraph.com/explorer/subgraphs/F7X9FvGzzzucrVbArY8yJhK7VZTEXCTzgogWnmsMznko?view=Overview&chain=sepolia)
-- [**_RocketAI(Subgraph Mumbai)_**](https://testnet.thegraph.com/explorer/subgraphs/E6ErCGzMQiiuNfJhwqriihGxhoc4YRBEQjEFx4c8fof6?view=Overview&chain=sepolia)
+- [RocketAI(Subgraph Code)](https://github.com/Architsharma7/Constellation/tree/main/subgraph)
+- [RocketAI(Subgraph Avalanche)](https://testnet.thegraph.com/explorer/subgraphs/F7X9FvGzzzucrVbArY8yJhK7VZTEXCTzgogWnmsMznko?view=Overview&chain=sepolia)
+- [RocketAI(Subgraph Mumbai)](https://testnet.thegraph.com/explorer/subgraphs/E6ErCGzMQiiuNfJhwqriihGxhoc4YRBEQjEFx4c8fof6?view=Overview&chain=sepolia)
 
-- Usage of the existing Unlock Protocol Subgraph to index information about user subscriptions
+- Usage of the existing Unlock Protocol Subgraph on **Avalanche Mainnet** & **Polygon Mumbai**
 
 ### Unlock Protocol 🔓
 
-**Unlock Protocol**: This protocol manages the subscription mechanics on the platform. It allows users to seamlessly subscribe to different AI agents, handling the access permissions and subscription durations. This integration ensures a smooth and secure transactional experience for users engaging with the agents.
-
+**Unlock Protocol**: This protocol manages the subscription mechanics on the platform. It allows users to seamlessly subscribe to different AI agents, handling the access permissions and subscription durations. This integration ensures a smooth and secure transactional experience for users engaging with the agents but also acts as a revenue stream for agent creators, contributors and to our platform for a sustainable decentralized economy.
 
 ## Smart Contracts
 
@@ -141,6 +140,7 @@ The RocketAI platform is deployed on the following blockchains:
 ### Conclusion and Future Plans 🚀🌐
 
 **RocketAI** focuses on fostering a dynamic AI ecosystem, emphasizing both creator innovation and user engagement. The platform's incentive layer and economy are built around a versatile reward system that benefits both AI agent creators and users.
+- Add more agent actions and tools.
 
 #### Key Elements:
 
